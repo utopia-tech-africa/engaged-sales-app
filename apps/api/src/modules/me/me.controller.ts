@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Patch, Post, UseGuards } from "@nestjs/common";
 
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.type";
@@ -10,7 +10,7 @@ import { MeService } from "./me.service";
 @Controller("me")
 @UseGuards(JwtAuthGuard)
 export class MeController {
-  public constructor(private readonly meService: MeService) {}
+  public constructor(@Inject(MeService) private readonly meService: MeService) {}
 
   @Get()
   public getMe(@CurrentUser() currentUser: AuthenticatedUser) {

@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class MeRepository {
-  public constructor(private readonly prisma: PrismaService) {}
+  public constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   public getProfile(userId: string) {
     return this.prisma.user.findUnique({

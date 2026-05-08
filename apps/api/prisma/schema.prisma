@@ -20,12 +20,20 @@ enum Gender {
   other
 }
 
+enum AuthProvider {
+  credentials
+  google
+}
+
 model User {
   id         String        @id @default(cuid())
   fullName   String
+  email      String?       @unique
   phone      String        @unique
   uniqueCode String        @unique
   role       UserRole
+  authProvider AuthProvider @default(credentials)
+  googleSub  String?       @unique
   gender     Gender?
   regionId   String?
   createdAt  DateTime      @default(now())
@@ -60,4 +68,15 @@ model LocationPing {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, recordedAt(sort: Desc)])
+}
+
+model OauthNonce {
+  id        String   @id @default(cuid())
+  nonce     String   @unique
+  provider  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
 }

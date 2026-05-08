@@ -5,6 +5,7 @@ import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 
 import { AppModule } from "./app.module";
+import { ProblemDetailsExceptionFilter } from "./common/filters/problem-details-exception.filter";
 import type { EnvironmentVariables } from "./config/environment";
 
 const bootstrap = async (): Promise<void> => {
@@ -24,6 +25,7 @@ const bootstrap = async (): Promise<void> => {
       }
     })
   );
+  app.useGlobalFilters(new ProblemDetailsExceptionFilter());
 
   app.setGlobalPrefix(prefix);
   await app.listen(port, host);

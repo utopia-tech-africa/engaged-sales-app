@@ -6,6 +6,7 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { HealthModule } from "./modules/health/health.module";
 import { MeModule } from "./modules/me/me.module";
 import { PrismaModule } from "./modules/prisma/prisma.module";
+import { RedisModule } from "./modules/redis/redis.module";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PrismaModule } from "./modules/prisma/prisma.module";
       validate: validateEnvironment
     }),
     PrismaModule,
+    RedisModule,
     AuthModule,
     HealthModule,
     MeModule
