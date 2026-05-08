@@ -4,7 +4,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["**/dist/**", "**/node_modules/**", "**/.turbo/**"]
+    ignores: ["**/dist/**", "**/node_modules/**", "**/.turbo/**", "**/src/generated/**"]
   },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
@@ -14,7 +14,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ["*.mjs", "*.cjs"]
+          allowDefaultProject: ["*.mjs", "*.cjs", "apps/api/prisma.config.ts"]
         },
         tsconfigRootDir: import.meta.dirname
       }
@@ -28,6 +28,15 @@ export default tseslint.config(
     files: ["**/*.module.ts"],
     rules: {
       "@typescript-eslint/no-extraneous-class": "off"
+    }
+  },
+  {
+    files: ["apps/api/prisma.config.ts"],
+    rules: {
+      "@typescript-eslint/no-unnecessary-boolean-literal-compare": "off",
+      "@typescript-eslint/no-unnecessary-condition": "off",
+      "@typescript-eslint/no-useless-default-assignment": "off",
+      "@typescript-eslint/prefer-nullish-coalescing": "off"
     }
   }
 );
