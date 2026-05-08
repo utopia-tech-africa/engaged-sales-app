@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  promoter
+  merchandizer
+  supervisor
+  admin
+}
+
+enum Gender {
+  male
+  female
+  other
+}
+
+model User {
+  id         String        @id @default(cuid())
+  fullName   String
+  phone      String        @unique
+  uniqueCode String        @unique
+  role       UserRole
+  gender     Gender?
+  regionId   String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  sessions   AuthSession[]
+  locations  LocationPing[]
+}
+
+model AuthSession {
+  id               String    @id @default(cuid())
+  userId           String
+  refreshTokenHash String
+  userAgent        String?
+  ipAddress        String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  replacedById     String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model LocationPing {
+  id        String   @id @default(cuid())
+  userId    String
+  latitude  Float
+  longitude Float
+  recordedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, recordedAt(sort: Desc)])
+}

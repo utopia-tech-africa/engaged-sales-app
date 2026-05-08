@@ -1,8 +1,11 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 
-import { AppController } from "./app.controller.js";
-import { validateEnvironment } from "./config/environment.js";
+import { validateEnvironment } from "./config/environment";
+import { AuthModule } from "./modules/auth/auth.module";
+import { HealthModule } from "./modules/health/health.module";
+import { MeModule } from "./modules/me/me.module";
+import { PrismaModule } from "./modules/prisma/prisma.module";
 
 @Module({
   imports: [
@@ -10,8 +13,11 @@ import { validateEnvironment } from "./config/environment.js";
       isGlobal: true,
       envFilePath: ".env",
       validate: validateEnvironment
-    })
-  ],
-  controllers: [AppController]
+    }),
+    PrismaModule,
+    AuthModule,
+    HealthModule,
+    MeModule
+  ]
 })
 export class AppModule {}
