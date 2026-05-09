@@ -92,3 +92,16 @@ export const parseSessions = (value: unknown): SessionsPayload => {
 export const parseSessionsFromOrval = (result: unknown): SessionsPayload => {
   return parseSessions(unwrapOrvalResponseBody(result));
 };
+
+const locationPingSchema = z.object({
+  userId: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  recordedAt: z.string()
+});
+
+export type LocationPing = z.infer<typeof locationPingSchema>;
+
+export const parseLocationPingFromOrval = (result: unknown): LocationPing => {
+  return locationPingSchema.parse(unwrapOrvalResponseBody(result));
+};

@@ -6,6 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export * from "./adminGeofenceCreateGeofenceBody";
+export * from "./adminGeofenceUpdateGeofenceBody";
 export * from "./oauthCallbackDto";
 export * from "./oauthCallbackDtoProvider";
 export * from "./oauthStartDto";

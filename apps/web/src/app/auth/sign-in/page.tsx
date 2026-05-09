@@ -9,9 +9,11 @@ import { type ReactElement, useState } from "react";
 
 import { MobileShell } from "@/components/mobile-shell";
 import { useAuthSignIn } from "@/lib/api/generated/client";
+import { ApiError } from "@/lib/api/problem-details";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseAuthResponseFromOrval } from "@/lib/auth/orval-auth-adapter";
 import { calmPrimaryButtonClass, calmTextLinkClass } from "@/lib/calm-ui";
+import { isOpsRole } from "@/lib/ops/ops-adapters";
 
 export default function SignInPage(): ReactElement {
   const router = useRouter();
@@ -21,6 +23,8 @@ export default function SignInPage(): ReactElement {
   const [role, setRole] = useState<"promoter" | "merchandizer" | "supervisor" | "admin">(
     "promoter"
   );
+  const [isLocating, setIsLocating] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
   const roleOptions: { id: string; label: string }[] = [
     { id: "promoter", label: "Promoter" },
     { id: "merchandizer", label: "Merchandizer" },
@@ -37,18 +41,53 @@ export default function SignInPage(): ReactElement {
           accessToken: parsed.accessToken,
           refreshToken: parsed.refreshToken
         });
-        router.replace("/dashboard");
+        router.replace(isOpsRole(parsed.user.role) ? "/ops" : "/dashboard");
       }
     }
   });
 
+  const signInErrorUnknown: unknown = signInMutation.error;
+  const apiErrorMessage =
+    signInErrorUnknown instanceof ApiError
+      ? (signInErrorUnknown.problem?.detail ?? signInErrorUnknown.message)
+      : "Sign-in failed. Please check your credentials and try again.";
+
   return (
-    <MobileShell title="Sign in" subtitle="Enter your phone, unique code, and role.">
+    <MobileShell
+      title="Sign in"
+      subtitle="Enter your phone, unique code, and role. Location is read when you sign in so we can enforce your organization’s work area when it is configured."
+    >
       <form
         className="flex flex-col gap-3"
         onSubmit={(event) => {
           event.preventDefault();
-          signInMutation.mutate({ data: { phone, uniqueCode, role } });
+          setGeoError(null);
+          setIsLocating(true);
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              signInMutation.mutate(
+                {
+                  data: {
+                    phone,
+                    uniqueCode,
+                    role,
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                  }
+                },
+                {
+                  onSettled: () => {
+                    setIsLocating(false);
+                  }
+                }
+              );
+            },
+            (error) => {
+              setIsLocating(false);
+              setGeoError(error.message || "Could not read your location.");
+            },
+            { enableHighAccuracy: true, timeout: 20_000, maximumAge: 60_000 }
+          );
         }}
       >
         <FormControl label="Phone number">
@@ -90,21 +129,30 @@ export default function SignInPage(): ReactElement {
           />
         </FormControl>
 
-        {signInMutation.isError ? (
+        {geoError ? (
           <p
             role="alert"
             className="rounded-lg border border-destructive/35 bg-destructive/10 px-3 py-2 text-sm text-destructive"
           >
-            Sign-in failed. Please check your credentials and try again.
+            {geoError}
+          </p>
+        ) : null}
+
+        {signInMutation.isError && !geoError ? (
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive/35 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            {apiErrorMessage}
           </p>
         ) : null}
 
         <button
           type="submit"
           className={`${calmPrimaryButtonClass} mt-2`}
-          disabled={signInMutation.isPending}
+          disabled={isLocating || signInMutation.isPending}
         >
-          {signInMutation.isPending ? "Signing in..." : "Sign in"}
+          {isLocating || signInMutation.isPending ? "Signing in..." : "Sign in"}
         </button>
       </form>
 

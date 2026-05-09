@@ -15,6 +15,7 @@ import * as argon2 from "argon2";
 
 import type { EnvironmentVariables } from "../../config/environment";
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.type";
+import { GeofenceService } from "../geofence/geofence.service";
 import { RedisService } from "../redis/redis.service";
 import { AuthRepository } from "./auth.repository";
 import type { AuthUserResponse } from "./dto/auth-user.response";
@@ -85,7 +86,9 @@ export class AuthService {
     @Inject(ConfigService)
     private readonly configService: ConfigService<EnvironmentVariables, true>,
     @Inject(RedisService)
-    private readonly redisService: RedisService
+    private readonly redisService: RedisService,
+    @Inject(GeofenceService)
+    private readonly geofenceService: GeofenceService
   ) {}
 
   public async signUp(
@@ -139,6 +142,9 @@ export class AuthService {
 
     await this.resetPhoneFailures(payload.phone);
 
+    this.assertCoordinatePair(payload.latitude, payload.longitude);
+    await this.geofenceService.assertLoginAllowed(payload.latitude, payload.longitude);
+
     const tokens = await this.issueTokens(user, {
       ...(userAgent !== undefined ? { userAgent } : {}),
       ...(ipAddress !== undefined ? { ipAddress } : {})
@@ -190,6 +196,9 @@ export class AuthService {
         });
       }
     }
+
+    this.assertCoordinatePair(payload.latitude, payload.longitude);
+    await this.geofenceService.assertLoginAllowed(payload.latitude, payload.longitude);
 
     const tokens = await this.issueTokens(user, {
       ...(userAgent !== undefined ? { userAgent } : {}),
@@ -393,6 +402,15 @@ export class AuthService {
     }
 
     return payload;
+  }
+
+  private assertCoordinatePair(latitude?: number, longitude?: number): void {
+    if (latitude === undefined && longitude === undefined) {
+      return;
+    }
+    if (latitude === undefined || longitude === undefined) {
+      throw new BadRequestException("Latitude and longitude must both be provided together");
+    }
   }
 
   private async issueTokens(

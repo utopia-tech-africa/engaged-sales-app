@@ -14,4 +14,8 @@ export type OauthCallbackDto = {
   redirectUri: string;
   /** Signed OAuth state from start endpoint */
   state: string;
+  /** Device latitude when geofencing is active (must be sent with longitude). */
+  latitude?: number;
+  /** Device longitude when geofencing is active. */
+  longitude?: number;
 };

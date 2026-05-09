@@ -153,7 +153,7 @@
             "description": "Invalid credentials"
           },
           "403": {
-            "description": "Rate limit exceeded or phone temporarily locked"
+            "description": "Rate limit exceeded, phone temporarily locked, or sign-in blocked outside the authorized work area (geofence)"
           }
         },
         "summary": "Sign in with phone, code, and role",
@@ -521,6 +521,151 @@
         "tags": ["Auth"]
       }
     },
+    "/admin/geofences": {
+      "get": {
+        "description": "Returns all geofence definitions for the operations dashboard.",
+        "operationId": "AdminGeofence_listGeofences",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of geofences"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List geofences (supervisor / admin)",
+        "tags": ["Admin geofences (supervisor / admin)"]
+      },
+      "post": {
+        "description": "Creates a circular work area. Sign-in is allowed when the device is inside any active geofence.",
+        "operationId": "AdminGeofence_createGeofence",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["label", "centerLatitude", "centerLongitude", "radiusMeters"],
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "example": "Nairobi CBD"
+                  },
+                  "centerLatitude": {
+                    "type": "number",
+                    "example": -1.286389
+                  },
+                  "centerLongitude": {
+                    "type": "number",
+                    "example": 36.817223
+                  },
+                  "radiusMeters": {
+                    "type": "number",
+                    "example": 5000,
+                    "description": "Radius from center in meters"
+                  },
+                  "isActive": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Geofence created"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create geofence (supervisor / admin)",
+        "tags": ["Admin geofences (supervisor / admin)"]
+      }
+    },
+    "/admin/geofences/{id}": {
+      "patch": {
+        "description": "Partial update (label, center, radius, isActive).",
+        "operationId": "AdminGeofence_updateGeofence",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Geofence id",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "centerLatitude": {
+                    "type": "number"
+                  },
+                  "centerLongitude": {
+                    "type": "number"
+                  },
+                  "radiusMeters": {
+                    "type": "number"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Geofence updated"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Geofence id not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update geofence (supervisor / admin)",
+        "tags": ["Admin geofences (supervisor / admin)"]
+      }
+    },
     "/health": {
       "get": {
         "description": "Returns a simple health signal for uptime probes.",
@@ -754,6 +899,16 @@
             "type": "string",
             "example": "promoter",
             "enum": ["promoter", "merchandizer", "supervisor", "admin"]
+          },
+          "latitude": {
+            "type": "number",
+            "description": "Device latitude (decimal degrees). Required when at least one geofence is active; send together with longitude.",
+            "example": -1.286389
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Device longitude (decimal degrees). Required with latitude when geofencing is enforced.",
+            "example": 36.817223
           }
         },
         "required": ["phone", "uniqueCode", "role"]
@@ -790,6 +945,16 @@
             "type": "string",
             "example": "eyJub25jZSI6Ii4uLiJ9.R5m...",
             "description": "Signed OAuth state from start endpoint"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "Device latitude when geofencing is active (must be sent with longitude).",
+            "example": -1.286389
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Device longitude when geofencing is active.",
+            "example": 36.817223
           }
         },
         "required": ["provider", "code", "redirectUri", "state"]

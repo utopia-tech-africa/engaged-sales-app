@@ -80,3 +80,15 @@ model OauthNonce {
 
   @@index([expiresAt])
 }
+
+/// Circular work area for sign-in geofencing. Admins manage rows via /admin/geofences.
+model Geofence {
+  id              String   @id @default(cuid())
+  label           String
+  centerLatitude  Float
+  centerLongitude Float
+  radiusMeters    Float
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

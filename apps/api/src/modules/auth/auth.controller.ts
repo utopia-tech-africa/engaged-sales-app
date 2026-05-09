@@ -193,7 +193,10 @@ export class AuthController {
     }
   })
   @ApiUnauthorizedResponse({ description: "Invalid credentials" })
-  @ApiForbiddenResponse({ description: "Rate limit exceeded or phone temporarily locked" })
+  @ApiForbiddenResponse({
+    description:
+      "Rate limit exceeded, phone temporarily locked, or sign-in blocked outside the authorized work area (geofence)"
+  })
   @ApiBadRequestResponse({ description: "Validation failed or request body missing" })
   public signIn(
     @Body() body: SignInDto,

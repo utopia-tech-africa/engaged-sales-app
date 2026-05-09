@@ -1,5 +1,15 @@
-import { IsIn, IsString, IsUrl, MaxLength, MinLength } from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import {
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Max,
+  MaxLength,
+  Min,
+  MinLength
+} from "class-validator";
 
 export class OauthCallbackDto {
   @ApiProperty({ type: String, example: "google", enum: ["google"] })
@@ -28,4 +38,26 @@ export class OauthCallbackDto {
   @IsString()
   @MinLength(10)
   public state!: string;
+
+  @ApiPropertyOptional({
+    description: "Device latitude when geofencing is active (must be sent with longitude).",
+    type: "number",
+    example: -1.286389
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  public latitude?: number;
+
+  @ApiPropertyOptional({
+    description: "Device longitude when geofencing is active.",
+    type: "number",
+    example: 36.817223
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  public longitude?: number;
 }

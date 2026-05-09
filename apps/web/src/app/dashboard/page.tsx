@@ -2,13 +2,28 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type ReactElement, useEffect } from "react";
+import { type ReactElement, useEffect, useState } from "react";
 
 import { MobileShell } from "@/components/mobile-shell";
-import { useAuthListSessions, useAuthSignOut, useMeGetMe } from "@/lib/api/generated/client";
+import {
+  useAuthListSessions,
+  useAuthSignOut,
+  useMeGetMe,
+  useMeUpdateMeLocation
+} from "@/lib/api/generated/client";
 import { useAuthStore } from "@/lib/auth/auth-store";
-import { parseMeProfileFromOrval, parseSessionsFromOrval } from "@/lib/auth/orval-auth-adapter";
-import { calmMutedLinkClass, calmSecondaryButtonClass } from "@/lib/calm-ui";
+import {
+  parseLocationPingFromOrval,
+  parseMeProfileFromOrval,
+  parseSessionsFromOrval,
+  type LocationPing
+} from "@/lib/auth/orval-auth-adapter";
+import {
+  calmMutedLinkClass,
+  calmPrimaryButtonClass,
+  calmSecondaryButtonClass
+} from "@/lib/calm-ui";
+import { isOpsRole } from "@/lib/ops/ops-adapters";
 
 export default function DashboardPage(): ReactElement {
   const router = useRouter();
@@ -29,6 +44,12 @@ export default function DashboardPage(): ReactElement {
     }
   });
 
+  useEffect(() => {
+    if (meQuery.data !== undefined && isOpsRole(meQuery.data.role)) {
+      router.replace("/ops");
+    }
+  }, [meQuery.data, router]);
+
   const sessionsQuery = useAuthListSessions({
     query: {
       enabled: accessToken !== null,
@@ -36,6 +57,40 @@ export default function DashboardPage(): ReactElement {
     }
   });
   const signOutMutation = useAuthSignOut();
+  const locationMutation = useMeUpdateMeLocation();
+  const [isLocating, setIsLocating] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [lastPing, setLastPing] = useState<LocationPing | null>(null);
+
+  const handleCheckIn = (): void => {
+    setGeoError(null);
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        locationMutation.mutate(
+          {
+            data: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            }
+          },
+          {
+            onSuccess: (result) => {
+              setLastPing(parseLocationPingFromOrval(result));
+            },
+            onSettled: () => {
+              setIsLocating(false);
+            }
+          }
+        );
+      },
+      (error) => {
+        setIsLocating(false);
+        setGeoError(error.message || "Could not read your location.");
+      },
+      { enableHighAccuracy: true, timeout: 20_000, maximumAge: 60_000 }
+    );
+  };
 
   const handleSignOut = (): void => {
     void (async () => {
@@ -119,6 +174,42 @@ export default function DashboardPage(): ReactElement {
             ))}
           </ul>
         ) : null}
+      </section>
+
+      <section className="mb-4 rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
+        <h2 className="text-base font-semibold text-foreground">Field check-in</h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Record where you are right now. Your browser will ask for location permission—only
+          coordinates are sent to the server.
+        </p>
+        {geoError ? (
+          <p className="mt-3 text-sm text-destructive" role="alert">
+            {geoError}
+          </p>
+        ) : null}
+        {locationMutation.isError ? (
+          <p className="mt-3 text-sm text-destructive" role="alert">
+            Could not save check-in. Try again.
+          </p>
+        ) : null}
+        {lastPing ? (
+          <p className="mt-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-foreground dark:bg-muted/15">
+            <span className="font-medium">Last saved: </span>
+            {new Date(lastPing.recordedAt).toLocaleString()}
+            <br />
+            <span className="text-muted-foreground">
+              {lastPing.latitude.toFixed(5)}, {lastPing.longitude.toFixed(5)}
+            </span>
+          </p>
+        ) : null}
+        <button
+          type="button"
+          className={`${calmPrimaryButtonClass} mt-4`}
+          disabled={isLocating || locationMutation.isPending}
+          onClick={handleCheckIn}
+        >
+          {isLocating || locationMutation.isPending ? "Saving check-in…" : "Check in with location"}
+        </button>
       </section>
 
       <div className="mt-5 flex flex-col gap-3">

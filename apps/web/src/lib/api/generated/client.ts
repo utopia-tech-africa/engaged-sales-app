@@ -22,6 +22,8 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AdminGeofenceCreateGeofenceBody,
+  AdminGeofenceUpdateGeofenceBody,
   OauthCallbackDto,
   OauthStartDto,
   ProfileCompletionDto,
@@ -35,6 +37,8 @@ import type {
 } from "./model";
 
 import { orvalFetcher } from "./orval-fetcher";
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export type authSignUpResponse201 = {
   data: unknown;
@@ -96,6 +100,7 @@ export const getAuthSignUpMutationOptions = <TError = void, TContext = unknown>(
     { data: SignUpDto },
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof authSignUp>>,
   TError,
@@ -103,11 +108,11 @@ export const getAuthSignUpMutationOptions = <TError = void, TContext = unknown>(
   TContext
 > => {
   const mutationKey = ["authSignUp"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof authSignUp>>,
@@ -115,7 +120,7 @@ export const getAuthSignUpMutationOptions = <TError = void, TContext = unknown>(
   > = (props) => {
     const { data } = props ?? {};
 
-    return authSignUp(data);
+    return authSignUp(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -136,6 +141,7 @@ export const useAuthSignUp = <TError = void, TContext = unknown>(
       { data: SignUpDto },
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
@@ -184,6 +190,7 @@ export const getAuthLegacySignUpMutationOptions = <TError = unknown, TContext = 
     { data: SignUpDto },
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof authLegacySignUp>>,
   TError,
@@ -191,11 +198,11 @@ export const getAuthLegacySignUpMutationOptions = <TError = unknown, TContext = 
   TContext
 > => {
   const mutationKey = ["authLegacySignUp"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof authLegacySignUp>>,
@@ -203,7 +210,7 @@ export const getAuthLegacySignUpMutationOptions = <TError = unknown, TContext = 
   > = (props) => {
     const { data } = props ?? {};
 
-    return authLegacySignUp(data);
+    return authLegacySignUp(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -226,6 +233,7 @@ export const useAuthLegacySignUp = <TError = unknown, TContext = unknown>(
       { data: SignUpDto },
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
@@ -297,6 +305,7 @@ export const getAuthSignInMutationOptions = <TError = void, TContext = unknown>(
     { data: SignInDto },
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof authSignIn>>,
   TError,
@@ -304,11 +313,11 @@ export const getAuthSignInMutationOptions = <TError = void, TContext = unknown>(
   TContext
 > => {
   const mutationKey = ["authSignIn"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof authSignIn>>,
@@ -316,7 +325,7 @@ export const getAuthSignInMutationOptions = <TError = void, TContext = unknown>(
   > = (props) => {
     const { data } = props ?? {};
 
-    return authSignIn(data);
+    return authSignIn(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -337,6 +346,7 @@ export const useAuthSignIn = <TError = void, TContext = unknown>(
       { data: SignInDto },
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
@@ -385,6 +395,7 @@ export const getAuthLegacySignInMutationOptions = <TError = unknown, TContext = 
     { data: SignInDto },
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof authLegacySignIn>>,
   TError,
@@ -392,11 +403,11 @@ export const getAuthLegacySignInMutationOptions = <TError = unknown, TContext = 
   TContext
 > => {
   const mutationKey = ["authLegacySignIn"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof authLegacySignIn>>,
@@ -404,7 +415,7 @@ export const getAuthLegacySignInMutationOptions = <TError = unknown, TContext = 
   > = (props) => {
     const { data } = props ?? {};
 
-    return authLegacySignIn(data);
+    return authLegacySignIn(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -427,6 +438,7 @@ export const useAuthLegacySignIn = <TError = unknown, TContext = unknown>(
       { data: SignInDto },
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
@@ -498,6 +510,7 @@ export const getAuthRefreshMutationOptions = <TError = void, TContext = unknown>
     { data: RefreshTokenDto },
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof authRefresh>>,
   TError,
@@ -505,11 +518,11 @@ export const getAuthRefreshMutationOptions = <TError = void, TContext = unknown>
   TContext
 > => {
   const mutationKey = ["authRefresh"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof authRefresh>>,
@@ -517,7 +530,7 @@ export const getAuthRefreshMutationOptions = <TError = void, TContext = unknown>
   > = (props) => {
     const { data } = props ?? {};
 
-    return authRefresh(data);
+    return authRefresh(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -538,6 +551,7 @@ export const useAuthRefresh = <TError = void, TContext = unknown>(
       { data: RefreshTokenDto },
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
@@ -611,6 +625,7 @@ export const getAuthOauthCallbackMutationOptions = <TError = void, TContext = un
     { data: OauthCallbackDto },
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof authOauthCallback>>,
   TError,
@@ -618,11 +633,11 @@ export const getAuthOauthCallbackMutationOptions = <TError = void, TContext = un
   TContext
 > => {
   const mutationKey = ["authOauthCallback"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof authOauthCallback>>,
@@ -630,7 +645,7 @@ export const getAuthOauthCallbackMutationOptions = <TError = void, TContext = un
   > = (props) => {
     const { data } = props ?? {};
 
-    return authOauthCallback(data);
+    return authOauthCallback(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -653,6 +668,7 @@ export const useAuthOauthCallback = <TError = void, TContext = unknown>(
       { data: OauthCallbackDto },
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
@@ -723,6 +739,7 @@ export const getAuthStartGoogleOauthMutationOptions = <
     { data: OauthStartDto },
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof authStartGoogleOauth>>,
   TError,
@@ -730,11 +747,11 @@ export const getAuthStartGoogleOauthMutationOptions = <
   TContext
 > => {
   const mutationKey = ["authStartGoogleOauth"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof authStartGoogleOauth>>,
@@ -742,7 +759,7 @@ export const getAuthStartGoogleOauthMutationOptions = <
   > = (props) => {
     const { data } = props ?? {};
 
-    return authStartGoogleOauth(data);
+    return authStartGoogleOauth(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -765,6 +782,7 @@ export const useAuthStartGoogleOauth = <TError = void, TContext = unknown>(
       { data: OauthStartDto },
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
@@ -835,6 +853,7 @@ export const getAuthProfileCompletionMutationOptions = <
     { data: ProfileCompletionDto },
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof authProfileCompletion>>,
   TError,
@@ -842,11 +861,11 @@ export const getAuthProfileCompletionMutationOptions = <
   TContext
 > => {
   const mutationKey = ["authProfileCompletion"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof authProfileCompletion>>,
@@ -854,7 +873,7 @@ export const getAuthProfileCompletionMutationOptions = <
   > = (props) => {
     const { data } = props ?? {};
 
-    return authProfileCompletion(data);
+    return authProfileCompletion(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -877,6 +896,7 @@ export const useAuthProfileCompletion = <TError = void, TContext = unknown>(
       { data: ProfileCompletionDto },
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
@@ -935,13 +955,14 @@ export const getAuthListSessionsQueryOptions = <
   TError = void
 >(options?: {
   query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof authListSessions>>, TError, TData>>;
+  request?: SecondParameter<typeof orvalFetcher>;
 }) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getAuthListSessionsQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof authListSessions>>> = ({ signal }) =>
-    authListSessions({ signal });
+    authListSessions({ signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof authListSessions>>,
@@ -967,6 +988,7 @@ export function useAuthListSessions<
         >,
         "initialData"
       >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -984,6 +1006,7 @@ export function useAuthListSessions<
         >,
         "initialData"
       >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -993,6 +1016,7 @@ export function useAuthListSessions<
 >(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof authListSessions>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -1006,6 +1030,7 @@ export function useAuthListSessions<
 >(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof authListSessions>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -1071,6 +1096,7 @@ export const getAuthRevokeAllSessionsForCurrentUserMutationOptions = <
     void,
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof authRevokeAllSessionsForCurrentUser>>,
   TError,
@@ -1078,17 +1104,17 @@ export const getAuthRevokeAllSessionsForCurrentUserMutationOptions = <
   TContext
 > => {
   const mutationKey = ["authRevokeAllSessionsForCurrentUser"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof authRevokeAllSessionsForCurrentUser>>,
     void
   > = () => {
-    return authRevokeAllSessionsForCurrentUser();
+    return authRevokeAllSessionsForCurrentUser(requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1111,6 +1137,7 @@ export const useAuthRevokeAllSessionsForCurrentUser = <TError = void, TContext =
       void,
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
@@ -1181,6 +1208,7 @@ export const getAuthRevokeUserSessionsMutationOptions = <
     { data: RevokeUserSessionsDto },
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof authRevokeUserSessions>>,
   TError,
@@ -1188,11 +1216,11 @@ export const getAuthRevokeUserSessionsMutationOptions = <
   TContext
 > => {
   const mutationKey = ["authRevokeUserSessions"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof authRevokeUserSessions>>,
@@ -1200,7 +1228,7 @@ export const getAuthRevokeUserSessionsMutationOptions = <
   > = (props) => {
     const { data } = props ?? {};
 
-    return authRevokeUserSessions(data);
+    return authRevokeUserSessions(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1223,6 +1251,7 @@ export const useAuthRevokeUserSessions = <TError = void, TContext = unknown>(
       { data: RevokeUserSessionsDto },
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
@@ -1280,6 +1309,7 @@ export const getAuthSignOutMutationOptions = <TError = void, TContext = unknown>
     { data: SignOutDto },
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof authSignOut>>,
   TError,
@@ -1287,11 +1317,11 @@ export const getAuthSignOutMutationOptions = <TError = void, TContext = unknown>
   TContext
 > => {
   const mutationKey = ["authSignOut"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof authSignOut>>,
@@ -1299,7 +1329,7 @@ export const getAuthSignOutMutationOptions = <TError = void, TContext = unknown>
   > = (props) => {
     const { data } = props ?? {};
 
-    return authSignOut(data);
+    return authSignOut(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1320,6 +1350,7 @@ export const useAuthSignOut = <TError = void, TContext = unknown>(
       { data: SignOutDto },
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
@@ -1329,6 +1360,397 @@ export const useAuthSignOut = <TError = void, TContext = unknown>(
   TContext
 > => {
   return useMutation(getAuthSignOutMutationOptions(options), queryClient);
+};
+
+export type adminGeofenceListGeofencesResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminGeofenceListGeofencesResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminGeofenceListGeofencesResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminGeofenceListGeofencesResponseSuccess = adminGeofenceListGeofencesResponse200 & {
+  headers: Headers;
+};
+export type adminGeofenceListGeofencesResponseError = (
+  | adminGeofenceListGeofencesResponse401
+  | adminGeofenceListGeofencesResponse403
+) & {
+  headers: Headers;
+};
+
+export type adminGeofenceListGeofencesResponse =
+  | adminGeofenceListGeofencesResponseSuccess
+  | adminGeofenceListGeofencesResponseError;
+
+export const getAdminGeofenceListGeofencesUrl = () => {
+  return `/admin/geofences`;
+};
+
+/**
+ * Returns all geofence definitions for the operations dashboard.
+ * @summary List geofences (supervisor / admin)
+ */
+export const adminGeofenceListGeofences = async (
+  options?: RequestInit
+): Promise<adminGeofenceListGeofencesResponse> => {
+  return orvalFetcher<adminGeofenceListGeofencesResponse>(getAdminGeofenceListGeofencesUrl(), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getAdminGeofenceListGeofencesQueryKey = () => {
+  return [`/admin/geofences`] as const;
+};
+
+export const getAdminGeofenceListGeofencesQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminGeofenceListGeofences>>,
+  TError = void
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof adminGeofenceListGeofences>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminGeofenceListGeofencesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminGeofenceListGeofences>>> = ({
+    signal
+  }) => adminGeofenceListGeofences({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminGeofenceListGeofences>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminGeofenceListGeofencesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminGeofenceListGeofences>>
+>;
+export type AdminGeofenceListGeofencesQueryError = void;
+
+export function useAdminGeofenceListGeofences<
+  TData = Awaited<ReturnType<typeof adminGeofenceListGeofences>>,
+  TError = void
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminGeofenceListGeofences>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminGeofenceListGeofences>>,
+          TError,
+          Awaited<ReturnType<typeof adminGeofenceListGeofences>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminGeofenceListGeofences<
+  TData = Awaited<ReturnType<typeof adminGeofenceListGeofences>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminGeofenceListGeofences>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminGeofenceListGeofences>>,
+          TError,
+          Awaited<ReturnType<typeof adminGeofenceListGeofences>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminGeofenceListGeofences<
+  TData = Awaited<ReturnType<typeof adminGeofenceListGeofences>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminGeofenceListGeofences>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List geofences (supervisor / admin)
+ */
+
+export function useAdminGeofenceListGeofences<
+  TData = Awaited<ReturnType<typeof adminGeofenceListGeofences>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminGeofenceListGeofences>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminGeofenceListGeofencesQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type adminGeofenceCreateGeofenceResponse201 = {
+  data: void;
+  status: 201;
+};
+
+export type adminGeofenceCreateGeofenceResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminGeofenceCreateGeofenceResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminGeofenceCreateGeofenceResponseSuccess = adminGeofenceCreateGeofenceResponse201 & {
+  headers: Headers;
+};
+export type adminGeofenceCreateGeofenceResponseError = (
+  | adminGeofenceCreateGeofenceResponse401
+  | adminGeofenceCreateGeofenceResponse403
+) & {
+  headers: Headers;
+};
+
+export type adminGeofenceCreateGeofenceResponse =
+  | adminGeofenceCreateGeofenceResponseSuccess
+  | adminGeofenceCreateGeofenceResponseError;
+
+export const getAdminGeofenceCreateGeofenceUrl = () => {
+  return `/admin/geofences`;
+};
+
+/**
+ * Creates a circular work area. Sign-in is allowed when the device is inside any active geofence.
+ * @summary Create geofence (supervisor / admin)
+ */
+export const adminGeofenceCreateGeofence = async (
+  adminGeofenceCreateGeofenceBody: AdminGeofenceCreateGeofenceBody,
+  options?: RequestInit
+): Promise<adminGeofenceCreateGeofenceResponse> => {
+  return orvalFetcher<adminGeofenceCreateGeofenceResponse>(getAdminGeofenceCreateGeofenceUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(adminGeofenceCreateGeofenceBody)
+  });
+};
+
+export const getAdminGeofenceCreateGeofenceMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminGeofenceCreateGeofence>>,
+    TError,
+    { data: AdminGeofenceCreateGeofenceBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminGeofenceCreateGeofence>>,
+  TError,
+  { data: AdminGeofenceCreateGeofenceBody },
+  TContext
+> => {
+  const mutationKey = ["adminGeofenceCreateGeofence"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminGeofenceCreateGeofence>>,
+    { data: AdminGeofenceCreateGeofenceBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminGeofenceCreateGeofence(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminGeofenceCreateGeofenceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminGeofenceCreateGeofence>>
+>;
+export type AdminGeofenceCreateGeofenceMutationBody = AdminGeofenceCreateGeofenceBody;
+export type AdminGeofenceCreateGeofenceMutationError = void;
+
+/**
+ * @summary Create geofence (supervisor / admin)
+ */
+export const useAdminGeofenceCreateGeofence = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminGeofenceCreateGeofence>>,
+      TError,
+      { data: AdminGeofenceCreateGeofenceBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminGeofenceCreateGeofence>>,
+  TError,
+  { data: AdminGeofenceCreateGeofenceBody },
+  TContext
+> => {
+  return useMutation(getAdminGeofenceCreateGeofenceMutationOptions(options), queryClient);
+};
+
+export type adminGeofenceUpdateGeofenceResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminGeofenceUpdateGeofenceResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminGeofenceUpdateGeofenceResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminGeofenceUpdateGeofenceResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminGeofenceUpdateGeofenceResponseSuccess = adminGeofenceUpdateGeofenceResponse200 & {
+  headers: Headers;
+};
+export type adminGeofenceUpdateGeofenceResponseError = (
+  | adminGeofenceUpdateGeofenceResponse401
+  | adminGeofenceUpdateGeofenceResponse403
+  | adminGeofenceUpdateGeofenceResponse404
+) & {
+  headers: Headers;
+};
+
+export type adminGeofenceUpdateGeofenceResponse =
+  | adminGeofenceUpdateGeofenceResponseSuccess
+  | adminGeofenceUpdateGeofenceResponseError;
+
+export const getAdminGeofenceUpdateGeofenceUrl = (id: unknown) => {
+  return `/admin/geofences/${String(id)}`;
+};
+
+/**
+ * Partial update (label, center, radius, isActive).
+ * @summary Update geofence (supervisor / admin)
+ */
+export const adminGeofenceUpdateGeofence = async (
+  id: unknown,
+  adminGeofenceUpdateGeofenceBody: AdminGeofenceUpdateGeofenceBody,
+  options?: RequestInit
+): Promise<adminGeofenceUpdateGeofenceResponse> => {
+  return orvalFetcher<adminGeofenceUpdateGeofenceResponse>(getAdminGeofenceUpdateGeofenceUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(adminGeofenceUpdateGeofenceBody)
+  });
+};
+
+export const getAdminGeofenceUpdateGeofenceMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminGeofenceUpdateGeofence>>,
+    TError,
+    { id: unknown; data: AdminGeofenceUpdateGeofenceBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminGeofenceUpdateGeofence>>,
+  TError,
+  { id: unknown; data: AdminGeofenceUpdateGeofenceBody },
+  TContext
+> => {
+  const mutationKey = ["adminGeofenceUpdateGeofence"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminGeofenceUpdateGeofence>>,
+    { id: unknown; data: AdminGeofenceUpdateGeofenceBody }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return adminGeofenceUpdateGeofence(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminGeofenceUpdateGeofenceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminGeofenceUpdateGeofence>>
+>;
+export type AdminGeofenceUpdateGeofenceMutationBody = AdminGeofenceUpdateGeofenceBody;
+export type AdminGeofenceUpdateGeofenceMutationError = void;
+
+/**
+ * @summary Update geofence (supervisor / admin)
+ */
+export const useAdminGeofenceUpdateGeofence = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminGeofenceUpdateGeofence>>,
+      TError,
+      { id: unknown; data: AdminGeofenceUpdateGeofenceBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminGeofenceUpdateGeofence>>,
+  TError,
+  { id: unknown; data: AdminGeofenceUpdateGeofenceBody },
+  TContext
+> => {
+  return useMutation(getAdminGeofenceUpdateGeofenceMutationOptions(options), queryClient);
 };
 
 export type healthGetHealthResponse200 = {
@@ -1365,13 +1787,14 @@ export const getHealthGetHealthQueryOptions = <
   TError = unknown
 >(options?: {
   query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthGetHealth>>, TError, TData>>;
+  request?: SecondParameter<typeof orvalFetcher>;
 }) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getHealthGetHealthQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof healthGetHealth>>> = ({ signal }) =>
-    healthGetHealth({ signal });
+    healthGetHealth({ signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof healthGetHealth>>,
@@ -1397,6 +1820,7 @@ export function useHealthGetHealth<
         >,
         "initialData"
       >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -1414,6 +1838,7 @@ export function useHealthGetHealth<
         >,
         "initialData"
       >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -1423,6 +1848,7 @@ export function useHealthGetHealth<
 >(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthGetHealth>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -1436,6 +1862,7 @@ export function useHealthGetHealth<
 >(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof healthGetHealth>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -1496,13 +1923,14 @@ export const getMeGetMeQueryOptions = <
   TError = void
 >(options?: {
   query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meGetMe>>, TError, TData>>;
+  request?: SecondParameter<typeof orvalFetcher>;
 }) => {
-  const { query: queryOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getMeGetMeQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof meGetMe>>> = ({ signal }) =>
-    meGetMe({ signal });
+    meGetMe({ signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof meGetMe>>,
@@ -1525,6 +1953,7 @@ export function useMeGetMe<TData = Awaited<ReturnType<typeof meGetMe>>, TError =
         >,
         "initialData"
       >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -1539,12 +1968,14 @@ export function useMeGetMe<TData = Awaited<ReturnType<typeof meGetMe>>, TError =
         >,
         "initialData"
       >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useMeGetMe<TData = Awaited<ReturnType<typeof meGetMe>>, TError = void>(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meGetMe>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
@@ -1555,6 +1986,7 @@ export function useMeGetMe<TData = Awaited<ReturnType<typeof meGetMe>>, TError =
 export function useMeGetMe<TData = Awaited<ReturnType<typeof meGetMe>>, TError = void>(
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meGetMe>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -1613,6 +2045,7 @@ export const getMeUpdateMeMutationOptions = <TError = void, TContext = unknown>(
     { data: UpdateMeDto },
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof meUpdateMe>>,
   TError,
@@ -1620,11 +2053,11 @@ export const getMeUpdateMeMutationOptions = <TError = void, TContext = unknown>(
   TContext
 > => {
   const mutationKey = ["meUpdateMe"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof meUpdateMe>>,
@@ -1632,7 +2065,7 @@ export const getMeUpdateMeMutationOptions = <TError = void, TContext = unknown>(
   > = (props) => {
     const { data } = props ?? {};
 
-    return meUpdateMe(data);
+    return meUpdateMe(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1653,6 +2086,7 @@ export const useMeUpdateMe = <TError = void, TContext = unknown>(
       { data: UpdateMeDto },
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
@@ -1712,6 +2146,7 @@ export const getMeUpdateMeLocationMutationOptions = <TError = void, TContext = u
     { data: UpdateLocationDto },
     TContext
   >;
+  request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof meUpdateMeLocation>>,
   TError,
@@ -1719,11 +2154,11 @@ export const getMeUpdateMeLocationMutationOptions = <TError = void, TContext = u
   TContext
 > => {
   const mutationKey = ["meUpdateMeLocation"];
-  const { mutation: mutationOptions } = options
+  const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
+    : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof meUpdateMeLocation>>,
@@ -1731,7 +2166,7 @@ export const getMeUpdateMeLocationMutationOptions = <TError = void, TContext = u
   > = (props) => {
     const { data } = props ?? {};
 
-    return meUpdateMeLocation(data);
+    return meUpdateMeLocation(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1754,6 +2189,7 @@ export const useMeUpdateMeLocation = <TError = void, TContext = unknown>(
       { data: UpdateLocationDto },
       TContext
     >;
+    request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
