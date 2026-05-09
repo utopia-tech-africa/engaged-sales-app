@@ -5,13 +5,18 @@ import { type ReactElement } from "react";
 
 import {
   useAdminGeofenceListGeofences,
+  useAdminRegionListRegions,
   useAuthListSessions,
   useHealthGetHealth,
   useMeGetMe
 } from "@/lib/api/generated/client";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseMeProfileFromOrval, parseSessionsFromOrval } from "@/lib/auth/orval-auth-adapter";
-import { parseGeofencesFromOrval, parseHealthFromOrval } from "@/lib/ops/ops-adapters";
+import {
+  parseGeofencesFromOrval,
+  parseHealthFromOrval,
+  parseRegionsFromOrval
+} from "@/lib/ops/ops-adapters";
 
 const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark:bg-card/50";
 
@@ -46,6 +51,13 @@ export default function OpsOverviewPage(): ReactElement {
     }
   });
 
+  const regionsQuery = useAdminRegionListRegions({
+    query: {
+      enabled: accessToken !== null,
+      select: (r) => parseRegionsFromOrval(r)
+    }
+  });
+
   const sessionCount = sessionsQuery.data?.sessions.length ?? "—";
   const activeFences = geofencesQuery.data?.filter((g) => g.isActive).length ?? "—";
   const totalFences = geofencesQuery.data?.length ?? "—";
@@ -60,7 +72,7 @@ export default function OpsOverviewPage(): ReactElement {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <div className={cardClass}>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             API health
@@ -95,6 +107,25 @@ export default function OpsOverviewPage(): ReactElement {
             href="/ops/geofences"
             className="mt-3 inline-block text-sm font-medium text-primary"
           >
+            Manage →
+          </Link>
+        </div>
+        <div className={cardClass}>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Regions
+          </p>
+          {regionsQuery.isLoading ? (
+            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
+          ) : null}
+          {regionsQuery.isError ? (
+            <p className="mt-2 text-sm text-destructive">Could not load</p>
+          ) : null}
+          {regionsQuery.data !== undefined ? (
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {regionsQuery.data.length}
+            </p>
+          ) : null}
+          <Link href="/ops/regions" className="mt-3 inline-block text-sm font-medium text-primary">
             Manage →
           </Link>
         </div>

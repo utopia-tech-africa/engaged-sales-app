@@ -1,4 +1,7 @@
+import Link from "next/link";
 import type { ReactElement } from "react";
+
+import { calmMutedLinkClass } from "@/lib/calm-ui";
 
 const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark:bg-card/50";
 
@@ -8,16 +11,26 @@ export default function OpsOrganizationPage(): ReactElement {
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Organization</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Configure regions, users, and assignments. These surfaces will connect to admin APIs as
-          they ship (see BACKEND_PRD §7.9).
+          Configure regions, users, and assignments. Subwholesales and activations will follow as
+          admin APIs ship.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className={cardClass}>
-          <h2 className="font-semibold text-foreground">Regions & subwholesales</h2>
+          <h2 className="font-semibold text-foreground">Regions</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            CRUD for territories and wholesale nodes. Planned:{" "}
-            <code className="text-xs">/admin/regions</code>,{" "}
+            Create and manage sales territories. Users reference a region by id in their profile.
+          </p>
+          <p className="mt-3">
+            <Link href="/ops/regions" className={calmMutedLinkClass}>
+              Open regions →
+            </Link>
+          </p>
+        </div>
+        <div className={cardClass}>
+          <h2 className="font-semibold text-foreground">Subwholesales</h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Wholesale nodes under regions. Planned:{" "}
             <code className="text-xs">/admin/subwholesales</code>.
           </p>
           <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
@@ -34,7 +47,7 @@ export default function OpsOrganizationPage(): ReactElement {
             Coming soon
           </span>
         </div>
-        <div className={`${cardClass} md:col-span-2`}>
+        <div className={cardClass}>
           <h2 className="font-semibold text-foreground">Activations</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             Create campaigns, product lists, and promoter rosters. Planned:{" "}

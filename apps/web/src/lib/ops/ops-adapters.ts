@@ -32,3 +32,20 @@ export const parseHealthFromOrval = (result: unknown): HealthPayload => {
 };
 
 export const isOpsRole = (role: string): boolean => role === "supervisor" || role === "admin";
+
+const regionRowSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  name: z.string(),
+  isActive: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string()
+});
+
+export type RegionRow = z.infer<typeof regionRowSchema>;
+
+const regionListSchema = z.array(regionRowSchema);
+
+export const parseRegionsFromOrval = (result: unknown): RegionRow[] => {
+  return regionListSchema.parse(unwrapOrvalResponseBody(result));
+};

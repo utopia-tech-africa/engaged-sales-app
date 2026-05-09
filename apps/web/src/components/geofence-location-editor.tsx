@@ -4,6 +4,7 @@ import { type ReactElement, useCallback, useMemo, useState } from "react";
 
 import { type GeofenceMapOtherZone } from "@/components/geofence-leaflet-map";
 import { GeofenceMapPicker } from "@/components/geofence-map-picker";
+import { requestCurrentPosition } from "@/lib/geolocation/request-current-position";
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -148,16 +149,15 @@ export const GeofenceLocationEditor = ({
 
   const useMyLocation = useCallback((): void => {
     setPlaceError(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        onLatitudeChange(pos.coords.latitude.toFixed(6));
-        onLongitudeChange(pos.coords.longitude.toFixed(6));
-      },
-      (err) => {
-        setPlaceError(err.message || "Could not read your location.");
-      },
-      { enableHighAccuracy: true, timeout: 20_000, maximumAge: 60_000 }
-    );
+    void (async () => {
+      const pos = await requestCurrentPosition();
+      if (pos.ok) {
+        onLatitudeChange(pos.latitude.toFixed(6));
+        onLongitudeChange(pos.longitude.toFixed(6));
+      } else {
+        setPlaceError(pos.message);
+      }
+    })();
   }, [onLatitudeChange, onLongitudeChange]);
 
   return (

@@ -13,4 +13,4 @@ export type ProfileCompletionDto = {
   gender?: ProfileCompletionDtoGender;
   fullName?: string;
   regionId?: string;
-};
+}

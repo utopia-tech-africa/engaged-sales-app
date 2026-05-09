@@ -9,4 +9,4 @@
 export type RevokeUserSessionsDto = {
   /** Target user id whose sessions should be revoked */
   userId: string;
-};
+}

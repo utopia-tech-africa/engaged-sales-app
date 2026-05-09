@@ -32,7 +32,7 @@ export class SignInDto {
 
   @ApiPropertyOptional({
     description:
-      "Device latitude (decimal degrees). Required when at least one geofence is active; send together with longitude.",
+      "Device latitude (decimal degrees). For promoters and merchandizers: required when at least one geofence is active (send with longitude). Supervisors and admins may omit coordinates.",
     type: "number",
     example: -1.286389
   })
@@ -44,7 +44,7 @@ export class SignInDto {
 
   @ApiPropertyOptional({
     description:
-      "Device longitude (decimal degrees). Required with latitude when geofencing is enforced.",
+      "Device longitude (decimal degrees). For promoters and merchandizers: required with latitude when geofencing is enforced. Supervisors and admins may omit.",
     type: "number",
     example: 36.817223
   })

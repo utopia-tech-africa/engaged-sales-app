@@ -6,9 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type UpdateLocationDto = {
-  /** Latitude in decimal degrees */
-  latitude: number;
-  /** Longitude in decimal degrees */
-  longitude: number;
-}
+export type AdminRegionCreateRegionBody = {
+  name: string;
+  /** Optional; otherwise derived from name */
+  slug?: string;
+  isActive?: boolean;
+};

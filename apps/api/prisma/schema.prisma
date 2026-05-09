@@ -38,8 +38,22 @@ model User {
   regionId   String?
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
+  region     Region?       @relation(fields: [regionId], references: [id], onDelete: SetNull)
   sessions   AuthSession[]
   locations  LocationPing[]
+
+  @@index([regionId])
+}
+
+/// Sales territory (e.g. Nairobi West). Referenced by User.regionId.
+model Region {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
 }
 
 model AuthSession {

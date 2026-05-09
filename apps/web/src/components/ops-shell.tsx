@@ -12,6 +12,7 @@ type NavItem = { href: string; label: string };
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/ops", label: "Overview" },
+  { href: "/ops/regions", label: "Regions" },
   { href: "/ops/geofences", label: "Work areas" },
   { href: "/ops/organization", label: "Organization" },
   { href: "/ops/account", label: "Account" }

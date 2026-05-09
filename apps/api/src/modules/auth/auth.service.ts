@@ -142,8 +142,10 @@ export class AuthService {
 
     await this.resetPhoneFailures(payload.phone);
 
-    this.assertCoordinatePair(payload.latitude, payload.longitude);
-    await this.geofenceService.assertLoginAllowed(payload.latitude, payload.longitude);
+    if (this.loginRoleRequiresWorkAreaCheck(user.role)) {
+      this.assertCoordinatePair(payload.latitude, payload.longitude);
+      await this.geofenceService.assertLoginAllowed(payload.latitude, payload.longitude);
+    }
 
     const tokens = await this.issueTokens(user, {
       ...(userAgent !== undefined ? { userAgent } : {}),
@@ -197,8 +199,10 @@ export class AuthService {
       }
     }
 
-    this.assertCoordinatePair(payload.latitude, payload.longitude);
-    await this.geofenceService.assertLoginAllowed(payload.latitude, payload.longitude);
+    if (this.loginRoleRequiresWorkAreaCheck(user.role)) {
+      this.assertCoordinatePair(payload.latitude, payload.longitude);
+      await this.geofenceService.assertLoginAllowed(payload.latitude, payload.longitude);
+    }
 
     const tokens = await this.issueTokens(user, {
       ...(userAgent !== undefined ? { userAgent } : {}),
@@ -411,6 +415,11 @@ export class AuthService {
     if (latitude === undefined || longitude === undefined) {
       throw new BadRequestException("Latitude and longitude must both be provided together");
     }
+  }
+
+  /** Promoters and merchandizers are checked against active geofences at login; supervisors and admins are not. */
+  private loginRoleRequiresWorkAreaCheck(role: User["role"]): boolean {
+    return role === "promoter" || role === "merchandizer";
   }
 
   private async issueTokens(

@@ -8,6 +8,8 @@
 
 export * from "./adminGeofenceCreateGeofenceBody";
 export * from "./adminGeofenceUpdateGeofenceBody";
+export * from "./adminRegionCreateRegionBody";
+export * from "./adminRegionUpdateRegionBody";
 export * from "./oauthCallbackDto";
 export * from "./oauthCallbackDtoProvider";
 export * from "./oauthStartDto";

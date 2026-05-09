@@ -9,4 +9,4 @@
 export type OauthStartDto = {
   /** Frontend redirect URI registered with Google OAuth */
   redirectUri: string;
-};
+}

@@ -9,4 +9,4 @@
 export type RefreshTokenDto = {
   /** Refresh token in <sessionId>.<secret> format */
   refreshToken: string;
-};
+}

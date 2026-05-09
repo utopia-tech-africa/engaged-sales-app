@@ -11,4 +11,4 @@ export type UpdateMeDto = {
   fullName?: string;
   gender?: UpdateMeDtoGender;
   regionId?: string;
-};
+}

@@ -40,7 +40,8 @@ export class OauthCallbackDto {
   public state!: string;
 
   @ApiPropertyOptional({
-    description: "Device latitude when geofencing is active (must be sent with longitude).",
+    description:
+      "Device latitude. For promoters/merchandizers when geofencing is active, send with longitude. Supervisors/admins may omit.",
     type: "number",
     example: -1.286389
   })
@@ -51,7 +52,7 @@ export class OauthCallbackDto {
   public latitude?: number;
 
   @ApiPropertyOptional({
-    description: "Device longitude when geofencing is active.",
+    description: "Device longitude (pair with latitude when required for field roles).",
     type: "number",
     example: 36.817223
   })

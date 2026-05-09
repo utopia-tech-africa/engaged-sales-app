@@ -13,6 +13,7 @@ import { ApiError } from "@/lib/api/problem-details";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseAuthResponseFromOrval } from "@/lib/auth/orval-auth-adapter";
 import { calmPrimaryButtonClass, calmTextLinkClass } from "@/lib/calm-ui";
+import { requestCurrentPosition } from "@/lib/geolocation/request-current-position";
 import { isOpsRole } from "@/lib/ops/ops-adapters";
 
 export default function SignInPage(): ReactElement {
@@ -55,39 +56,47 @@ export default function SignInPage(): ReactElement {
   return (
     <MobileShell
       title="Sign in"
-      subtitle="Enter your phone, unique code, and role. Location is read when you sign in so we can enforce your organization’s work area when it is configured."
+      subtitle="Enter your phone, unique code, and role. Supervisors and admins can sign in from anywhere. For promoters and merchandizers, location may be required when your organization has an active work area."
     >
       <form
         className="flex flex-col gap-3"
         onSubmit={(event) => {
           event.preventDefault();
           setGeoError(null);
+          if (isOpsRole(role)) {
+            signInMutation.mutate(
+              { data: { phone, uniqueCode, role } },
+              {
+                onSettled: () => {
+                  setIsLocating(false);
+                }
+              }
+            );
+            return;
+          }
           setIsLocating(true);
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              signInMutation.mutate(
-                {
-                  data: {
-                    phone,
-                    uniqueCode,
-                    role,
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude
-                  }
+          void (async () => {
+            const pos = await requestCurrentPosition();
+            const data = {
+              phone,
+              uniqueCode,
+              role,
+              ...(pos.ok ? { latitude: pos.latitude, longitude: pos.longitude } : {})
+            };
+            signInMutation.mutate(
+              { data },
+              {
+                onSettled: () => {
+                  setIsLocating(false);
                 },
-                {
-                  onSettled: () => {
-                    setIsLocating(false);
+                onError: (err: unknown) => {
+                  if (!pos.ok && err instanceof ApiError && err.status !== 401) {
+                    setGeoError(`${pos.message} (${err.problem?.detail ?? err.message})`);
                   }
                 }
-              );
-            },
-            (error) => {
-              setIsLocating(false);
-              setGeoError(error.message || "Could not read your location.");
-            },
-            { enableHighAccuracy: true, timeout: 20_000, maximumAge: 60_000 }
-          );
+              }
+            );
+          })();
         }}
       >
         <FormControl label="Phone number">

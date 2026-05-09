@@ -24,6 +24,8 @@ import type {
 import type {
   AdminGeofenceCreateGeofenceBody,
   AdminGeofenceUpdateGeofenceBody,
+  AdminRegionCreateRegionBody,
+  AdminRegionUpdateRegionBody,
   OauthCallbackDto,
   OauthStartDto,
   ProfileCompletionDto,
@@ -1751,6 +1753,408 @@ export const useAdminGeofenceUpdateGeofence = <TError = void, TContext = unknown
   TContext
 > => {
   return useMutation(getAdminGeofenceUpdateGeofenceMutationOptions(options), queryClient);
+};
+
+export type adminRegionListRegionsResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminRegionListRegionsResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminRegionListRegionsResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminRegionListRegionsResponseSuccess = adminRegionListRegionsResponse200 & {
+  headers: Headers;
+};
+export type adminRegionListRegionsResponseError = (
+  | adminRegionListRegionsResponse401
+  | adminRegionListRegionsResponse403
+) & {
+  headers: Headers;
+};
+
+export type adminRegionListRegionsResponse =
+  | adminRegionListRegionsResponseSuccess
+  | adminRegionListRegionsResponseError;
+
+export const getAdminRegionListRegionsUrl = () => {
+  return `/admin/regions`;
+};
+
+/**
+ * Returns all sales regions for assignment and reporting.
+ * @summary List regions (supervisor / admin)
+ */
+export const adminRegionListRegions = async (
+  options?: RequestInit
+): Promise<adminRegionListRegionsResponse> => {
+  return orvalFetcher<adminRegionListRegionsResponse>(getAdminRegionListRegionsUrl(), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getAdminRegionListRegionsQueryKey = () => {
+  return [`/admin/regions`] as const;
+};
+
+export const getAdminRegionListRegionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminRegionListRegions>>,
+  TError = void
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof adminRegionListRegions>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminRegionListRegionsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminRegionListRegions>>> = ({ signal }) =>
+    adminRegionListRegions({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminRegionListRegions>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminRegionListRegionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminRegionListRegions>>
+>;
+export type AdminRegionListRegionsQueryError = void;
+
+export function useAdminRegionListRegions<
+  TData = Awaited<ReturnType<typeof adminRegionListRegions>>,
+  TError = void
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminRegionListRegions>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminRegionListRegions>>,
+          TError,
+          Awaited<ReturnType<typeof adminRegionListRegions>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminRegionListRegions<
+  TData = Awaited<ReturnType<typeof adminRegionListRegions>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminRegionListRegions>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminRegionListRegions>>,
+          TError,
+          Awaited<ReturnType<typeof adminRegionListRegions>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminRegionListRegions<
+  TData = Awaited<ReturnType<typeof adminRegionListRegions>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminRegionListRegions>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List regions (supervisor / admin)
+ */
+
+export function useAdminRegionListRegions<
+  TData = Awaited<ReturnType<typeof adminRegionListRegions>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminRegionListRegions>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminRegionListRegionsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type adminRegionCreateRegionResponse201 = {
+  data: void;
+  status: 201;
+};
+
+export type adminRegionCreateRegionResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminRegionCreateRegionResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminRegionCreateRegionResponse409 = {
+  data: void;
+  status: 409;
+};
+
+export type adminRegionCreateRegionResponseSuccess = adminRegionCreateRegionResponse201 & {
+  headers: Headers;
+};
+export type adminRegionCreateRegionResponseError = (
+  | adminRegionCreateRegionResponse401
+  | adminRegionCreateRegionResponse403
+  | adminRegionCreateRegionResponse409
+) & {
+  headers: Headers;
+};
+
+export type adminRegionCreateRegionResponse =
+  | adminRegionCreateRegionResponseSuccess
+  | adminRegionCreateRegionResponseError;
+
+export const getAdminRegionCreateRegionUrl = () => {
+  return `/admin/regions`;
+};
+
+/**
+ * Creates a region. Slug is generated from `name` if omitted (unique suffix added on collision). User.regionId must match a region id (cuid), not the slug.
+ * @summary Create region (supervisor / admin)
+ */
+export const adminRegionCreateRegion = async (
+  adminRegionCreateRegionBody: AdminRegionCreateRegionBody,
+  options?: RequestInit
+): Promise<adminRegionCreateRegionResponse> => {
+  return orvalFetcher<adminRegionCreateRegionResponse>(getAdminRegionCreateRegionUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(adminRegionCreateRegionBody)
+  });
+};
+
+export const getAdminRegionCreateRegionMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminRegionCreateRegion>>,
+    TError,
+    { data: AdminRegionCreateRegionBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminRegionCreateRegion>>,
+  TError,
+  { data: AdminRegionCreateRegionBody },
+  TContext
+> => {
+  const mutationKey = ["adminRegionCreateRegion"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminRegionCreateRegion>>,
+    { data: AdminRegionCreateRegionBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminRegionCreateRegion(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminRegionCreateRegionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminRegionCreateRegion>>
+>;
+export type AdminRegionCreateRegionMutationBody = AdminRegionCreateRegionBody;
+export type AdminRegionCreateRegionMutationError = void;
+
+/**
+ * @summary Create region (supervisor / admin)
+ */
+export const useAdminRegionCreateRegion = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminRegionCreateRegion>>,
+      TError,
+      { data: AdminRegionCreateRegionBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminRegionCreateRegion>>,
+  TError,
+  { data: AdminRegionCreateRegionBody },
+  TContext
+> => {
+  return useMutation(getAdminRegionCreateRegionMutationOptions(options), queryClient);
+};
+
+export type adminRegionUpdateRegionResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminRegionUpdateRegionResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminRegionUpdateRegionResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminRegionUpdateRegionResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminRegionUpdateRegionResponse409 = {
+  data: void;
+  status: 409;
+};
+
+export type adminRegionUpdateRegionResponseSuccess = adminRegionUpdateRegionResponse200 & {
+  headers: Headers;
+};
+export type adminRegionUpdateRegionResponseError = (
+  | adminRegionUpdateRegionResponse401
+  | adminRegionUpdateRegionResponse403
+  | adminRegionUpdateRegionResponse404
+  | adminRegionUpdateRegionResponse409
+) & {
+  headers: Headers;
+};
+
+export type adminRegionUpdateRegionResponse =
+  | adminRegionUpdateRegionResponseSuccess
+  | adminRegionUpdateRegionResponseError;
+
+export const getAdminRegionUpdateRegionUrl = (id: unknown) => {
+  return `/admin/regions/${String(id)}`;
+};
+
+/**
+ * Partial update (slug, name, isActive).
+ * @summary Update region (supervisor / admin)
+ */
+export const adminRegionUpdateRegion = async (
+  id: unknown,
+  adminRegionUpdateRegionBody: AdminRegionUpdateRegionBody,
+  options?: RequestInit
+): Promise<adminRegionUpdateRegionResponse> => {
+  return orvalFetcher<adminRegionUpdateRegionResponse>(getAdminRegionUpdateRegionUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(adminRegionUpdateRegionBody)
+  });
+};
+
+export const getAdminRegionUpdateRegionMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminRegionUpdateRegion>>,
+    TError,
+    { id: unknown; data: AdminRegionUpdateRegionBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminRegionUpdateRegion>>,
+  TError,
+  { id: unknown; data: AdminRegionUpdateRegionBody },
+  TContext
+> => {
+  const mutationKey = ["adminRegionUpdateRegion"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminRegionUpdateRegion>>,
+    { id: unknown; data: AdminRegionUpdateRegionBody }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return adminRegionUpdateRegion(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminRegionUpdateRegionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminRegionUpdateRegion>>
+>;
+export type AdminRegionUpdateRegionMutationBody = AdminRegionUpdateRegionBody;
+export type AdminRegionUpdateRegionMutationError = void;
+
+/**
+ * @summary Update region (supervisor / admin)
+ */
+export const useAdminRegionUpdateRegion = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminRegionUpdateRegion>>,
+      TError,
+      { id: unknown; data: AdminRegionUpdateRegionBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminRegionUpdateRegion>>,
+  TError,
+  { id: unknown; data: AdminRegionUpdateRegionBody },
+  TContext
+> => {
+  return useMutation(getAdminRegionUpdateRegionMutationOptions(options), queryClient);
 };
 
 export type healthGetHealthResponse200 = {

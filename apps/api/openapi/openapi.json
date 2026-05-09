@@ -666,6 +666,143 @@
         "tags": ["Admin geofences (supervisor / admin)"]
       }
     },
+    "/admin/regions": {
+      "get": {
+        "description": "Returns all sales regions for assignment and reporting.",
+        "operationId": "AdminRegion_listRegions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of regions"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List regions (supervisor / admin)",
+        "tags": ["Admin regions (supervisor / admin)"]
+      },
+      "post": {
+        "description": "Creates a region. Slug is generated from `name` if omitted (unique suffix added on collision). User.regionId must match a region id (cuid), not the slug.",
+        "operationId": "AdminRegion_createRegion",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Nairobi West"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "example": "nairobi-west",
+                    "description": "Optional; otherwise derived from name"
+                  },
+                  "isActive": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Region created"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "409": {
+            "description": "Slug already in use"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create region (supervisor / admin)",
+        "tags": ["Admin regions (supervisor / admin)"]
+      }
+    },
+    "/admin/regions/{id}": {
+      "patch": {
+        "description": "Partial update (slug, name, isActive).",
+        "operationId": "AdminRegion_updateRegion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Region id (cuid)",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Region updated"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Region id not found"
+          },
+          "409": {
+            "description": "Slug already in use"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update region (supervisor / admin)",
+        "tags": ["Admin regions (supervisor / admin)"]
+      }
+    },
     "/health": {
       "get": {
         "description": "Returns a simple health signal for uptime probes.",
@@ -902,12 +1039,12 @@
           },
           "latitude": {
             "type": "number",
-            "description": "Device latitude (decimal degrees). Required when at least one geofence is active; send together with longitude.",
+            "description": "Device latitude (decimal degrees). For promoters and merchandizers: required when at least one geofence is active (send with longitude). Supervisors and admins may omit coordinates.",
             "example": -1.286389
           },
           "longitude": {
             "type": "number",
-            "description": "Device longitude (decimal degrees). Required with latitude when geofencing is enforced.",
+            "description": "Device longitude (decimal degrees). For promoters and merchandizers: required with latitude when geofencing is enforced. Supervisors and admins may omit.",
             "example": 36.817223
           }
         },
@@ -948,12 +1085,12 @@
           },
           "latitude": {
             "type": "number",
-            "description": "Device latitude when geofencing is active (must be sent with longitude).",
+            "description": "Device latitude. For promoters/merchandizers when geofencing is active, send with longitude. Supervisors/admins may omit.",
             "example": -1.286389
           },
           "longitude": {
             "type": "number",
-            "description": "Device longitude when geofencing is active.",
+            "description": "Device longitude (pair with latitude when required for field roles).",
             "example": 36.817223
           }
         },

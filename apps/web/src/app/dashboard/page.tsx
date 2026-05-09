@@ -23,6 +23,7 @@ import {
   calmPrimaryButtonClass,
   calmSecondaryButtonClass
 } from "@/lib/calm-ui";
+import { requestCurrentPosition } from "@/lib/geolocation/request-current-position";
 import { isOpsRole } from "@/lib/ops/ops-adapters";
 
 export default function DashboardPage(): ReactElement {
@@ -65,31 +66,30 @@ export default function DashboardPage(): ReactElement {
   const handleCheckIn = (): void => {
     setGeoError(null);
     setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        locationMutation.mutate(
-          {
-            data: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
-            }
-          },
-          {
-            onSuccess: (result) => {
-              setLastPing(parseLocationPingFromOrval(result));
-            },
-            onSettled: () => {
-              setIsLocating(false);
-            }
-          }
-        );
-      },
-      (error) => {
+    void (async () => {
+      const pos = await requestCurrentPosition();
+      if (!pos.ok) {
         setIsLocating(false);
-        setGeoError(error.message || "Could not read your location.");
-      },
-      { enableHighAccuracy: true, timeout: 20_000, maximumAge: 60_000 }
-    );
+        setGeoError(pos.message);
+        return;
+      }
+      locationMutation.mutate(
+        {
+          data: {
+            latitude: pos.latitude,
+            longitude: pos.longitude
+          }
+        },
+        {
+          onSuccess: (result) => {
+            setLastPing(parseLocationPingFromOrval(result));
+          },
+          onSettled: () => {
+            setIsLocating(false);
+          }
+        }
+      );
+    })();
   };
 
   const handleSignOut = (): void => {

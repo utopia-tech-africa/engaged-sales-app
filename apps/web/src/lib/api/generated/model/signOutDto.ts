@@ -9,4 +9,4 @@
 export type SignOutDto = {
   /** Refresh token to revoke the session */
   refreshToken: string;
-};
+}
