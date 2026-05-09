@@ -21,7 +21,9 @@ export class RedisService implements OnModuleDestroy {
     this.client.on("error", () => {
       if (!this.hasLoggedConnectionError) {
         this.hasLoggedConnectionError = true;
-        this.logger.warn("Redis connection failed. Auth rate-limiting will fail until Redis is reachable.");
+        this.logger.warn(
+          "Redis connection failed. Auth rate-limiting will fail until Redis is reachable."
+        );
       }
     });
   }

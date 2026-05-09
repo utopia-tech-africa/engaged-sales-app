@@ -16,7 +16,11 @@ export class SignUpDto {
   @IsIn(["male", "female", "other"])
   public gender!: "male" | "female" | "other";
 
-  @ApiPropertyOptional({ type: String, example: "nairobi-west", description: "Optional sales region id" })
+  @ApiPropertyOptional({
+    type: String,
+    example: "nairobi-west",
+    description: "Optional sales region id"
+  })
   @IsOptional()
   @IsString()
   @MinLength(1)

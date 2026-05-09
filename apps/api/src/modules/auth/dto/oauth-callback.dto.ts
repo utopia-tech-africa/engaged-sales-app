@@ -6,7 +6,11 @@ export class OauthCallbackDto {
   @IsIn(["google"])
   public provider!: "google";
 
-  @ApiProperty({ type: String, example: "4/0AQSTgQF...", description: "Authorization code from Google callback" })
+  @ApiProperty({
+    type: String,
+    example: "4/0AQSTgQF...",
+    description: "Authorization code from Google callback"
+  })
   @IsString()
   @MinLength(10)
   @MaxLength(2048)
