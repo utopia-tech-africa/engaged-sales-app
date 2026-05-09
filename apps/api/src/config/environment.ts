@@ -44,6 +44,10 @@ class EnvironmentVariablesDto {
   @IsString()
   @MinLength(1)
   public REDIS_URL = "redis://127.0.0.1:6379";
+
+  @IsString()
+  @MinLength(1)
+  public CORS_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000";
 }
 
 export type EnvironmentVariables = {
@@ -57,6 +61,7 @@ export type EnvironmentVariables = {
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
   REDIS_URL: string;
+  CORS_ORIGINS: string;
 };
 
 export const validateEnvironment = (config: Record<string, unknown>): EnvironmentVariables => {
@@ -71,7 +76,8 @@ export const validateEnvironment = (config: Record<string, unknown>): Environmen
     JWT_REFRESH_TTL_DAYS: config["JWT_REFRESH_TTL_DAYS"] ?? 30,
     GOOGLE_CLIENT_ID: config["GOOGLE_CLIENT_ID"] ?? "google-client-id",
     GOOGLE_CLIENT_SECRET: config["GOOGLE_CLIENT_SECRET"] ?? "google-client-secret",
-    REDIS_URL: config["REDIS_URL"] ?? "redis://127.0.0.1:6379"
+    REDIS_URL: config["REDIS_URL"] ?? "redis://127.0.0.1:6379",
+    CORS_ORIGINS: config["CORS_ORIGINS"] ?? "http://localhost:3000,http://127.0.0.1:3000"
   };
 
   const validatedEnvironment = plainToInstance(EnvironmentVariablesDto, rawEnvironment, {
@@ -96,6 +102,7 @@ export const validateEnvironment = (config: Record<string, unknown>): Environmen
     JWT_REFRESH_TTL_DAYS: validatedEnvironment.JWT_REFRESH_TTL_DAYS,
     GOOGLE_CLIENT_ID: validatedEnvironment.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: validatedEnvironment.GOOGLE_CLIENT_SECRET,
-    REDIS_URL: validatedEnvironment.REDIS_URL
+    REDIS_URL: validatedEnvironment.REDIS_URL,
+    CORS_ORIGINS: validatedEnvironment.CORS_ORIGINS
   };
 };

@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnModuleDestroy } from "@nestjs/common";
+import { Inject, Injectable, Logger, OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
 
@@ -6,12 +6,24 @@ import type { EnvironmentVariables } from "../../config/environment";
 
 @Injectable()
 export class RedisService implements OnModuleDestroy {
+  private readonly logger = new Logger(RedisService.name);
+
   private readonly client: Redis;
+
+  private hasLoggedConnectionError = false;
 
   public constructor(
     @Inject(ConfigService) configService: ConfigService<EnvironmentVariables, true>
   ) {
-    this.client = new Redis(configService.get("REDIS_URL", { infer: true }));
+    this.client = new Redis(configService.get("REDIS_URL", { infer: true }), {
+      lazyConnect: true
+    });
+    this.client.on("error", () => {
+      if (!this.hasLoggedConnectionError) {
+        this.hasLoggedConnectionError = true;
+        this.logger.warn("Redis connection failed. Auth rate-limiting will fail until Redis is reachable.");
+      }
+    });
   }
 
   public async onModuleDestroy(): Promise<void> {
