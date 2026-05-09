@@ -49,3 +49,33 @@ const regionListSchema = z.array(regionRowSchema);
 export const parseRegionsFromOrval = (result: unknown): RegionRow[] => {
   return regionListSchema.parse(unwrapOrvalResponseBody(result));
 };
+
+const adminUserRowSchema = z.object({
+  id: z.string(),
+  fullName: z.string(),
+  email: z.string().nullable(),
+  phone: z.string(),
+  uniqueCode: z.string(),
+  role: z.enum(["promoter", "merchandizer", "supervisor", "admin"]),
+  isActive: z.boolean(),
+  gender: z.enum(["male", "female", "other"]).nullable(),
+  regionId: z.string().nullable(),
+  authProvider: z.enum(["credentials", "google"]),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  region: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      slug: z.string()
+    })
+    .nullable()
+});
+
+export type AdminUserRow = z.infer<typeof adminUserRowSchema>;
+
+const adminUserListSchema = z.array(adminUserRowSchema);
+
+export const parseAdminUsersFromOrval = (result: unknown): AdminUserRow[] => {
+  return adminUserListSchema.parse(unwrapOrvalResponseBody(result));
+};

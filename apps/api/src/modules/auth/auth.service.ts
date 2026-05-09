@@ -199,6 +199,10 @@ export class AuthService {
       }
     }
 
+    if (!user.isActive) {
+      throw new ForbiddenException("This account has been deactivated");
+    }
+
     if (this.loginRoleRequiresWorkAreaCheck(user.role)) {
       this.assertCoordinatePair(payload.latitude, payload.longitude);
       await this.geofenceService.assertLoginAllowed(payload.latitude, payload.longitude);
@@ -314,6 +318,11 @@ export class AuthService {
       throw new UnauthorizedException("Session user no longer exists");
     }
 
+    if (!user.isActive) {
+      await this.authRepository.revokeAllUserSessions(user.id);
+      throw new UnauthorizedException("Account is deactivated");
+    }
+
     const nextSessionSecret = this.generateRefreshSecret();
     const nextSession = await this.authRepository.createSession({
       userId: user.id,
@@ -398,6 +407,10 @@ export class AuthService {
     const user = await this.authRepository.getUserById(payload.id);
     if (!user) {
       throw new UnauthorizedException("Invalid token user");
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException("Account is deactivated");
     }
 
     const session = await this.authRepository.getActiveSessionById(payload.sessionId);
@@ -568,6 +581,7 @@ export class AuthService {
       phone: user.phone,
       uniqueCode: user.uniqueCode,
       role: user.role,
+      isActive: user.isActive,
       gender: user.gender,
       regionId: user.regionId,
       authProvider: user.authProvider,

@@ -8,6 +8,7 @@ export type AuthUser = {
   phone: string;
   uniqueCode: string;
   role: Role;
+  isActive: boolean;
   gender: Gender | null;
   regionId: string | null;
   authProvider: "credentials" | "google";

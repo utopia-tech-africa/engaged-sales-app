@@ -1,18 +1,24 @@
-import Link from "next/link";
-import type { ReactElement } from "react";
+"use client";
 
+import Link from "next/link";
+import { type ReactElement } from "react";
+
+import { useAuthStore } from "@/lib/auth/auth-store";
 import { calmMutedLinkClass } from "@/lib/calm-ui";
 
 const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark:bg-card/50";
 
 export default function OpsOrganizationPage(): ReactElement {
+  const isAdmin = useAuthStore((state) => state.user?.role === "admin");
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Organization</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Configure regions, users, and assignments. Subwholesales and activations will follow as
-          admin APIs ship.
+          {isAdmin
+            ? "Configure regions, users, and assignments. Subwholesales and activations will follow as admin APIs ship."
+            : "Configure regions, users, and assignments. Subwholesales and activations will follow in a future release."}
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
@@ -30,8 +36,15 @@ export default function OpsOrganizationPage(): ReactElement {
         <div className={cardClass}>
           <h2 className="font-semibold text-foreground">Subwholesales</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Wholesale nodes under regions. Planned:{" "}
-            <code className="text-xs">/admin/subwholesales</code>.
+            Wholesale nodes under regions.
+            {isAdmin ? (
+              <>
+                {" "}
+                Planned: <code className="text-xs">/admin/subwholesales</code>.
+              </>
+            ) : (
+              " Planned for a future release."
+            )}
           </p>
           <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
             Coming soon
@@ -40,18 +53,40 @@ export default function OpsOrganizationPage(): ReactElement {
         <div className={cardClass}>
           <h2 className="font-semibold text-foreground">Users & roles</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Invite promoters, assign supervisors, reset sessions. Planned:{" "}
-            <code className="text-xs">/admin/users</code>.
+            Invite promoters, assign supervisors, reset sessions.
+            {isAdmin ? (
+              <>
+                {" "}
+                Planned: <code className="text-xs">/admin/users</code>.
+              </>
+            ) : (
+              " Manage invites and roles from Users in the sidebar."
+            )}
           </p>
-          <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-            Coming soon
-          </span>
+          {isAdmin ? (
+            <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+              Coming soon
+            </span>
+          ) : (
+            <p className="mt-3">
+              <Link href="/ops/users" className={calmMutedLinkClass}>
+                Open users →
+              </Link>
+            </p>
+          )}
         </div>
         <div className={cardClass}>
           <h2 className="font-semibold text-foreground">Activations</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Create campaigns, product lists, and promoter rosters. Planned:{" "}
-            <code className="text-xs">/admin/activations</code> and related routes.
+            Create campaigns, product lists, and promoter rosters.
+            {isAdmin ? (
+              <>
+                {" "}
+                Planned: <code className="text-xs">/admin/activations</code> and related routes.
+              </>
+            ) : (
+              " Planned for a future release."
+            )}
           </p>
           <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
             Coming soon

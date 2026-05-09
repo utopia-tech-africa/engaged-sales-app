@@ -7,6 +7,6 @@ import { RegionService } from "./region.service";
 @Module({
   imports: [PrismaModule],
   providers: [RegionService, RegionRepository],
-  exports: [RegionService]
+  exports: [RegionService, RegionRepository]
 })
 export class RegionCoreModule {}

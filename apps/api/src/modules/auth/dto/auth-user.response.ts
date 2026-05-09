@@ -7,6 +7,7 @@ export type AuthUserResponse = {
   phone: string;
   uniqueCode: string;
   role: User["role"];
+  isActive: boolean;
   gender: User["gender"];
   regionId: string | null;
   authProvider: User["authProvider"];

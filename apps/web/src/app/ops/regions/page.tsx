@@ -22,6 +22,7 @@ const inputClass =
 
 export default function OpsRegionsPage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
+  const isAdmin = useAuthStore((state) => state.user?.role === "admin");
   const queryClient = useQueryClient();
 
   const regionsQuery = useAdminRegionListRegions({
@@ -148,8 +149,16 @@ export default function OpsRegionsPage(): ReactElement {
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Regions</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
           Sales territories for user assignment. New regions derive a slug from the display name;
-          edit an existing row to change slug or name. Profile APIs use the region id (cuid) in{" "}
-          <code className="text-xs">regionId</code>—copy it from the table when configuring users.
+          edit an existing row to change slug or name.
+          {isAdmin ? (
+            <>
+              {" "}
+              Profile APIs use the region id (cuid) in <code className="text-xs">regionId</code>
+              —copy it from the table when configuring users.
+            </>
+          ) : (
+            " Copy the region id from the table when assigning users to a territory."
+          )}
         </p>
       </div>
 

@@ -6,6 +6,7 @@ import { type ReactElement } from "react";
 import {
   useAdminGeofenceListGeofences,
   useAdminRegionListRegions,
+  useAdminUserListUsers,
   useAuthListSessions,
   useHealthGetHealth,
   useMeGetMe
@@ -13,6 +14,7 @@ import {
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseMeProfileFromOrval, parseSessionsFromOrval } from "@/lib/auth/orval-auth-adapter";
 import {
+  parseAdminUsersFromOrval,
   parseGeofencesFromOrval,
   parseHealthFromOrval,
   parseRegionsFromOrval
@@ -22,10 +24,11 @@ const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark
 
 export default function OpsOverviewPage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
+  const isAdmin = useAuthStore((state) => state.user?.role === "admin");
 
   const healthQuery = useHealthGetHealth({
     query: {
-      enabled: accessToken !== null,
+      enabled: accessToken !== null && isAdmin,
       select: (r) => parseHealthFromOrval(r)
     }
   });
@@ -58,6 +61,13 @@ export default function OpsOverviewPage(): ReactElement {
     }
   });
 
+  const usersQuery = useAdminUserListUsers({
+    query: {
+      enabled: accessToken !== null,
+      select: (r) => parseAdminUsersFromOrval(r)
+    }
+  });
+
   const sessionCount = sessionsQuery.data?.sessions.length ?? "—";
   const activeFences = geofencesQuery.data?.filter((g) => g.isActive).length ?? "—";
   const totalFences = geofencesQuery.data?.length ?? "—";
@@ -67,26 +77,36 @@ export default function OpsOverviewPage(): ReactElement {
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Overview</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Desktop-first operations console. Configure work areas and monitor core signals; more
-          modules from the product roadmap will plug in here.
+          {isAdmin
+            ? "Desktop-first operations console. Configure work areas and monitor core signals; more modules from the product roadmap will plug in here."
+            : "Desktop-first operations console. Configure work areas, regions, and your team; more capabilities will appear here over time."}
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <div className={cardClass}>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            API health
-          </p>
-          {healthQuery.isLoading ? (
-            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-          ) : null}
-          {healthQuery.isError ? (
-            <p className="mt-2 text-sm text-destructive">Unreachable</p>
-          ) : null}
-          {healthQuery.data ? (
-            <p className="mt-2 text-2xl font-semibold text-emerald-600 dark:text-emerald-400">OK</p>
-          ) : null}
-        </div>
+      <div
+        className={[
+          "grid gap-4 sm:grid-cols-2",
+          isAdmin ? "xl:grid-cols-6" : "xl:grid-cols-5"
+        ].join(" ")}
+      >
+        {isAdmin ? (
+          <div className={cardClass}>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              API health
+            </p>
+            {healthQuery.isLoading ? (
+              <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
+            ) : null}
+            {healthQuery.isError ? (
+              <p className="mt-2 text-sm text-destructive">Unreachable</p>
+            ) : null}
+            {healthQuery.data ? (
+              <p className="mt-2 text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
+                OK
+              </p>
+            ) : null}
+          </div>
+        ) : null}
         <div className={cardClass}>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Active work areas
@@ -130,6 +150,21 @@ export default function OpsOverviewPage(): ReactElement {
           </Link>
         </div>
         <div className={cardClass}>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Users</p>
+          {usersQuery.isLoading ? (
+            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
+          ) : null}
+          {usersQuery.isError ? (
+            <p className="mt-2 text-sm text-destructive">Could not load</p>
+          ) : null}
+          {usersQuery.data !== undefined ? (
+            <p className="mt-2 text-2xl font-semibold text-foreground">{usersQuery.data.length}</p>
+          ) : null}
+          <Link href="/ops/users" className="mt-3 inline-block text-sm font-medium text-primary">
+            Manage →
+          </Link>
+        </div>
+        <div className={cardClass}>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Your sessions
           </p>
@@ -163,22 +198,27 @@ export default function OpsOverviewPage(): ReactElement {
       <div>
         <h2 className="text-lg font-semibold text-foreground">Platform modules</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Placeholders for roadmap capabilities (activations, sales, surveys, live map). Wire these
-          to the API as endpoints land.
+          {isAdmin
+            ? "Placeholders for roadmap capabilities (activations, sales, surveys, live map). Wire these to the API as endpoints land."
+            : "Coming capabilities: activations, sales capture, surveys, and live map views."}
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[
             {
               title: "Activations & rosters",
-              body: "Create activations, assign promoters, import products — backend routes from PRD §7.9."
+              body: isAdmin
+                ? "Create activations, assign promoters, import products — backend routes from PRD §7.9."
+                : "Create activations, assign promoters, and manage product lists."
             },
             {
               title: "Field team",
-              body: "Directory, roles, regions, session oversight — pair with `/admin/users` when available."
+              body: "Directory, roles, and regions — use Users in the sidebar to invite and manage accounts."
             },
             {
               title: "Submissions & analytics",
-              body: "Sales, surveys, flagged submissions, KPI overview — `/admin/overview` style feeds."
+              body: isAdmin
+                ? "Sales, surveys, flagged submissions, KPI overview — `/admin/overview` style feeds."
+                : "Sales, surveys, flagged submissions, and KPI overview."
             }
           ].map((item) => (
             <div key={item.title} className={cardClass}>

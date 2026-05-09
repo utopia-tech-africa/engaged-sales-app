@@ -32,6 +32,7 @@ model User {
   phone      String        @unique
   uniqueCode String        @unique
   role       UserRole
+  isActive   Boolean       @default(true)
   authProvider AuthProvider @default(credentials)
   googleSub  String?       @unique
   gender     Gender?

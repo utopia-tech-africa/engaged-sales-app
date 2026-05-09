@@ -26,6 +26,8 @@ import type {
   AdminGeofenceUpdateGeofenceBody,
   AdminRegionCreateRegionBody,
   AdminRegionUpdateRegionBody,
+  AdminUserCreateUserBody,
+  AdminUserUpdateUserBody,
   OauthCallbackDto,
   OauthStartDto,
   ProfileCompletionDto,
@@ -2155,6 +2157,394 @@ export const useAdminRegionUpdateRegion = <TError = void, TContext = unknown>(
   TContext
 > => {
   return useMutation(getAdminRegionUpdateRegionMutationOptions(options), queryClient);
+};
+
+export type adminUserListUsersResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminUserListUsersResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminUserListUsersResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminUserListUsersResponseSuccess = adminUserListUsersResponse200 & {
+  headers: Headers;
+};
+export type adminUserListUsersResponseError = (
+  | adminUserListUsersResponse401
+  | adminUserListUsersResponse403
+) & {
+  headers: Headers;
+};
+
+export type adminUserListUsersResponse =
+  | adminUserListUsersResponseSuccess
+  | adminUserListUsersResponseError;
+
+export const getAdminUserListUsersUrl = () => {
+  return `/admin/users`;
+};
+
+/**
+ * Supervisors see promoters and merchandizers only; admins see all users. Sends invite email (Resend) on create when `RESEND_API_KEY` is set.
+ * @summary List users (supervisor / admin)
+ */
+export const adminUserListUsers = async (
+  options?: RequestInit
+): Promise<adminUserListUsersResponse> => {
+  return orvalFetcher<adminUserListUsersResponse>(getAdminUserListUsersUrl(), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getAdminUserListUsersQueryKey = () => {
+  return [`/admin/users`] as const;
+};
+
+export const getAdminUserListUsersQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminUserListUsers>>,
+  TError = void
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminUserListUsers>>, TError, TData>>;
+  request?: SecondParameter<typeof orvalFetcher>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminUserListUsersQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminUserListUsers>>> = ({ signal }) =>
+    adminUserListUsers({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminUserListUsers>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminUserListUsersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminUserListUsers>>
+>;
+export type AdminUserListUsersQueryError = void;
+
+export function useAdminUserListUsers<
+  TData = Awaited<ReturnType<typeof adminUserListUsers>>,
+  TError = void
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminUserListUsers>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminUserListUsers>>,
+          TError,
+          Awaited<ReturnType<typeof adminUserListUsers>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminUserListUsers<
+  TData = Awaited<ReturnType<typeof adminUserListUsers>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminUserListUsers>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminUserListUsers>>,
+          TError,
+          Awaited<ReturnType<typeof adminUserListUsers>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminUserListUsers<
+  TData = Awaited<ReturnType<typeof adminUserListUsers>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminUserListUsers>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List users (supervisor / admin)
+ */
+
+export function useAdminUserListUsers<
+  TData = Awaited<ReturnType<typeof adminUserListUsers>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof adminUserListUsers>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminUserListUsersQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type adminUserCreateUserResponse201 = {
+  data: void;
+  status: 201;
+};
+
+export type adminUserCreateUserResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminUserCreateUserResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminUserCreateUserResponse409 = {
+  data: void;
+  status: 409;
+};
+
+export type adminUserCreateUserResponseSuccess = adminUserCreateUserResponse201 & {
+  headers: Headers;
+};
+export type adminUserCreateUserResponseError = (
+  | adminUserCreateUserResponse401
+  | adminUserCreateUserResponse403
+  | adminUserCreateUserResponse409
+) & {
+  headers: Headers;
+};
+
+export type adminUserCreateUserResponse =
+  | adminUserCreateUserResponseSuccess
+  | adminUserCreateUserResponseError;
+
+export const getAdminUserCreateUserUrl = () => {
+  return `/admin/users`;
+};
+
+/**
+ * Creates a credentials user and emails sign-in instructions via Resend when configured.
+ * @summary Create user (invite)
+ */
+export const adminUserCreateUser = async (
+  adminUserCreateUserBody: AdminUserCreateUserBody,
+  options?: RequestInit
+): Promise<adminUserCreateUserResponse> => {
+  return orvalFetcher<adminUserCreateUserResponse>(getAdminUserCreateUserUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(adminUserCreateUserBody)
+  });
+};
+
+export const getAdminUserCreateUserMutationOptions = <TError = void, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminUserCreateUser>>,
+    TError,
+    { data: AdminUserCreateUserBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminUserCreateUser>>,
+  TError,
+  { data: AdminUserCreateUserBody },
+  TContext
+> => {
+  const mutationKey = ["adminUserCreateUser"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminUserCreateUser>>,
+    { data: AdminUserCreateUserBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminUserCreateUser(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminUserCreateUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminUserCreateUser>>
+>;
+export type AdminUserCreateUserMutationBody = AdminUserCreateUserBody;
+export type AdminUserCreateUserMutationError = void;
+
+/**
+ * @summary Create user (invite)
+ */
+export const useAdminUserCreateUser = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminUserCreateUser>>,
+      TError,
+      { data: AdminUserCreateUserBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminUserCreateUser>>,
+  TError,
+  { data: AdminUserCreateUserBody },
+  TContext
+> => {
+  return useMutation(getAdminUserCreateUserMutationOptions(options), queryClient);
+};
+
+export type adminUserUpdateUserResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminUserUpdateUserResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminUserUpdateUserResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminUserUpdateUserResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminUserUpdateUserResponse409 = {
+  data: void;
+  status: 409;
+};
+
+export type adminUserUpdateUserResponseSuccess = adminUserUpdateUserResponse200 & {
+  headers: Headers;
+};
+export type adminUserUpdateUserResponseError = (
+  | adminUserUpdateUserResponse401
+  | adminUserUpdateUserResponse403
+  | adminUserUpdateUserResponse404
+  | adminUserUpdateUserResponse409
+) & {
+  headers: Headers;
+};
+
+export type adminUserUpdateUserResponse =
+  | adminUserUpdateUserResponseSuccess
+  | adminUserUpdateUserResponseError;
+
+export const getAdminUserUpdateUserUrl = (id: unknown) => {
+  return `/admin/users/${String(id)}`;
+};
+
+/**
+ * Partial update. Supervisors may edit promoters and merchandizers only. Only admins may assign supervisor or admin roles.
+ * @summary Update user
+ */
+export const adminUserUpdateUser = async (
+  id: unknown,
+  adminUserUpdateUserBody: AdminUserUpdateUserBody,
+  options?: RequestInit
+): Promise<adminUserUpdateUserResponse> => {
+  return orvalFetcher<adminUserUpdateUserResponse>(getAdminUserUpdateUserUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(adminUserUpdateUserBody)
+  });
+};
+
+export const getAdminUserUpdateUserMutationOptions = <TError = void, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminUserUpdateUser>>,
+    TError,
+    { id: unknown; data: AdminUserUpdateUserBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminUserUpdateUser>>,
+  TError,
+  { id: unknown; data: AdminUserUpdateUserBody },
+  TContext
+> => {
+  const mutationKey = ["adminUserUpdateUser"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminUserUpdateUser>>,
+    { id: unknown; data: AdminUserUpdateUserBody }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return adminUserUpdateUser(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminUserUpdateUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminUserUpdateUser>>
+>;
+export type AdminUserUpdateUserMutationBody = AdminUserUpdateUserBody;
+export type AdminUserUpdateUserMutationError = void;
+
+/**
+ * @summary Update user
+ */
+export const useAdminUserUpdateUser = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminUserUpdateUser>>,
+      TError,
+      { id: unknown; data: AdminUserUpdateUserBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminUserUpdateUser>>,
+  TError,
+  { id: unknown; data: AdminUserUpdateUserBody },
+  TContext
+> => {
+  return useMutation(getAdminUserUpdateUserMutationOptions(options), queryClient);
 };
 
 export type healthGetHealthResponse200 = {

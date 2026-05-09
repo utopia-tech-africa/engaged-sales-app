@@ -23,7 +23,8 @@ export class AuthRepository {
       where: {
         phone,
         uniqueCode,
-        role
+        role,
+        isActive: true
       }
     });
   }
