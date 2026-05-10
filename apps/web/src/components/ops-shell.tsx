@@ -10,14 +10,55 @@ import { calmMutedLinkClass, calmSecondaryButtonClass } from "@/lib/calm-ui";
 
 type NavItem = { href: string; label: string };
 
-const NAV_ITEMS: NavItem[] = [
-  { href: "/ops", label: "Overview" },
-  { href: "/ops/users", label: "Users" },
-  { href: "/ops/regions", label: "Regions" },
-  { href: "/ops/geofences", label: "Work areas" },
-  { href: "/ops/organization", label: "Organization" },
-  { href: "/ops/account", label: "Account" }
-];
+const navItemsForRole = (role: AuthUser["role"]): NavItem[] => {
+  const items: NavItem[] = [
+    { href: "/ops", label: "Overview" },
+    { href: "/ops/users", label: "Users" },
+    { href: "/ops/regions", label: "Regions" },
+    { href: "/ops/geofences", label: "Work areas" }
+  ];
+  if (role === "admin" || role === "supervisor") {
+    items.push({ href: "/ops/activations", label: "Activations" });
+  }
+  items.push(
+    { href: "/ops/organization", label: "Organization" },
+    { href: "/ops/account", label: "Account" }
+  );
+  return items;
+};
+
+type OpsNavLinksProps = {
+  role: AuthUser["role"];
+  onNavigate?: () => void;
+};
+
+const OpsNavLinks = ({ role, onNavigate }: OpsNavLinksProps): ReactElement => {
+  const pathname = usePathname();
+  const navLinkClass = (href: string): string => {
+    const active = pathname === href || (href !== "/ops" && pathname.startsWith(href));
+    return [
+      "block rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+      active
+        ? "bg-primary/15 text-primary"
+        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+    ].join(" ");
+  };
+
+  return (
+    <nav className="flex flex-col gap-1" aria-label="Operations">
+      {navItemsForRole(role).map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={navLinkClass(item.href)}
+          onClick={onNavigate}
+        >
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
+};
 
 type OpsShellProps = PropsWithChildren<{
   user: AuthUser;
@@ -31,33 +72,7 @@ export const OpsShell = ({
   onSignOut,
   isSigningOut
 }: OpsShellProps): ReactElement => {
-  const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  const navLinkClass = (href: string): string => {
-    const active = pathname === href || (href !== "/ops" && pathname.startsWith(href));
-    return [
-      "block rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-      active
-        ? "bg-primary/15 text-primary"
-        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-    ].join(" ");
-  };
-
-  const NavLinks = ({ onNavigate }: { onNavigate?: () => void }): ReactElement => (
-    <nav className="flex flex-col gap-1" aria-label="Operations">
-      {NAV_ITEMS.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className={navLinkClass(item.href)}
-          onClick={onNavigate}
-        >
-          {item.label}
-        </Link>
-      ))}
-    </nav>
-  );
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background">
@@ -73,7 +88,7 @@ export const OpsShell = ({
             </span>
           </div>
           <div className="flex flex-1 flex-col p-3">
-            <NavLinks />
+            <OpsNavLinks role={user.role} />
             <div className="mt-auto border-t border-border pt-4">
               <p className="truncate px-3 text-xs text-muted-foreground" title={user.fullName}>
                 {user.fullName}
@@ -124,7 +139,8 @@ export const OpsShell = ({
             </button>
           </div>
           <div className="flex flex-1 flex-col p-3">
-            <NavLinks
+            <OpsNavLinks
+              role={user.role}
               onNavigate={() => {
                 setMobileNavOpen(false);
               }}

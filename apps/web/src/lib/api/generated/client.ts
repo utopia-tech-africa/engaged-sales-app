@@ -22,6 +22,10 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AdminActivationAddActivationProductBody,
+  AdminActivationAddToRosterBody,
+  AdminActivationCreateActivationBody,
+  AdminActivationUpdateActivationBody,
   AdminGeofenceCreateGeofenceBody,
   AdminGeofenceUpdateGeofenceBody,
   AdminRegionCreateRegionBody,
@@ -2157,6 +2161,1093 @@ export const useAdminRegionUpdateRegion = <TError = void, TContext = unknown>(
   TContext
 > => {
   return useMutation(getAdminRegionUpdateRegionMutationOptions(options), queryClient);
+};
+
+export type adminActivationListActivationsResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminActivationListActivationsResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminActivationListActivationsResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminActivationListActivationsResponseSuccess =
+  adminActivationListActivationsResponse200 & {
+    headers: Headers;
+  };
+export type adminActivationListActivationsResponseError = (
+  | adminActivationListActivationsResponse401
+  | adminActivationListActivationsResponse403
+) & {
+  headers: Headers;
+};
+
+export type adminActivationListActivationsResponse =
+  | adminActivationListActivationsResponseSuccess
+  | adminActivationListActivationsResponseError;
+
+export const getAdminActivationListActivationsUrl = () => {
+  return `/admin/activations`;
+};
+
+/**
+ * Campaigns / activations with region and counts.
+ * @summary List activations
+ */
+export const adminActivationListActivations = async (
+  options?: RequestInit
+): Promise<adminActivationListActivationsResponse> => {
+  return orvalFetcher<adminActivationListActivationsResponse>(
+    getAdminActivationListActivationsUrl(),
+    {
+      ...options,
+      method: "GET"
+    }
+  );
+};
+
+export const getAdminActivationListActivationsQueryKey = () => {
+  return [`/admin/activations`] as const;
+};
+
+export const getAdminActivationListActivationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminActivationListActivations>>,
+  TError = void
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof adminActivationListActivations>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminActivationListActivationsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminActivationListActivations>>> = ({
+    signal
+  }) => adminActivationListActivations({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminActivationListActivations>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminActivationListActivationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminActivationListActivations>>
+>;
+export type AdminActivationListActivationsQueryError = void;
+
+export function useAdminActivationListActivations<
+  TData = Awaited<ReturnType<typeof adminActivationListActivations>>,
+  TError = void
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminActivationListActivations>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminActivationListActivations>>,
+          TError,
+          Awaited<ReturnType<typeof adminActivationListActivations>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminActivationListActivations<
+  TData = Awaited<ReturnType<typeof adminActivationListActivations>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminActivationListActivations>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminActivationListActivations>>,
+          TError,
+          Awaited<ReturnType<typeof adminActivationListActivations>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminActivationListActivations<
+  TData = Awaited<ReturnType<typeof adminActivationListActivations>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminActivationListActivations>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List activations
+ */
+
+export function useAdminActivationListActivations<
+  TData = Awaited<ReturnType<typeof adminActivationListActivations>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminActivationListActivations>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminActivationListActivationsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type adminActivationCreateActivationResponse201 = {
+  data: void;
+  status: 201;
+};
+
+export type adminActivationCreateActivationResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminActivationCreateActivationResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminActivationCreateActivationResponse409 = {
+  data: void;
+  status: 409;
+};
+
+export type adminActivationCreateActivationResponseSuccess =
+  adminActivationCreateActivationResponse201 & {
+    headers: Headers;
+  };
+export type adminActivationCreateActivationResponseError = (
+  | adminActivationCreateActivationResponse401
+  | adminActivationCreateActivationResponse403
+  | adminActivationCreateActivationResponse409
+) & {
+  headers: Headers;
+};
+
+export type adminActivationCreateActivationResponse =
+  | adminActivationCreateActivationResponseSuccess
+  | adminActivationCreateActivationResponseError;
+
+export const getAdminActivationCreateActivationUrl = () => {
+  return `/admin/activations`;
+};
+
+/**
+ * Creates an activation; slug is derived from name if omitted.
+ * @summary Create activation
+ */
+export const adminActivationCreateActivation = async (
+  adminActivationCreateActivationBody: AdminActivationCreateActivationBody,
+  options?: RequestInit
+): Promise<adminActivationCreateActivationResponse> => {
+  return orvalFetcher<adminActivationCreateActivationResponse>(
+    getAdminActivationCreateActivationUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(adminActivationCreateActivationBody)
+    }
+  );
+};
+
+export const getAdminActivationCreateActivationMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminActivationCreateActivation>>,
+    TError,
+    { data: AdminActivationCreateActivationBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminActivationCreateActivation>>,
+  TError,
+  { data: AdminActivationCreateActivationBody },
+  TContext
+> => {
+  const mutationKey = ["adminActivationCreateActivation"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminActivationCreateActivation>>,
+    { data: AdminActivationCreateActivationBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminActivationCreateActivation(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminActivationCreateActivationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminActivationCreateActivation>>
+>;
+export type AdminActivationCreateActivationMutationBody = AdminActivationCreateActivationBody;
+export type AdminActivationCreateActivationMutationError = void;
+
+/**
+ * @summary Create activation
+ */
+export const useAdminActivationCreateActivation = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminActivationCreateActivation>>,
+      TError,
+      { data: AdminActivationCreateActivationBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminActivationCreateActivation>>,
+  TError,
+  { data: AdminActivationCreateActivationBody },
+  TContext
+> => {
+  return useMutation(getAdminActivationCreateActivationMutationOptions(options), queryClient);
+};
+
+export type adminActivationGetActivationResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminActivationGetActivationResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminActivationGetActivationResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminActivationGetActivationResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminActivationGetActivationResponseSuccess =
+  adminActivationGetActivationResponse200 & {
+    headers: Headers;
+  };
+export type adminActivationGetActivationResponseError = (
+  | adminActivationGetActivationResponse401
+  | adminActivationGetActivationResponse403
+  | adminActivationGetActivationResponse404
+) & {
+  headers: Headers;
+};
+
+export type adminActivationGetActivationResponse =
+  | adminActivationGetActivationResponseSuccess
+  | adminActivationGetActivationResponseError;
+
+export const getAdminActivationGetActivationUrl = (id: unknown) => {
+  return `/admin/activations/${String(id)}`;
+};
+
+/**
+ * @summary Get activation with products and roster
+ */
+export const adminActivationGetActivation = async (
+  id: unknown,
+  options?: RequestInit
+): Promise<adminActivationGetActivationResponse> => {
+  return orvalFetcher<adminActivationGetActivationResponse>(
+    getAdminActivationGetActivationUrl(id),
+    {
+      ...options,
+      method: "GET"
+    }
+  );
+};
+
+export const getAdminActivationGetActivationQueryKey = (id: unknown) => {
+  return [`/admin/activations/${String(id)}`] as const;
+};
+
+export const getAdminActivationGetActivationQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminActivationGetActivation>>,
+  TError = void
+>(
+  id: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminActivationGetActivation>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminActivationGetActivationQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminActivationGetActivation>>> = ({
+    signal
+  }) => adminActivationGetActivation(id, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminActivationGetActivation>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminActivationGetActivationQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminActivationGetActivation>>
+>;
+export type AdminActivationGetActivationQueryError = void;
+
+export function useAdminActivationGetActivation<
+  TData = Awaited<ReturnType<typeof adminActivationGetActivation>>,
+  TError = void
+>(
+  id: unknown,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminActivationGetActivation>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminActivationGetActivation>>,
+          TError,
+          Awaited<ReturnType<typeof adminActivationGetActivation>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminActivationGetActivation<
+  TData = Awaited<ReturnType<typeof adminActivationGetActivation>>,
+  TError = void
+>(
+  id: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminActivationGetActivation>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminActivationGetActivation>>,
+          TError,
+          Awaited<ReturnType<typeof adminActivationGetActivation>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminActivationGetActivation<
+  TData = Awaited<ReturnType<typeof adminActivationGetActivation>>,
+  TError = void
+>(
+  id: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminActivationGetActivation>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get activation with products and roster
+ */
+
+export function useAdminActivationGetActivation<
+  TData = Awaited<ReturnType<typeof adminActivationGetActivation>>,
+  TError = void
+>(
+  id: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminActivationGetActivation>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminActivationGetActivationQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type adminActivationUpdateActivationResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminActivationUpdateActivationResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminActivationUpdateActivationResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminActivationUpdateActivationResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminActivationUpdateActivationResponse409 = {
+  data: void;
+  status: 409;
+};
+
+export type adminActivationUpdateActivationResponseSuccess =
+  adminActivationUpdateActivationResponse200 & {
+    headers: Headers;
+  };
+export type adminActivationUpdateActivationResponseError = (
+  | adminActivationUpdateActivationResponse401
+  | adminActivationUpdateActivationResponse403
+  | adminActivationUpdateActivationResponse404
+  | adminActivationUpdateActivationResponse409
+) & {
+  headers: Headers;
+};
+
+export type adminActivationUpdateActivationResponse =
+  | adminActivationUpdateActivationResponseSuccess
+  | adminActivationUpdateActivationResponseError;
+
+export const getAdminActivationUpdateActivationUrl = (id: unknown) => {
+  return `/admin/activations/${String(id)}`;
+};
+
+/**
+ * Partial update. Send empty regionId to clear region.
+ * @summary Update activation
+ */
+export const adminActivationUpdateActivation = async (
+  id: unknown,
+  adminActivationUpdateActivationBody: AdminActivationUpdateActivationBody,
+  options?: RequestInit
+): Promise<adminActivationUpdateActivationResponse> => {
+  return orvalFetcher<adminActivationUpdateActivationResponse>(
+    getAdminActivationUpdateActivationUrl(id),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(adminActivationUpdateActivationBody)
+    }
+  );
+};
+
+export const getAdminActivationUpdateActivationMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminActivationUpdateActivation>>,
+    TError,
+    { id: unknown; data: AdminActivationUpdateActivationBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminActivationUpdateActivation>>,
+  TError,
+  { id: unknown; data: AdminActivationUpdateActivationBody },
+  TContext
+> => {
+  const mutationKey = ["adminActivationUpdateActivation"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminActivationUpdateActivation>>,
+    { id: unknown; data: AdminActivationUpdateActivationBody }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return adminActivationUpdateActivation(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminActivationUpdateActivationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminActivationUpdateActivation>>
+>;
+export type AdminActivationUpdateActivationMutationBody = AdminActivationUpdateActivationBody;
+export type AdminActivationUpdateActivationMutationError = void;
+
+/**
+ * @summary Update activation
+ */
+export const useAdminActivationUpdateActivation = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminActivationUpdateActivation>>,
+      TError,
+      { id: unknown; data: AdminActivationUpdateActivationBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminActivationUpdateActivation>>,
+  TError,
+  { id: unknown; data: AdminActivationUpdateActivationBody },
+  TContext
+> => {
+  return useMutation(getAdminActivationUpdateActivationMutationOptions(options), queryClient);
+};
+
+export type adminActivationAddActivationProductResponse201 = {
+  data: void;
+  status: 201;
+};
+
+export type adminActivationAddActivationProductResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminActivationAddActivationProductResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminActivationAddActivationProductResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminActivationAddActivationProductResponseSuccess =
+  adminActivationAddActivationProductResponse201 & {
+    headers: Headers;
+  };
+export type adminActivationAddActivationProductResponseError = (
+  | adminActivationAddActivationProductResponse401
+  | adminActivationAddActivationProductResponse403
+  | adminActivationAddActivationProductResponse404
+) & {
+  headers: Headers;
+};
+
+export type adminActivationAddActivationProductResponse =
+  | adminActivationAddActivationProductResponseSuccess
+  | adminActivationAddActivationProductResponseError;
+
+export const getAdminActivationAddActivationProductUrl = (id: unknown) => {
+  return `/admin/activations/${String(id)}/products`;
+};
+
+/**
+ * @summary Add product line to activation
+ */
+export const adminActivationAddActivationProduct = async (
+  id: unknown,
+  adminActivationAddActivationProductBody: AdminActivationAddActivationProductBody,
+  options?: RequestInit
+): Promise<adminActivationAddActivationProductResponse> => {
+  return orvalFetcher<adminActivationAddActivationProductResponse>(
+    getAdminActivationAddActivationProductUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(adminActivationAddActivationProductBody)
+    }
+  );
+};
+
+export const getAdminActivationAddActivationProductMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminActivationAddActivationProduct>>,
+    TError,
+    { id: unknown; data: AdminActivationAddActivationProductBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminActivationAddActivationProduct>>,
+  TError,
+  { id: unknown; data: AdminActivationAddActivationProductBody },
+  TContext
+> => {
+  const mutationKey = ["adminActivationAddActivationProduct"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminActivationAddActivationProduct>>,
+    { id: unknown; data: AdminActivationAddActivationProductBody }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return adminActivationAddActivationProduct(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminActivationAddActivationProductMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminActivationAddActivationProduct>>
+>;
+export type AdminActivationAddActivationProductMutationBody =
+  AdminActivationAddActivationProductBody;
+export type AdminActivationAddActivationProductMutationError = void;
+
+/**
+ * @summary Add product line to activation
+ */
+export const useAdminActivationAddActivationProduct = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminActivationAddActivationProduct>>,
+      TError,
+      { id: unknown; data: AdminActivationAddActivationProductBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminActivationAddActivationProduct>>,
+  TError,
+  { id: unknown; data: AdminActivationAddActivationProductBody },
+  TContext
+> => {
+  return useMutation(getAdminActivationAddActivationProductMutationOptions(options), queryClient);
+};
+
+export type adminActivationRemoveActivationProductResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminActivationRemoveActivationProductResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminActivationRemoveActivationProductResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminActivationRemoveActivationProductResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminActivationRemoveActivationProductResponseSuccess =
+  adminActivationRemoveActivationProductResponse200 & {
+    headers: Headers;
+  };
+export type adminActivationRemoveActivationProductResponseError = (
+  | adminActivationRemoveActivationProductResponse401
+  | adminActivationRemoveActivationProductResponse403
+  | adminActivationRemoveActivationProductResponse404
+) & {
+  headers: Headers;
+};
+
+export type adminActivationRemoveActivationProductResponse =
+  | adminActivationRemoveActivationProductResponseSuccess
+  | adminActivationRemoveActivationProductResponseError;
+
+export const getAdminActivationRemoveActivationProductUrl = (id: unknown, productId: unknown) => {
+  return `/admin/activations/${String(id)}/products/${String(productId)}`;
+};
+
+/**
+ * @summary Remove product line from activation
+ */
+export const adminActivationRemoveActivationProduct = async (
+  id: unknown,
+  productId: unknown,
+  options?: RequestInit
+): Promise<adminActivationRemoveActivationProductResponse> => {
+  return orvalFetcher<adminActivationRemoveActivationProductResponse>(
+    getAdminActivationRemoveActivationProductUrl(id, productId),
+    {
+      ...options,
+      method: "DELETE"
+    }
+  );
+};
+
+export const getAdminActivationRemoveActivationProductMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminActivationRemoveActivationProduct>>,
+    TError,
+    { id: unknown; productId: unknown },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminActivationRemoveActivationProduct>>,
+  TError,
+  { id: unknown; productId: unknown },
+  TContext
+> => {
+  const mutationKey = ["adminActivationRemoveActivationProduct"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminActivationRemoveActivationProduct>>,
+    { id: unknown; productId: unknown }
+  > = (props) => {
+    const { id, productId } = props ?? {};
+
+    return adminActivationRemoveActivationProduct(id, productId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminActivationRemoveActivationProductMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminActivationRemoveActivationProduct>>
+>;
+
+export type AdminActivationRemoveActivationProductMutationError = void;
+
+/**
+ * @summary Remove product line from activation
+ */
+export const useAdminActivationRemoveActivationProduct = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminActivationRemoveActivationProduct>>,
+      TError,
+      { id: unknown; productId: unknown },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminActivationRemoveActivationProduct>>,
+  TError,
+  { id: unknown; productId: unknown },
+  TContext
+> => {
+  return useMutation(
+    getAdminActivationRemoveActivationProductMutationOptions(options),
+    queryClient
+  );
+};
+
+export type adminActivationAddToRosterResponse201 = {
+  data: void;
+  status: 201;
+};
+
+export type adminActivationAddToRosterResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminActivationAddToRosterResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminActivationAddToRosterResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminActivationAddToRosterResponse409 = {
+  data: void;
+  status: 409;
+};
+
+export type adminActivationAddToRosterResponseSuccess = adminActivationAddToRosterResponse201 & {
+  headers: Headers;
+};
+export type adminActivationAddToRosterResponseError = (
+  | adminActivationAddToRosterResponse401
+  | adminActivationAddToRosterResponse403
+  | adminActivationAddToRosterResponse404
+  | adminActivationAddToRosterResponse409
+) & {
+  headers: Headers;
+};
+
+export type adminActivationAddToRosterResponse =
+  | adminActivationAddToRosterResponseSuccess
+  | adminActivationAddToRosterResponseError;
+
+export const getAdminActivationAddToRosterUrl = (id: unknown) => {
+  return `/admin/activations/${String(id)}/roster`;
+};
+
+/**
+ * Only active promoters and merchandizers may be assigned.
+ * @summary Add promoter or merchandizer to roster
+ */
+export const adminActivationAddToRoster = async (
+  id: unknown,
+  adminActivationAddToRosterBody: AdminActivationAddToRosterBody,
+  options?: RequestInit
+): Promise<adminActivationAddToRosterResponse> => {
+  return orvalFetcher<adminActivationAddToRosterResponse>(getAdminActivationAddToRosterUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(adminActivationAddToRosterBody)
+  });
+};
+
+export const getAdminActivationAddToRosterMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminActivationAddToRoster>>,
+    TError,
+    { id: unknown; data: AdminActivationAddToRosterBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminActivationAddToRoster>>,
+  TError,
+  { id: unknown; data: AdminActivationAddToRosterBody },
+  TContext
+> => {
+  const mutationKey = ["adminActivationAddToRoster"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminActivationAddToRoster>>,
+    { id: unknown; data: AdminActivationAddToRosterBody }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return adminActivationAddToRoster(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminActivationAddToRosterMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminActivationAddToRoster>>
+>;
+export type AdminActivationAddToRosterMutationBody = AdminActivationAddToRosterBody;
+export type AdminActivationAddToRosterMutationError = void;
+
+/**
+ * @summary Add promoter or merchandizer to roster
+ */
+export const useAdminActivationAddToRoster = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminActivationAddToRoster>>,
+      TError,
+      { id: unknown; data: AdminActivationAddToRosterBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminActivationAddToRoster>>,
+  TError,
+  { id: unknown; data: AdminActivationAddToRosterBody },
+  TContext
+> => {
+  return useMutation(getAdminActivationAddToRosterMutationOptions(options), queryClient);
+};
+
+export type adminActivationRemoveFromRosterResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminActivationRemoveFromRosterResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminActivationRemoveFromRosterResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminActivationRemoveFromRosterResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminActivationRemoveFromRosterResponseSuccess =
+  adminActivationRemoveFromRosterResponse200 & {
+    headers: Headers;
+  };
+export type adminActivationRemoveFromRosterResponseError = (
+  | adminActivationRemoveFromRosterResponse401
+  | adminActivationRemoveFromRosterResponse403
+  | adminActivationRemoveFromRosterResponse404
+) & {
+  headers: Headers;
+};
+
+export type adminActivationRemoveFromRosterResponse =
+  | adminActivationRemoveFromRosterResponseSuccess
+  | adminActivationRemoveFromRosterResponseError;
+
+export const getAdminActivationRemoveFromRosterUrl = (id: unknown, userId: unknown) => {
+  return `/admin/activations/${String(id)}/roster/${String(userId)}`;
+};
+
+/**
+ * @summary Remove user from roster
+ */
+export const adminActivationRemoveFromRoster = async (
+  id: unknown,
+  userId: unknown,
+  options?: RequestInit
+): Promise<adminActivationRemoveFromRosterResponse> => {
+  return orvalFetcher<adminActivationRemoveFromRosterResponse>(
+    getAdminActivationRemoveFromRosterUrl(id, userId),
+    {
+      ...options,
+      method: "DELETE"
+    }
+  );
+};
+
+export const getAdminActivationRemoveFromRosterMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminActivationRemoveFromRoster>>,
+    TError,
+    { id: unknown; userId: unknown },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminActivationRemoveFromRoster>>,
+  TError,
+  { id: unknown; userId: unknown },
+  TContext
+> => {
+  const mutationKey = ["adminActivationRemoveFromRoster"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminActivationRemoveFromRoster>>,
+    { id: unknown; userId: unknown }
+  > = (props) => {
+    const { id, userId } = props ?? {};
+
+    return adminActivationRemoveFromRoster(id, userId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminActivationRemoveFromRosterMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminActivationRemoveFromRoster>>
+>;
+
+export type AdminActivationRemoveFromRosterMutationError = void;
+
+/**
+ * @summary Remove user from roster
+ */
+export const useAdminActivationRemoveFromRoster = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminActivationRemoveFromRoster>>,
+      TError,
+      { id: unknown; userId: unknown },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminActivationRemoveFromRoster>>,
+  TError,
+  { id: unknown; userId: unknown },
+  TContext
+> => {
+  return useMutation(getAdminActivationRemoveFromRosterMutationOptions(options), queryClient);
 };
 
 export type adminUserListUsersResponse200 = {

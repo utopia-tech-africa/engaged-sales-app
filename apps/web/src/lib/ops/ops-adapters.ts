@@ -79,3 +79,96 @@ const adminUserListSchema = z.array(adminUserRowSchema);
 export const parseAdminUsersFromOrval = (result: unknown): AdminUserRow[] => {
   return adminUserListSchema.parse(unwrapOrvalResponseBody(result));
 };
+
+const activationListRowSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  slug: z.string(),
+  description: z.string().nullable(),
+  regionId: z.string().nullable(),
+  startsAt: z.string(),
+  endsAt: z.string().nullable(),
+  isActive: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  region: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      slug: z.string()
+    })
+    .nullable(),
+  _count: z.object({
+    products: z.number(),
+    roster: z.number()
+  })
+});
+
+export type ActivationListRow = z.infer<typeof activationListRowSchema>;
+
+const activationListSchema = z.array(activationListRowSchema);
+
+export const parseActivationsFromOrval = (result: unknown): ActivationListRow[] => {
+  return activationListSchema.parse(unwrapOrvalResponseBody(result));
+};
+
+const activationProductSchema = z.object({
+  id: z.string(),
+  activationId: z.string(),
+  name: z.string(),
+  sku: z.string().nullable(),
+  quantity: z.number().int().min(1).optional().default(1),
+  sortOrder: z.number(),
+  createdAt: z.string(),
+  updatedAt: z.string()
+});
+
+export type ActivationProductRow = z.infer<typeof activationProductSchema>;
+
+export const parseActivationProductRow = (value: unknown): ActivationProductRow => {
+  return activationProductSchema.parse(unwrapOrvalResponseBody(value));
+};
+
+const activationRosterEntrySchema = z.object({
+  id: z.string(),
+  activationId: z.string(),
+  userId: z.string(),
+  createdAt: z.string(),
+  user: z.object({
+    id: z.string(),
+    fullName: z.string(),
+    phone: z.string(),
+    role: z.enum(["promoter", "merchandizer", "supervisor", "admin"]),
+    isActive: z.boolean()
+  })
+});
+
+export type ActivationRosterEntry = z.infer<typeof activationRosterEntrySchema>;
+
+const activationDetailSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  slug: z.string(),
+  description: z.string().nullable(),
+  regionId: z.string().nullable(),
+  startsAt: z.string(),
+  endsAt: z.string().nullable(),
+  isActive: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  region: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      slug: z.string()
+    })
+    .nullable(),
+  products: z.array(activationProductSchema),
+  roster: z.array(activationRosterEntrySchema)
+});
+
+export type ActivationDetail = z.infer<typeof activationDetailSchema>;
+
+export const parseActivationDetailFromOrval = (result: unknown): ActivationDetail => {
+  return activationDetailSchema.parse(unwrapOrvalResponseBody(result));
+};

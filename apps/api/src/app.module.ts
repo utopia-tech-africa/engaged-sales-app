@@ -3,6 +3,7 @@ import type { ConfigModuleOptions } from "@nestjs/config";
 import { ConfigModule } from "@nestjs/config";
 
 import { validateEnvironment } from "./config/environment";
+import { ActivationAdminModule } from "./modules/activation/activation-admin.module";
 import { AdminUserAdminModule } from "./modules/admin-user/admin-user-admin.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { GeofenceAdminModule } from "./modules/geofence/geofence-admin.module";
@@ -36,6 +37,7 @@ const APP_IMPORTS = asNestImports(
   AuthModule,
   GeofenceAdminModule,
   RegionAdminModule,
+  ActivationAdminModule,
   AdminUserAdminModule,
   HealthModule,
   MeModule

@@ -10,6 +10,8 @@ const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark
 
 export default function OpsOrganizationPage(): ReactElement {
   const isAdmin = useAuthStore((state) => state.user?.role === "admin");
+  const role = useAuthStore((state) => state.user?.role);
+  const canManageActivations = role === "admin" || role === "supervisor";
 
   return (
     <div className="space-y-8">
@@ -17,8 +19,10 @@ export default function OpsOrganizationPage(): ReactElement {
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Organization</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
           {isAdmin
-            ? "Configure regions, users, and assignments. Subwholesales and activations will follow as admin APIs ship."
-            : "Configure regions, users, and assignments. Subwholesales and activations will follow in a future release."}
+            ? "Configure regions, users, and assignments. Subwholesales remain on the roadmap."
+            : canManageActivations
+              ? "Configure regions, users, and assignments. Subwholesales remain on the roadmap."
+              : "Configure regions, users, and assignments. Subwholesales and supervisor-only tools follow in future releases."}
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
@@ -82,15 +86,21 @@ export default function OpsOrganizationPage(): ReactElement {
             {isAdmin ? (
               <>
                 {" "}
-                Planned: <code className="text-xs">/admin/activations</code> and related routes.
+                Admin API: <code className="text-xs">/admin/activations</code>.
               </>
-            ) : (
-              " Planned for a future release."
-            )}
+            ) : null}
           </p>
-          <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-            Coming soon
-          </span>
+          {canManageActivations ? (
+            <p className="mt-3">
+              <Link href="/ops/activations" className={calmMutedLinkClass}>
+                Open activations →
+              </Link>
+            </p>
+          ) : (
+            <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+              Supervisor or admin
+            </span>
+          )}
         </div>
       </div>
     </div>

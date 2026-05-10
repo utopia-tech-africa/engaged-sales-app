@@ -4,6 +4,7 @@ import Link from "next/link";
 import { type ReactElement } from "react";
 
 import {
+  useAdminActivationListActivations,
   useAdminGeofenceListGeofences,
   useAdminRegionListRegions,
   useAdminUserListUsers,
@@ -14,6 +15,7 @@ import {
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseMeProfileFromOrval, parseSessionsFromOrval } from "@/lib/auth/orval-auth-adapter";
 import {
+  parseActivationsFromOrval,
   parseAdminUsersFromOrval,
   parseGeofencesFromOrval,
   parseHealthFromOrval,
@@ -25,6 +27,8 @@ const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark
 export default function OpsOverviewPage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
   const isAdmin = useAuthStore((state) => state.user?.role === "admin");
+  const role = useAuthStore((state) => state.user?.role);
+  const canManageActivations = role === "admin" || role === "supervisor";
 
   const healthQuery = useHealthGetHealth({
     query: {
@@ -68,6 +72,13 @@ export default function OpsOverviewPage(): ReactElement {
     }
   });
 
+  const activationsQuery = useAdminActivationListActivations({
+    query: {
+      enabled: accessToken !== null && canManageActivations,
+      select: (r) => parseActivationsFromOrval(r)
+    }
+  });
+
   const sessionCount = sessionsQuery.data?.sessions.length ?? "—";
   const activeFences = geofencesQuery.data?.filter((g) => g.isActive).length ?? "—";
   const totalFences = geofencesQuery.data?.length ?? "—";
@@ -86,7 +97,11 @@ export default function OpsOverviewPage(): ReactElement {
       <div
         className={[
           "grid gap-4 sm:grid-cols-2",
-          isAdmin ? "xl:grid-cols-6" : "xl:grid-cols-5"
+          isAdmin && canManageActivations
+            ? "xl:grid-cols-7"
+            : isAdmin || canManageActivations
+              ? "xl:grid-cols-6"
+              : "xl:grid-cols-5"
         ].join(" ")}
       >
         {isAdmin ? (
@@ -130,6 +145,30 @@ export default function OpsOverviewPage(): ReactElement {
             Manage →
           </Link>
         </div>
+        {canManageActivations ? (
+          <div className={cardClass}>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Activations
+            </p>
+            {activationsQuery.isLoading ? (
+              <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
+            ) : null}
+            {activationsQuery.isError ? (
+              <p className="mt-2 text-sm text-destructive">Could not load</p>
+            ) : null}
+            {activationsQuery.data !== undefined ? (
+              <p className="mt-2 text-2xl font-semibold text-foreground">
+                {activationsQuery.data.length}
+              </p>
+            ) : null}
+            <Link
+              href="/ops/activations"
+              className="mt-3 inline-block text-sm font-medium text-primary"
+            >
+              Manage →
+            </Link>
+          </div>
+        ) : null}
         <div className={cardClass}>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Regions
@@ -199,36 +238,53 @@ export default function OpsOverviewPage(): ReactElement {
         <h2 className="text-lg font-semibold text-foreground">Platform modules</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {isAdmin
-            ? "Placeholders for roadmap capabilities (activations, sales, surveys, live map). Wire these to the API as endpoints land."
-            : "Coming capabilities: activations, sales capture, surveys, and live map views."}
+            ? "Roadmap capabilities beyond activations (sales capture, surveys, live map) will plug in here as APIs ship."
+            : canManageActivations
+              ? "Beyond activations: sales capture, surveys, and live map views will appear here over time."
+              : "Coming capabilities: sales capture, surveys, and live map views."}
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[
-            {
-              title: "Activations & rosters",
-              body: isAdmin
-                ? "Create activations, assign promoters, import products — backend routes from PRD §7.9."
-                : "Create activations, assign promoters, and manage product lists."
-            },
-            {
-              title: "Field team",
-              body: "Directory, roles, and regions — use Users in the sidebar to invite and manage accounts."
-            },
-            {
-              title: "Submissions & analytics",
-              body: isAdmin
-                ? "Sales, surveys, flagged submissions, KPI overview — `/admin/overview` style feeds."
-                : "Sales, surveys, flagged submissions, and KPI overview."
-            }
-          ].map((item) => (
-            <div key={item.title} className={cardClass}>
-              <h3 className="font-medium text-foreground">{item.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+          <div className={cardClass}>
+            <h3 className="font-medium text-foreground">Activations & rosters</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {canManageActivations
+                ? "Campaigns with product lines and a field roster of promoters and merchandizers."
+                : "Supervisors and admins create campaigns, product lists, and promoter rosters."}
+            </p>
+            {canManageActivations ? (
+              <Link
+                href="/ops/activations"
+                className="mt-3 inline-block text-sm font-medium text-primary"
+              >
+                Open →
+              </Link>
+            ) : (
               <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-                Coming soon
+                Supervisor / admin
               </span>
-            </div>
-          ))}
+            )}
+          </div>
+          <div className={cardClass}>
+            <h3 className="font-medium text-foreground">Field team</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Directory, roles, and regions — use Users in the sidebar to invite and manage
+              accounts.
+            </p>
+            <Link href="/ops/users" className="mt-3 inline-block text-sm font-medium text-primary">
+              Users →
+            </Link>
+          </div>
+          <div className={cardClass}>
+            <h3 className="font-medium text-foreground">Submissions & analytics</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {isAdmin
+                ? "Sales, surveys, flagged submissions, KPI overview — `/admin/overview` style feeds."
+                : "Sales, surveys, flagged submissions, and KPI overview."}
+            </p>
+            <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+              Coming soon
+            </span>
+          </div>
         </div>
       </div>
     </div>

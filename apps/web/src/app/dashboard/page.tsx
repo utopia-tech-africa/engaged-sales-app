@@ -11,7 +11,7 @@ import {
   useMeGetMe,
   useMeUpdateMeLocation
 } from "@/lib/api/generated/client";
-import { useAuthStore } from "@/lib/auth/auth-store";
+import { useAuthStore, useAuthStoreHydrated } from "@/lib/auth/auth-store";
 import {
   parseLocationPingFromOrval,
   parseMeProfileFromOrval,
@@ -28,15 +28,16 @@ import { isOpsRole } from "@/lib/ops/ops-adapters";
 
 export default function DashboardPage(): ReactElement {
   const router = useRouter();
+  const authHydrated = useAuthStoreHydrated();
   const accessToken = useAuthStore((state) => state.accessToken);
   const refreshToken = useAuthStore((state) => state.refreshToken);
   const clearSession = useAuthStore((state) => state.clearSession);
 
   useEffect(() => {
-    if (accessToken === null) {
+    if (authHydrated && accessToken === null) {
       router.replace("/auth/sign-in");
     }
-  }, [accessToken, router]);
+  }, [authHydrated, accessToken, router]);
 
   const meQuery = useMeGetMe({
     query: {
@@ -106,8 +107,8 @@ export default function DashboardPage(): ReactElement {
     })();
   };
 
-  if (accessToken === null) {
-    return <MobileShell title="Redirecting..." subtitle="Taking you to sign in." />;
+  if (!authHydrated || accessToken === null) {
+    return <MobileShell title="Loading…" subtitle="Restoring your session." />;
   }
 
   return (

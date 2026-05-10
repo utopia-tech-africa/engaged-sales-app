@@ -5,11 +5,12 @@ import { type PropsWithChildren, type ReactElement, useEffect } from "react";
 
 import { OpsShell } from "@/components/ops-shell";
 import { useAuthSignOut } from "@/lib/api/generated/client";
-import { useAuthStore } from "@/lib/auth/auth-store";
+import { useAuthStore, useAuthStoreHydrated } from "@/lib/auth/auth-store";
 import { isOpsRole } from "@/lib/ops/ops-adapters";
 
 export const OpsLayoutClient = ({ children }: PropsWithChildren): ReactElement => {
   const router = useRouter();
+  const authHydrated = useAuthStoreHydrated();
   const accessToken = useAuthStore((state) => state.accessToken);
   const refreshToken = useAuthStore((state) => state.refreshToken);
   const user = useAuthStore((state) => state.user);
@@ -17,10 +18,10 @@ export const OpsLayoutClient = ({ children }: PropsWithChildren): ReactElement =
   const signOutMutation = useAuthSignOut();
 
   useEffect(() => {
-    if (accessToken === null) {
+    if (authHydrated && accessToken === null) {
       router.replace("/auth/sign-in");
     }
-  }, [accessToken, router]);
+  }, [authHydrated, accessToken, router]);
 
   useEffect(() => {
     if (user !== null && !isOpsRole(user.role)) {
@@ -38,7 +39,7 @@ export const OpsLayoutClient = ({ children }: PropsWithChildren): ReactElement =
     })();
   };
 
-  if (accessToken === null || user === null) {
+  if (!authHydrated || accessToken === null || user === null) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
         Loading…
