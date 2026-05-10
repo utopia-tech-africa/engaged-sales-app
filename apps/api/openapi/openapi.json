@@ -1,0 +1,1765 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/auth/sign-up": {
+      "post": {
+        "description": "Creates a new promoter user and returns access/refresh tokens.",
+        "operationId": "Auth_signUp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpDto"
+              },
+              "examples": {
+                "default": {
+                  "value": {
+                    "fullName": "Jamal Salim",
+                    "phone": "+254712345678",
+                    "gender": "male",
+                    "regionId": "nairobi-west"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "user": {
+                      "id": "cmad4p0bo0000iib0i0l9e8wk",
+                      "fullName": "Jamal Salim",
+                      "email": null,
+                      "phone": "+254712345678",
+                      "uniqueCode": "P-12ab34cd",
+                      "role": "promoter",
+                      "gender": "male",
+                      "regionId": "nairobi-west",
+                      "authProvider": "credentials",
+                      "requiresProfileCompletion": false,
+                      "missingProfileFields": [],
+                      "createdAt": "2026-05-08T18:00:00.000Z",
+                      "updatedAt": "2026-05-08T18:00:00.000Z"
+                    },
+                    "accessToken": "<jwt>",
+                    "refreshToken": "<sessionId>.<secret>",
+                    "expiresIn": 900
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or request body missing"
+          },
+          "403": {
+            "description": "Too many auth attempts from this IP"
+          },
+          "409": {
+            "description": "User already exists"
+          }
+        },
+        "summary": "Register a promoter account",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/signup": {
+      "post": {
+        "description": "Deprecated alias of /auth/sign-up; emits deprecation headers.",
+        "operationId": "Auth_legacySignUp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Same response as /auth/sign-up"
+          }
+        },
+        "summary": "Deprecated signup alias",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/sign-in": {
+      "post": {
+        "description": "Authenticates a user and returns a fresh token pair.",
+        "operationId": "Auth_signIn",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInDto"
+              },
+              "examples": {
+                "default": {
+                  "value": {
+                    "phone": "+254712345678",
+                    "uniqueCode": "P-12ab34cd",
+                    "role": "promoter"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sign-in successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "user": {
+                      "id": "cmad4p0bo0000iib0i0l9e8wk",
+                      "fullName": "Jamal Salim",
+                      "email": null,
+                      "phone": "+254712345678",
+                      "uniqueCode": "P-12ab34cd",
+                      "role": "promoter",
+                      "gender": "male",
+                      "regionId": "nairobi-west",
+                      "authProvider": "credentials",
+                      "requiresProfileCompletion": false,
+                      "missingProfileFields": []
+                    },
+                    "accessToken": "<jwt>",
+                    "refreshToken": "<sessionId>.<secret>",
+                    "expiresIn": 900
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or request body missing"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          },
+          "403": {
+            "description": "Rate limit exceeded, phone temporarily locked, or sign-in blocked outside the authorized work area (geofence)"
+          }
+        },
+        "summary": "Sign in with phone, code, and role",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "description": "Deprecated alias of /auth/sign-in; emits deprecation headers.",
+        "operationId": "Auth_legacySignIn",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Same response as /auth/sign-in"
+          }
+        },
+        "summary": "Deprecated login alias",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "description": "Rotates refresh token session and returns a new token pair.",
+        "operationId": "Auth_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token refresh successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "accessToken": "<jwt>",
+                    "refreshToken": "<newSessionId>.<newSecret>",
+                    "expiresIn": 900
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or request body missing"
+          },
+          "401": {
+            "description": "Invalid, revoked, expired, or reused refresh token"
+          },
+          "403": {
+            "description": "Refresh rate limit exceeded"
+          }
+        },
+        "summary": "Rotate refresh token and issue new access token",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/oauth/callback": {
+      "post": {
+        "description": "Validates state/nonce, exchanges Google code, and returns token pair.",
+        "operationId": "Auth_oauthCallback",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OauthCallbackDto"
+              },
+              "examples": {
+                "default": {
+                  "value": {
+                    "provider": "google",
+                    "code": "4/0AQSTgQF...",
+                    "redirectUri": "http://localhost:3000/auth/google/callback",
+                    "state": "eyJub25jZSI6Ii4uLiJ9.R5m..."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OAuth callback successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "user": {
+                      "id": "cmad4p0bo0000iib0i0l9e8wk",
+                      "fullName": "Jamal Salim",
+                      "email": "jamal@example.com",
+                      "phone": "pending-a8e4c2f7f9d1",
+                      "uniqueCode": "P-12ab34cd",
+                      "role": "promoter",
+                      "gender": null,
+                      "regionId": null,
+                      "authProvider": "google",
+                      "requiresProfileCompletion": true,
+                      "missingProfileFields": ["phone", "regionId"]
+                    },
+                    "accessToken": "<jwt>",
+                    "refreshToken": "<sessionId>.<secret>",
+                    "expiresIn": 900
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or malformed body"
+          },
+          "401": {
+            "description": "Invalid OAuth state, nonce, or Google code"
+          },
+          "403": {
+            "description": "OAuth callback rate limit exceeded"
+          }
+        },
+        "summary": "Handle Google OAuth callback",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/oauth/google/start": {
+      "post": {
+        "description": "Creates state/nonce and returns Google authorization URL.",
+        "operationId": "Auth_startGoogleOauth",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OauthStartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OAuth authorization payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "provider": "google",
+                    "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth?client_id=...&redirect_uri=...&state=...",
+                    "state": "eyJub25jZSI6Ii4uLiJ9.R5m..."
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or request body missing"
+          },
+          "403": {
+            "description": "OAuth start rate limit exceeded"
+          }
+        },
+        "summary": "Create Google OAuth authorization URL",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/profile-completion": {
+      "post": {
+        "description": "Updates optional profile fields for the authenticated user.",
+        "operationId": "Auth_profileCompletion",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileCompletionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile completion successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "user": {
+                      "id": "cmad4p0bo0000iib0i0l9e8wk",
+                      "fullName": "Jamal Salim",
+                      "email": "jamal@example.com",
+                      "phone": "+254712345678",
+                      "uniqueCode": "P-12ab34cd",
+                      "role": "promoter",
+                      "gender": "male",
+                      "regionId": "nairobi-west",
+                      "authProvider": "google",
+                      "requiresProfileCompletion": false,
+                      "missingProfileFields": []
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed or empty payload"
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Complete current user profile fields",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/sessions": {
+      "get": {
+        "description": "Returns current and historical sessions for the authenticated user.",
+        "operationId": "Auth_listSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Sessions fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "sessions": [
+                      {
+                        "id": "cmadfk8m50000ii9l5g8qxh4d",
+                        "userId": "cmad4p0bo0000iib0i0l9e8wk",
+                        "userAgent": "Mozilla/5.0",
+                        "ipAddress": "127.0.0.1",
+                        "createdAt": "2026-05-08T18:00:00.000Z",
+                        "updatedAt": "2026-05-08T18:00:00.000Z",
+                        "expiresAt": "2026-06-07T18:00:00.000Z",
+                        "revokedAt": null,
+                        "replacedById": null,
+                        "isCurrent": true,
+                        "isActive": true
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List sessions for current user",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/sessions/revoke-all": {
+      "post": {
+        "description": "Revokes all sessions for the current user except current session.",
+        "operationId": "Auth_revokeAllSessionsForCurrentUser",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Sessions revoked successfully"
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke all other sessions for current user",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/sessions/revoke-user": {
+      "post": {
+        "description": "Admin-only endpoint to revoke all sessions for target user id.",
+        "operationId": "Auth_revokeUserSessions",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevokeUserSessionsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Target user sessions revoked successfully"
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          },
+          "403": {
+            "description": "Only admin users can call this endpoint"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Admin: revoke all sessions for a target user",
+        "tags": ["Auth"]
+      }
+    },
+    "/auth/sign-out": {
+      "post": {
+        "description": "Revokes the session represented by provided refresh token.",
+        "operationId": "Auth_signOut",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignOutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Session revoked or already inactive"
+          },
+          "400": {
+            "description": "Validation failed or request body missing"
+          }
+        },
+        "summary": "Revoke current refresh token session",
+        "tags": ["Auth"]
+      }
+    },
+    "/admin/geofences": {
+      "get": {
+        "description": "Returns all geofence definitions for the operations dashboard.",
+        "operationId": "AdminGeofence_listGeofences",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of geofences"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List geofences (supervisor / admin)",
+        "tags": ["Admin geofences (supervisor / admin)"]
+      },
+      "post": {
+        "description": "Creates a circular work area. Sign-in is allowed when the device is inside any active geofence.",
+        "operationId": "AdminGeofence_createGeofence",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["label", "centerLatitude", "centerLongitude", "radiusMeters"],
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "example": "Nairobi CBD"
+                  },
+                  "centerLatitude": {
+                    "type": "number",
+                    "example": -1.286389
+                  },
+                  "centerLongitude": {
+                    "type": "number",
+                    "example": 36.817223
+                  },
+                  "radiusMeters": {
+                    "type": "number",
+                    "example": 5000,
+                    "description": "Radius from center in meters"
+                  },
+                  "isActive": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Geofence created"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create geofence (supervisor / admin)",
+        "tags": ["Admin geofences (supervisor / admin)"]
+      }
+    },
+    "/admin/geofences/{id}": {
+      "patch": {
+        "description": "Partial update (label, center, radius, isActive).",
+        "operationId": "AdminGeofence_updateGeofence",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Geofence id",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "centerLatitude": {
+                    "type": "number"
+                  },
+                  "centerLongitude": {
+                    "type": "number"
+                  },
+                  "radiusMeters": {
+                    "type": "number"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Geofence updated"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Geofence id not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update geofence (supervisor / admin)",
+        "tags": ["Admin geofences (supervisor / admin)"]
+      }
+    },
+    "/admin/regions": {
+      "get": {
+        "description": "Returns all sales regions for assignment and reporting.",
+        "operationId": "AdminRegion_listRegions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of regions"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List regions (supervisor / admin)",
+        "tags": ["Admin regions (supervisor / admin)"]
+      },
+      "post": {
+        "description": "Creates a region. Slug is generated from `name` if omitted (unique suffix added on collision). User.regionId must match a region id (cuid), not the slug.",
+        "operationId": "AdminRegion_createRegion",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Nairobi West"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "example": "nairobi-west",
+                    "description": "Optional; otherwise derived from name"
+                  },
+                  "isActive": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Region created"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "409": {
+            "description": "Slug already in use"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create region (supervisor / admin)",
+        "tags": ["Admin regions (supervisor / admin)"]
+      }
+    },
+    "/admin/regions/{id}": {
+      "patch": {
+        "description": "Partial update (slug, name, isActive).",
+        "operationId": "AdminRegion_updateRegion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Region id (cuid)",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Region updated"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Region id not found"
+          },
+          "409": {
+            "description": "Slug already in use"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update region (supervisor / admin)",
+        "tags": ["Admin regions (supervisor / admin)"]
+      }
+    },
+    "/admin/activations": {
+      "get": {
+        "description": "Campaigns / activations with region and counts.",
+        "operationId": "Activation_listActivations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Activation list"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List activations",
+        "tags": ["Admin activations (supervisor / admin)"]
+      },
+      "post": {
+        "operationId": "Activation_createActivation",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Activation created"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Region not found"
+          },
+          "409": {
+            "description": "Slug already in use"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create activation",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/admin/activations/{id}": {
+      "get": {
+        "operationId": "Activation_getActivation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activation detail with products and roster"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get activation",
+        "tags": ["Admin activations (supervisor / admin)"]
+      },
+      "patch": {
+        "operationId": "Activation_updateActivation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activation updated"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation or region not found"
+          },
+          "409": {
+            "description": "Slug already in use"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update activation",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/admin/activations/{id}/products": {
+      "post": {
+        "operationId": "Activation_addProduct",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateActivationProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product line created"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add product line to activation",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/admin/activations/{id}/products/{productId}": {
+      "delete": {
+        "operationId": "Activation_removeProduct",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "description": "Activation product id (cuid)",
+            "schema": {}
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation or product not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove product line from activation",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/admin/activations/{id}/roster/batch": {
+      "post": {
+        "operationId": "Activation_addToRosterBatch",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddActivationRosterBatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Activation detail after roster update"
+          },
+          "400": {
+            "description": "Invalid user ids or ineligible users"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation or user not found"
+          },
+          "409": {
+            "description": "One or more users already on roster"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add multiple users to activation roster (atomic)",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/admin/activations/{id}/roster": {
+      "post": {
+        "operationId": "Activation_addToRoster",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddActivationRosterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Roster entry created"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation or user not found"
+          },
+          "409": {
+            "description": "User already on roster"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add user to activation roster",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/admin/activations/{id}/roster/{userId}": {
+      "delete": {
+        "operationId": "Activation_removeFromRoster",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "description": "User id (cuid)",
+            "schema": {}
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation or roster entry not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove user from activation roster",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "description": "Supervisors see promoters and merchandizers only; admins see all users. Sends invite email (Resend) on create when `RESEND_API_KEY` is set.",
+        "operationId": "AdminUser_listUsers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of users"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List users (supervisor / admin)",
+        "tags": ["Admin users (supervisor / admin)"]
+      },
+      "post": {
+        "description": "Creates a credentials user and emails sign-in instructions via Resend when configured.",
+        "operationId": "AdminUser_createUser",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["fullName", "email", "phone", "role"],
+                "properties": {
+                  "fullName": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "example": "+254712345678"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["promoter", "merchandizer", "supervisor", "admin"]
+                  },
+                  "regionId": {
+                    "type": "string",
+                    "description": "Optional region cuid"
+                  },
+                  "gender": {
+                    "type": "string",
+                    "enum": ["male", "female", "other"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin; only admins may create supervisor/admin"
+          },
+          "409": {
+            "description": "Phone or email already in use"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create user (invite)",
+        "tags": ["Admin users (supervisor / admin)"]
+      }
+    },
+    "/admin/users/{id}": {
+      "patch": {
+        "description": "Partial update. Supervisors may edit promoters and merchandizers only. Only admins may assign supervisor or admin roles.",
+        "operationId": "AdminUser_updateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User id (cuid)",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fullName": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["promoter", "merchandizer", "supervisor", "admin"]
+                  },
+                  "regionId": {
+                    "type": "string"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  },
+                  "gender": {
+                    "type": "string",
+                    "enum": ["male", "female", "other"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Not allowed for this role or target user"
+          },
+          "404": {
+            "description": "User id not found"
+          },
+          "409": {
+            "description": "Unique constraint violation"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update user",
+        "tags": ["Admin users (supervisor / admin)"]
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "Returns a simple health signal for uptime probes.",
+        "operationId": "Health_getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "ok": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Health check endpoint",
+        "tags": ["Health"]
+      }
+    },
+    "/me": {
+      "get": {
+        "description": "Returns the authenticated user's profile details.",
+        "operationId": "Me_getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current user profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": "cmad4p0bo0000iib0i0l9e8wk",
+                    "fullName": "Jamal Salim",
+                    "phone": "+254712345678",
+                    "role": "promoter",
+                    "gender": "male",
+                    "regionId": "nairobi-west"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          },
+          "404": {
+            "description": "User profile not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get current user profile",
+        "tags": ["Me"]
+      },
+      "patch": {
+        "description": "Updates one or more profile fields for the authenticated user.",
+        "operationId": "Me_updateMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMeDto"
+              },
+              "examples": {
+                "updateNameAndRegion": {
+                  "summary": "Update name and region",
+                  "value": {
+                    "fullName": "Jamal S. Salim",
+                    "regionId": "nairobi-east"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": "cmad4p0bo0000iib0i0l9e8wk",
+                    "fullName": "Jamal S. Salim",
+                    "phone": "+254712345678",
+                    "role": "promoter",
+                    "gender": "male",
+                    "regionId": "nairobi-east"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update current user profile",
+        "tags": ["Me"]
+      }
+    },
+    "/me/location/history": {
+      "get": {
+        "description": "Returns recent location pings for the authenticated user, newest first.",
+        "operationId": "Me_listLocationHistory",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum rows to return (1–100, default 50)",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Location ping rows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": [
+                    {
+                      "id": "cmad4p0bo0000iib0i0l9e8wk",
+                      "latitude": -1.286389,
+                      "longitude": 36.817223,
+                      "recordedAt": "2026-05-08T18:20:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List own location check-ins",
+        "tags": ["Me"]
+      }
+    },
+    "/me/location": {
+      "post": {
+        "description": "Stores a location ping for the authenticated user.",
+        "operationId": "Me_updateMeLocation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLocationDto"
+              },
+              "examples": {
+                "nairobiDowntown": {
+                  "summary": "Nairobi CBD location ping",
+                  "value": {
+                    "latitude": -1.286389,
+                    "longitude": 36.817223
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recorded location ping",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "userId": "cmad4p0bo0000iib0i0l9e8wk",
+                    "latitude": -1.286389,
+                    "longitude": 36.817223,
+                    "recordedAt": "2026-05-08T18:20:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Record user location",
+        "tags": ["Me"]
+      }
+    }
+  },
+  "info": {
+    "title": "Engaged Sales API",
+    "description": "API documentation for Engaged Sales backend",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "SignUpDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "Jamal Salim",
+            "description": "Full name of the user"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+254712345678",
+            "description": "E.164 phone number"
+          },
+          "gender": {
+            "type": "string",
+            "example": "male",
+            "enum": ["male", "female", "other"]
+          },
+          "regionId": {
+            "type": "string",
+            "example": "nairobi-west",
+            "description": "Optional sales region id"
+          }
+        },
+        "required": ["fullName", "phone", "gender"]
+      },
+      "SignInDto": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "example": "+254712345678",
+            "description": "Registered phone number"
+          },
+          "uniqueCode": {
+            "type": "string",
+            "example": "P-12ab34cd",
+            "description": "Unique promoter code"
+          },
+          "role": {
+            "type": "string",
+            "example": "promoter",
+            "enum": ["promoter", "merchandizer", "supervisor", "admin"]
+          },
+          "latitude": {
+            "type": "number",
+            "description": "Device latitude (decimal degrees). For promoters and merchandizers: required when at least one geofence is active (send with longitude). Supervisors and admins may omit coordinates.",
+            "example": -1.286389
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Device longitude (decimal degrees). For promoters and merchandizers: required with latitude when geofencing is enforced. Supervisors and admins may omit.",
+            "example": 36.817223
+          }
+        },
+        "required": ["phone", "uniqueCode", "role"]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "example": "cmadfk8m50000ii9l5g8qxh4d.6Mcpfd1xK8h6c7Iu4eD9TzLQkKkL4aY5",
+            "description": "Refresh token in <sessionId>.<secret> format"
+          }
+        },
+        "required": ["refreshToken"]
+      },
+      "OauthCallbackDto": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "example": "google",
+            "enum": ["google"]
+          },
+          "code": {
+            "type": "string",
+            "example": "4/0AQSTgQF...",
+            "description": "Authorization code from Google callback"
+          },
+          "redirectUri": {
+            "type": "string",
+            "example": "http://localhost:3000/auth/google/callback"
+          },
+          "state": {
+            "type": "string",
+            "example": "eyJub25jZSI6Ii4uLiJ9.R5m...",
+            "description": "Signed OAuth state from start endpoint"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "Device latitude. For promoters/merchandizers when geofencing is active, send with longitude. Supervisors/admins may omit.",
+            "example": -1.286389
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Device longitude (pair with latitude when required for field roles).",
+            "example": 36.817223
+          }
+        },
+        "required": ["provider", "code", "redirectUri", "state"]
+      },
+      "OauthStartDto": {
+        "type": "object",
+        "properties": {
+          "redirectUri": {
+            "type": "string",
+            "example": "http://localhost:3000/auth/google/callback",
+            "description": "Frontend redirect URI registered with Google OAuth"
+          }
+        },
+        "required": ["redirectUri"]
+      },
+      "ProfileCompletionDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "jamal@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+254712345678"
+          },
+          "gender": {
+            "type": "string",
+            "example": "male",
+            "enum": ["male", "female", "other"]
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Jamal Salim"
+          },
+          "regionId": {
+            "type": "string",
+            "example": "nairobi-west"
+          }
+        }
+      },
+      "RevokeUserSessionsDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "example": "cmad4p0bo0000iib0i0l9e8wk",
+            "description": "Target user id whose sessions should be revoked"
+          }
+        },
+        "required": ["userId"]
+      },
+      "SignOutDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "example": "cmadfk8m50000ii9l5g8qxh4d.6Mcpfd1xK8h6c7Iu4eD9TzLQkKkL4aY5",
+            "description": "Refresh token to revoke the session"
+          }
+        },
+        "required": ["refreshToken"]
+      },
+      "CreateActivationProductDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AddActivationRosterBatchDto": {
+        "type": "object",
+        "properties": {
+          "userIds": {
+            "description": "User ids (cuid) to add. Each must be an active promoter or merchandizer, and not already on this roster.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["userIds"]
+      },
+      "AddActivationRosterDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateMeDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "Jamal Salim"
+          },
+          "gender": {
+            "type": "string",
+            "example": "male",
+            "enum": ["male", "female", "other"]
+          },
+          "regionId": {
+            "type": "string",
+            "example": "nairobi-west"
+          }
+        }
+      },
+      "UpdateLocationDto": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "example": -1.286389,
+            "description": "Latitude in decimal degrees"
+          },
+          "longitude": {
+            "type": "number",
+            "example": 36.817223,
+            "description": "Longitude in decimal degrees"
+          }
+        },
+        "required": ["latitude", "longitude"]
+      }
+    }
+  }
+}

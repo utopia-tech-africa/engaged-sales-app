@@ -32,6 +32,34 @@ class EnvironmentVariablesDto {
   @IsInt()
   @Min(1)
   public JWT_REFRESH_TTL_DAYS = 30;
+
+  @IsString()
+  @MinLength(1)
+  public GOOGLE_CLIENT_ID = "google-client-id";
+
+  @IsString()
+  @MinLength(1)
+  public GOOGLE_CLIENT_SECRET = "google-client-secret";
+
+  @IsString()
+  @MinLength(1)
+  public REDIS_URL = "redis://127.0.0.1:6379";
+
+  @IsString()
+  @MinLength(1)
+  public CORS_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000";
+
+  /** When empty, invite emails are skipped (logged). */
+  @IsString()
+  public RESEND_API_KEY = "";
+
+  /** e.g. `Engaged Sales <notifications@yourdomain.com>`. When empty, Resend test sender may be used. */
+  @IsString()
+  public RESEND_FROM_EMAIL = "";
+
+  /** Public web origin for sign-in links in emails (no trailing slash). */
+  @IsString()
+  public APP_PUBLIC_URL = "http://localhost:3000";
 }
 
 export type EnvironmentVariables = {
@@ -42,6 +70,13 @@ export type EnvironmentVariables = {
   JWT_REFRESH_SECRET: string;
   JWT_ACCESS_TTL_SECONDS: number;
   JWT_REFRESH_TTL_DAYS: number;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  REDIS_URL: string;
+  CORS_ORIGINS: string;
+  RESEND_API_KEY: string;
+  RESEND_FROM_EMAIL: string;
+  APP_PUBLIC_URL: string;
 };
 
 export const validateEnvironment = (config: Record<string, unknown>): EnvironmentVariables => {
@@ -53,7 +88,14 @@ export const validateEnvironment = (config: Record<string, unknown>): Environmen
     JWT_ACCESS_SECRET: config["JWT_ACCESS_SECRET"] ?? "dev-access-secret-change-me",
     JWT_REFRESH_SECRET: config["JWT_REFRESH_SECRET"] ?? "dev-refresh-secret-change-me",
     JWT_ACCESS_TTL_SECONDS: config["JWT_ACCESS_TTL_SECONDS"] ?? 900,
-    JWT_REFRESH_TTL_DAYS: config["JWT_REFRESH_TTL_DAYS"] ?? 30
+    JWT_REFRESH_TTL_DAYS: config["JWT_REFRESH_TTL_DAYS"] ?? 30,
+    GOOGLE_CLIENT_ID: config["GOOGLE_CLIENT_ID"] ?? "google-client-id",
+    GOOGLE_CLIENT_SECRET: config["GOOGLE_CLIENT_SECRET"] ?? "google-client-secret",
+    REDIS_URL: config["REDIS_URL"] ?? "redis://127.0.0.1:6379",
+    CORS_ORIGINS: config["CORS_ORIGINS"] ?? "http://localhost:3000,http://127.0.0.1:3000",
+    RESEND_API_KEY: config["RESEND_API_KEY"] ?? "",
+    RESEND_FROM_EMAIL: config["RESEND_FROM_EMAIL"] ?? "",
+    APP_PUBLIC_URL: config["APP_PUBLIC_URL"] ?? "http://localhost:3000"
   };
 
   const validatedEnvironment = plainToInstance(EnvironmentVariablesDto, rawEnvironment, {
@@ -75,6 +117,13 @@ export const validateEnvironment = (config: Record<string, unknown>): Environmen
     JWT_ACCESS_SECRET: validatedEnvironment.JWT_ACCESS_SECRET,
     JWT_REFRESH_SECRET: validatedEnvironment.JWT_REFRESH_SECRET,
     JWT_ACCESS_TTL_SECONDS: validatedEnvironment.JWT_ACCESS_TTL_SECONDS,
-    JWT_REFRESH_TTL_DAYS: validatedEnvironment.JWT_REFRESH_TTL_DAYS
+    JWT_REFRESH_TTL_DAYS: validatedEnvironment.JWT_REFRESH_TTL_DAYS,
+    GOOGLE_CLIENT_ID: validatedEnvironment.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: validatedEnvironment.GOOGLE_CLIENT_SECRET,
+    REDIS_URL: validatedEnvironment.REDIS_URL,
+    CORS_ORIGINS: validatedEnvironment.CORS_ORIGINS,
+    RESEND_API_KEY: validatedEnvironment.RESEND_API_KEY,
+    RESEND_FROM_EMAIL: validatedEnvironment.RESEND_FROM_EMAIL,
+    APP_PUBLIC_URL: validatedEnvironment.APP_PUBLIC_URL
   };
 };

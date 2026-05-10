@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class MeRepository {
-  public constructor(private readonly prisma: PrismaService) {}
+  public constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   public getProfile(userId: string) {
     return this.prisma.user.findUnique({
@@ -55,6 +55,20 @@ export class MeRepository {
       },
       select: {
         userId: true,
+        latitude: true,
+        longitude: true,
+        recordedAt: true
+      }
+    });
+  }
+
+  public listLocationPingsByUser(userId: string, take: number) {
+    return this.prisma.locationPing.findMany({
+      where: { userId },
+      orderBy: { recordedAt: "desc" },
+      take,
+      select: {
+        id: true,
         latitude: true,
         longitude: true,
         recordedAt: true

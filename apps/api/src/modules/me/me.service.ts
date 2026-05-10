@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.type";
 import type { UpdateLocationDto } from "./dto/update-location.dto";
@@ -21,7 +21,7 @@ const toProfilePatch = (
 
 @Injectable()
 export class MeService {
-  public constructor(private readonly meRepository: MeRepository) {}
+  public constructor(@Inject(MeRepository) private readonly meRepository: MeRepository) {}
 
   public async getCurrentUser(currentUser: AuthenticatedUser) {
     const profile = await this.meRepository.getProfile(currentUser.id);
@@ -43,5 +43,10 @@ export class MeService {
 
   public updateLocation(currentUser: AuthenticatedUser, payload: UpdateLocationDto) {
     return this.meRepository.addLocation(currentUser.id, payload.latitude, payload.longitude);
+  }
+
+  public listLocationHistory(currentUser: AuthenticatedUser, limit: number) {
+    const take = Math.min(100, Math.max(1, limit));
+    return this.meRepository.listLocationPingsByUser(currentUser.id, take);
   }
 }
