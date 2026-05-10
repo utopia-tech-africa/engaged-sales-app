@@ -154,4 +154,30 @@ export class ActivationRepository {
       select: { id: true, role: true, isActive: true }
     });
   }
+
+  public findRosterEntriesForUsers(activationId: string, userIds: readonly string[]) {
+    if (userIds.length === 0) {
+      return Promise.resolve([] as { userId: string }[]);
+    }
+    return this.prisma.activationRoster.findMany({
+      where: { activationId, userId: { in: [...userIds] } },
+      select: { userId: true }
+    });
+  }
+
+  public findUsersForRosterByIds(userIds: readonly string[]) {
+    if (userIds.length === 0) {
+      return Promise.resolve([] as { id: string; role: string; isActive: boolean }[]);
+    }
+    return this.prisma.user.findMany({
+      where: { id: { in: [...userIds] } },
+      select: { id: true, role: true, isActive: true }
+    });
+  }
+
+  public createManyRosterEntries(activationId: string, userIds: readonly string[]) {
+    return this.prisma.activationRoster.createMany({
+      data: userIds.map((userId) => ({ activationId, userId }))
+    });
+  }
 }

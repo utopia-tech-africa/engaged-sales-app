@@ -17,7 +17,7 @@ import {
   getAdminActivationGetActivationQueryKey,
   getAdminActivationListActivationsQueryKey,
   useAdminActivationAddActivationProduct,
-  useAdminActivationAddToRoster,
+  useAdminActivationAddToRosterBatch,
   useAdminActivationCreateActivation,
   useAdminActivationGetActivation,
   useAdminActivationListActivations,
@@ -225,7 +225,15 @@ export default function OpsActivationsPage(): ReactElement {
     }
   });
 
-  const addRosterMutation = useAdminActivationAddToRoster();
+  const addRosterBatchMutation = useAdminActivationAddToRosterBatch({
+    mutation: {
+      onSuccess: async (_, v) => {
+        await invalidateList();
+        await invalidateDetail(String(v.id));
+        setRosterSelectedUserIds([]);
+      }
+    }
+  });
 
   const removeRosterMutation = useAdminActivationRemoveFromRoster({
     mutation: {
@@ -341,34 +349,22 @@ export default function OpsActivationsPage(): ReactElement {
     });
   };
 
-  const onAddRoster = async (e: SyntheticEvent<HTMLFormElement>): Promise<void> => {
+  const onAddRoster = (e: SyntheticEvent<HTMLFormElement>): void => {
     e.preventDefault();
     if (selectedId === null || rosterSelectedUserIds.length === 0) {
       return;
     }
     setFormError(null);
-    const idsToAdd = [...rosterSelectedUserIds];
-    const results = await Promise.allSettled(
-      idsToAdd.map((userId) => addRosterMutation.mutateAsync({ id: selectedId, data: { userId } }))
-    );
-    await invalidateList();
-    await invalidateDetail(selectedId);
-    const failedIds = idsToAdd.filter((_, i) => results[i]?.status === "rejected");
-    setRosterSelectedUserIds(failedIds);
-    const firstReject = results.find((r): r is PromiseRejectedResult => r.status === "rejected");
-    if (failedIds.length > 0 && firstReject !== undefined) {
-      const detailMsg =
-        firstReject.reason instanceof ApiError
-          ? (firstReject.reason.problem?.detail ?? firstReject.reason.message)
-          : "Add to roster failed.";
-      if (failedIds.length === idsToAdd.length) {
-        setFormError(detailMsg);
-      } else {
-        setFormError(
-          `Added ${String(idsToAdd.length - failedIds.length)} of ${String(idsToAdd.length)}. ${String(failedIds.length)} could not be added (${detailMsg})`
-        );
+    addRosterBatchMutation.mutate(
+      { id: selectedId, data: { userIds: [...rosterSelectedUserIds] } },
+      {
+        onError: (err: unknown) => {
+          setFormError(
+            err instanceof ApiError ? (err.problem?.detail ?? err.message) : "Add to roster failed."
+          );
+        }
       }
-    }
+    );
   };
 
   const tabBtn = (tab: DetailTab, label: string): ReactElement => (
@@ -828,16 +824,14 @@ export default function OpsActivationsPage(): ReactElement {
                         <h3 className={labelClass}>Add field team members</h3>
                         <form
                           className="mt-3 flex flex-col gap-4 rounded-lg border border-dashed border-border bg-muted/15 p-4"
-                          onSubmit={(ev) => {
-                            void onAddRoster(ev);
-                          }}
+                          onSubmit={onAddRoster}
                         >
                           <div className="flex flex-wrap gap-2">
                             <button
                               type="button"
                               className={cn(calmSecondaryButtonClass, "w-auto px-3 py-2 text-xs")}
                               disabled={
-                                addRosterMutation.isPending ||
+                                addRosterBatchMutation.isPending ||
                                 rosterAddCandidates.length === 0 ||
                                 rosterAddCandidates.every((u) =>
                                   rosterSelectedUserIds.includes(u.id)
@@ -853,7 +847,8 @@ export default function OpsActivationsPage(): ReactElement {
                               type="button"
                               className={cn(calmSecondaryButtonClass, "w-auto px-3 py-2 text-xs")}
                               disabled={
-                                addRosterMutation.isPending || rosterSelectedUserIds.length === 0
+                                addRosterBatchMutation.isPending ||
+                                rosterSelectedUserIds.length === 0
                               }
                               onClick={() => {
                                 setRosterSelectedUserIds([]);
@@ -885,7 +880,7 @@ export default function OpsActivationsPage(): ReactElement {
                                           type="checkbox"
                                           className="mt-0.5 size-4 shrink-0 rounded border-input"
                                           checked={checked}
-                                          disabled={addRosterMutation.isPending}
+                                          disabled={addRosterBatchMutation.isPending}
                                           onChange={(ev) => {
                                             const on = ev.target.checked;
                                             setRosterSelectedUserIds((prev) =>
@@ -919,12 +914,12 @@ export default function OpsActivationsPage(): ReactElement {
                               "w-full shrink-0 sm:w-auto sm:self-start"
                             )}
                             disabled={
-                              addRosterMutation.isPending ||
+                              addRosterBatchMutation.isPending ||
                               rosterSelectedUserIds.length === 0 ||
                               rosterAddCandidates.length === 0
                             }
                           >
-                            {addRosterMutation.isPending
+                            {addRosterBatchMutation.isPending
                               ? "Adding…"
                               : rosterSelectedUserIds.length === 0
                                 ? "Add to roster"

@@ -806,11 +806,11 @@
     "/admin/activations": {
       "get": {
         "description": "Campaigns / activations with region and counts.",
-        "operationId": "AdminActivation_listActivations",
+        "operationId": "Activation_listActivations",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "List of activations"
+            "description": "Activation list"
           },
           "401": {
             "description": "Missing or invalid JWT"
@@ -828,46 +828,8 @@
         "tags": ["Admin activations (supervisor / admin)"]
       },
       "post": {
-        "description": "Creates an activation; slug is derived from name if omitted.",
-        "operationId": "AdminActivation_createActivation",
+        "operationId": "Activation_createActivation",
         "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["name", "startsAt"],
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "slug": {
-                    "type": "string",
-                    "description": "Optional; derived from name if omitted"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "regionId": {
-                    "type": "string"
-                  },
-                  "startsAt": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "endsAt": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "isActive": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "201": {
             "description": "Activation created"
@@ -877,6 +839,9 @@
           },
           "403": {
             "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Region not found"
           },
           "409": {
             "description": "Slug already in use"
@@ -893,7 +858,7 @@
     },
     "/admin/activations/{id}": {
       "get": {
-        "operationId": "AdminActivation_getActivation",
+        "operationId": "Activation_getActivation",
         "parameters": [
           {
             "name": "id",
@@ -905,7 +870,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Activation detail"
+            "description": "Activation detail with products and roster"
           },
           "401": {
             "description": "Missing or invalid JWT"
@@ -922,12 +887,11 @@
             "bearer": []
           }
         ],
-        "summary": "Get activation with products and roster",
+        "summary": "Get activation",
         "tags": ["Admin activations (supervisor / admin)"]
       },
       "patch": {
-        "description": "Partial update. Send empty regionId to clear region.",
-        "operationId": "AdminActivation_updateActivation",
+        "operationId": "Activation_updateActivation",
         "parameters": [
           {
             "name": "id",
@@ -937,43 +901,6 @@
             "schema": {}
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "slug": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "regionId": {
-                    "type": "string",
-                    "description": "Send empty string to clear region"
-                  },
-                  "startsAt": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "endsAt": {
-                    "type": "string",
-                    "format": "date-time",
-                    "nullable": true
-                  },
-                  "isActive": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Activation updated"
@@ -985,10 +912,10 @@
             "description": "Requires supervisor or admin role"
           },
           "404": {
-            "description": "Activation not found"
+            "description": "Activation or region not found"
           },
           "409": {
-            "description": "Slug conflict"
+            "description": "Slug already in use"
           }
         },
         "security": [
@@ -1002,7 +929,7 @@
     },
     "/admin/activations/{id}/products": {
       "post": {
-        "operationId": "AdminActivation_addActivationProduct",
+        "operationId": "Activation_addProduct",
         "parameters": [
           {
             "name": "id",
@@ -1017,31 +944,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["name"],
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "sku": {
-                    "type": "string"
-                  },
-                  "quantity": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "description": "Defaults to 1 if omitted"
-                  },
-                  "sortOrder": {
-                    "type": "integer"
-                  }
-                }
+                "$ref": "#/components/schemas/CreateActivationProductDto"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Product created"
+            "description": "Product line created"
           },
           "401": {
             "description": "Missing or invalid JWT"
@@ -1064,13 +974,13 @@
     },
     "/admin/activations/{id}/products/{productId}": {
       "delete": {
-        "operationId": "AdminActivation_removeActivationProduct",
+        "operationId": "Activation_removeProduct",
         "parameters": [
           {
             "name": "productId",
             "required": true,
             "in": "path",
-            "description": "ActivationProduct id (cuid)",
+            "description": "Activation product id (cuid)",
             "schema": {}
           },
           {
@@ -1082,9 +992,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Product removed"
-          },
           "401": {
             "description": "Missing or invalid JWT"
           },
@@ -1104,10 +1011,9 @@
         "tags": ["Admin activations (supervisor / admin)"]
       }
     },
-    "/admin/activations/{id}/roster": {
+    "/admin/activations/{id}/roster/batch": {
       "post": {
-        "description": "Only active promoters and merchandizers may be assigned.",
-        "operationId": "AdminActivation_addToRoster",
+        "operationId": "Activation_addToRosterBatch",
         "parameters": [
           {
             "name": "id",
@@ -1122,14 +1028,58 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["userId"],
-                "properties": {
-                  "userId": {
-                    "type": "string",
-                    "description": "Promoter or merchandizer user id"
-                  }
-                }
+                "$ref": "#/components/schemas/AddActivationRosterBatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Activation detail after roster update"
+          },
+          "400": {
+            "description": "Invalid user ids or ineligible users"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation or user not found"
+          },
+          "409": {
+            "description": "One or more users already on roster"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add multiple users to activation roster (atomic)",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/admin/activations/{id}/roster": {
+      "post": {
+        "operationId": "Activation_addToRoster",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddActivationRosterDto"
               }
             }
           }
@@ -1145,10 +1095,10 @@
             "description": "Requires supervisor or admin role"
           },
           "404": {
-            "description": "Activation not found"
+            "description": "Activation or user not found"
           },
           "409": {
-            "description": "Already on roster"
+            "description": "User already on roster"
           }
         },
         "security": [
@@ -1156,13 +1106,13 @@
             "bearer": []
           }
         ],
-        "summary": "Add promoter or merchandizer to roster",
+        "summary": "Add user to activation roster",
         "tags": ["Admin activations (supervisor / admin)"]
       }
     },
     "/admin/activations/{id}/roster/{userId}": {
       "delete": {
-        "operationId": "AdminActivation_removeFromRoster",
+        "operationId": "Activation_removeFromRoster",
         "parameters": [
           {
             "name": "userId",
@@ -1180,9 +1130,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Removed from roster"
-          },
           "401": {
             "description": "Missing or invalid JWT"
           },
@@ -1198,7 +1145,7 @@
             "bearer": []
           }
         ],
-        "summary": "Remove user from roster",
+        "summary": "Remove user from activation roster",
         "tags": ["Admin activations (supervisor / admin)"]
       }
     },
@@ -1708,6 +1655,27 @@
           }
         },
         "required": ["refreshToken"]
+      },
+      "CreateActivationProductDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "AddActivationRosterBatchDto": {
+        "type": "object",
+        "properties": {
+          "userIds": {
+            "description": "User ids (cuid) to add. Each must be an active promoter or merchandizer, and not already on this roster.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["userIds"]
+      },
+      "AddActivationRosterDto": {
+        "type": "object",
+        "properties": {}
       },
       "UpdateMeDto": {
         "type": "object",

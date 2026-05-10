@@ -8,6 +8,7 @@
 
 export * from "./adminActivationAddActivationProductBody";
 export * from "./adminActivationAddToRosterBody";
+export * from "./adminActivationAddToRosterBatchBody";
 export * from "./adminActivationCreateActivationBody";
 export * from "./adminActivationUpdateActivationBody";
 export * from "./adminGeofenceCreateGeofenceBody";

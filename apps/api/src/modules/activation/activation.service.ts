@@ -12,6 +12,7 @@ import type { Prisma } from "../../generated/prisma/client";
 import { RegionRepository } from "../region/region.repository";
 import { slugifyRegionName } from "../region/slug.util";
 import { ActivationRepository } from "./activation.repository";
+import type { AddActivationRosterBatchDto } from "./dto/add-activation-roster-batch.dto";
 import type { AddActivationRosterDto } from "./dto/add-activation-roster.dto";
 import type { CreateActivationDto } from "./dto/create-activation.dto";
 import type { CreateActivationProductDto } from "./dto/create-activation-product.dto";
@@ -248,6 +249,62 @@ export class ActivationService {
       }
       throw error;
     }
+  }
+
+  public async addToRosterBatchForAdmin(
+    currentUser: AuthenticatedUser,
+    activationId: string,
+    dto: AddActivationRosterBatchDto
+  ) {
+    this.requireSupervisorOrAdmin(currentUser);
+    const uniqueUserIds = [
+      ...new Set(dto.userIds.map((id) => id.trim()).filter((id) => id.length > 0))
+    ];
+    if (uniqueUserIds.length === 0) {
+      throw new BadRequestException("At least one user id is required");
+    }
+
+    const activation = await this.repository.findById(activationId);
+    if (activation === null) {
+      throw new NotFoundException("Activation not found");
+    }
+
+    const alreadyOnRoster = await this.repository.findRosterEntriesForUsers(
+      activationId,
+      uniqueUserIds
+    );
+    if (alreadyOnRoster.length > 0) {
+      throw new ConflictException(
+        `${String(alreadyOnRoster.length)} user(s) are already on this activation roster`
+      );
+    }
+
+    const users = await this.repository.findUsersForRosterByIds(uniqueUserIds);
+    if (users.length !== uniqueUserIds.length) {
+      throw new NotFoundException("One or more users were not found");
+    }
+
+    for (const user of users) {
+      if (!user.isActive) {
+        throw new BadRequestException("User is inactive and cannot be added to a roster");
+      }
+      if (!ROSTER_FIELD_ROLES.has(user.role as UserRole)) {
+        throw new BadRequestException(
+          "Only promoters and merchandizers can be added to an activation roster"
+        );
+      }
+    }
+
+    try {
+      await this.repository.createManyRosterEntries(activationId, uniqueUserIds);
+    } catch (error: unknown) {
+      if (ActivationService.isUniqueViolation(error)) {
+        throw new ConflictException("One or more users are already on this activation roster");
+      }
+      throw error;
+    }
+
+    return this.getByIdForAdmin(currentUser, activationId);
   }
 
   public async removeFromRosterForAdmin(

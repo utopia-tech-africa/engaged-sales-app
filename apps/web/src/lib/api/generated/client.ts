@@ -23,6 +23,7 @@ import type {
 
 import type {
   AdminActivationAddActivationProductBody,
+  AdminActivationAddToRosterBatchBody,
   AdminActivationAddToRosterBody,
   AdminActivationCreateActivationBody,
   AdminActivationUpdateActivationBody,
@@ -3126,6 +3127,143 @@ export const useAdminActivationAddToRoster = <TError = void, TContext = unknown>
   TContext
 > => {
   return useMutation(getAdminActivationAddToRosterMutationOptions(options), queryClient);
+};
+
+export type adminActivationAddToRosterBatchResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminActivationAddToRosterBatchResponse400 = {
+  data: void;
+  status: 400;
+};
+
+export type adminActivationAddToRosterBatchResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminActivationAddToRosterBatchResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminActivationAddToRosterBatchResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminActivationAddToRosterBatchResponse409 = {
+  data: void;
+  status: 409;
+};
+
+export type adminActivationAddToRosterBatchResponseSuccess =
+  adminActivationAddToRosterBatchResponse200 & {
+    headers: Headers;
+  };
+export type adminActivationAddToRosterBatchResponseError = (
+  | adminActivationAddToRosterBatchResponse400
+  | adminActivationAddToRosterBatchResponse401
+  | adminActivationAddToRosterBatchResponse403
+  | adminActivationAddToRosterBatchResponse404
+  | adminActivationAddToRosterBatchResponse409
+) & {
+  headers: Headers;
+};
+
+export type adminActivationAddToRosterBatchResponse =
+  | adminActivationAddToRosterBatchResponseSuccess
+  | adminActivationAddToRosterBatchResponseError;
+
+export const getAdminActivationAddToRosterBatchUrl = (id: unknown) => {
+  return `/admin/activations/${String(id)}/roster/batch`;
+};
+
+/**
+ * Add multiple active promoters or merchandizers to an activation roster in one request (all-or-nothing).
+ * @summary Add multiple users to activation roster (atomic)
+ */
+export const adminActivationAddToRosterBatch = async (
+  id: unknown,
+  adminActivationAddToRosterBatchBody: AdminActivationAddToRosterBatchBody,
+  options?: RequestInit
+): Promise<adminActivationAddToRosterBatchResponse> => {
+  return orvalFetcher<adminActivationAddToRosterBatchResponse>(
+    getAdminActivationAddToRosterBatchUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(adminActivationAddToRosterBatchBody)
+    }
+  );
+};
+
+export const getAdminActivationAddToRosterBatchMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminActivationAddToRosterBatch>>,
+    TError,
+    { id: unknown; data: AdminActivationAddToRosterBatchBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminActivationAddToRosterBatch>>,
+  TError,
+  { id: unknown; data: AdminActivationAddToRosterBatchBody },
+  TContext
+> => {
+  const mutationKey = ["adminActivationAddToRosterBatch"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminActivationAddToRosterBatch>>,
+    { id: unknown; data: AdminActivationAddToRosterBatchBody }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return adminActivationAddToRosterBatch(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminActivationAddToRosterBatchMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminActivationAddToRosterBatch>>
+>;
+export type AdminActivationAddToRosterBatchMutationBody = AdminActivationAddToRosterBatchBody;
+export type AdminActivationAddToRosterBatchMutationError = void;
+
+/**
+ * @summary Add multiple users to activation roster (atomic)
+ */
+export const useAdminActivationAddToRosterBatch = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminActivationAddToRosterBatch>>,
+      TError,
+      { id: unknown; data: AdminActivationAddToRosterBatchBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminActivationAddToRosterBatch>>,
+  TError,
+  { id: unknown; data: AdminActivationAddToRosterBatchBody },
+  TContext
+> => {
+  return useMutation(getAdminActivationAddToRosterBatchMutationOptions(options), queryClient);
 };
 
 export type adminActivationRemoveFromRosterResponse200 = {
