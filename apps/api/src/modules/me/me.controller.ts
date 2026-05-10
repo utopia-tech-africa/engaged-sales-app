@@ -110,6 +110,7 @@ export class MeController {
           id: "cmad4p0bo0000iib0i0l9e8wk",
           latitude: -1.286389,
           longitude: 36.817223,
+          placeLabel: "City Square, Nairobi, Kenya",
           recordedAt: "2026-05-08T18:20:00.000Z"
         }
       ]
@@ -154,6 +155,7 @@ export class MeController {
         userId: "cmad4p0bo0000iib0i0l9e8wk",
         latitude: -1.286389,
         longitude: 36.817223,
+        placeLabel: "City Square, Nairobi, Kenya",
         recordedAt: "2026-05-08T18:20:00.000Z"
       }
     }

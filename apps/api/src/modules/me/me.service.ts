@@ -1,9 +1,10 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.type";
 import type { UpdateLocationDto } from "./dto/update-location.dto";
 import type { UpdateMeDto } from "./dto/update-me.dto";
-import { MeRepository } from "./me.repository";
+import { type LocationPingHistoryRow, MeRepository } from "./me.repository";
+import { ReverseGeocodeService } from "./reverse-geocode.service";
 
 const toProfilePatch = (
   value: UpdateMeDto
@@ -21,7 +22,10 @@ const toProfilePatch = (
 
 @Injectable()
 export class MeService {
-  public constructor(@Inject(MeRepository) private readonly meRepository: MeRepository) {}
+  public constructor(
+    private readonly meRepository: MeRepository,
+    private readonly reverseGeocode: ReverseGeocodeService
+  ) {}
 
   public async getCurrentUser(currentUser: AuthenticatedUser) {
     const profile = await this.meRepository.getProfile(currentUser.id);
@@ -41,12 +45,28 @@ export class MeService {
     return this.meRepository.updateProfile(currentUser.id, patch);
   }
 
-  public updateLocation(currentUser: AuthenticatedUser, payload: UpdateLocationDto) {
-    return this.meRepository.addLocation(currentUser.id, payload.latitude, payload.longitude);
+  public async updateLocation(currentUser: AuthenticatedUser, payload: UpdateLocationDto) {
+    const placeLabel = await this.reverseGeocode.resolvePlaceLabel(
+      payload.latitude,
+      payload.longitude
+    );
+    return this.meRepository.addLocation(
+      currentUser.id,
+      payload.latitude,
+      payload.longitude,
+      placeLabel
+    );
   }
 
-  public listLocationHistory(currentUser: AuthenticatedUser, limit: number) {
+  public async listLocationHistory(
+    currentUser: AuthenticatedUser,
+    limit: number
+  ): Promise<LocationPingHistoryRow[]> {
     const take = Math.min(100, Math.max(1, limit));
-    return this.meRepository.listLocationPingsByUser(currentUser.id, take);
+    const rows: LocationPingHistoryRow[] = await this.meRepository.listLocationPingsByUser(
+      currentUser.id,
+      take
+    );
+    return rows;
   }
 }

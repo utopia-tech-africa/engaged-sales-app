@@ -25,6 +25,17 @@ export default tseslint.config(
     }
   },
   {
+    files: ["apps/api/**/*.ts"],
+    ignores: ["apps/api/src/generated/**", "apps/api/prisma.config.ts"],
+    languageOptions: {
+      parserOptions: {
+        projectService: false,
+        project: ["./apps/api/tsconfig.json"],
+        tsconfigRootDir: import.meta.dirname
+      }
+    }
+  },
+  {
     files: ["**/*.module.ts"],
     rules: {
       "@typescript-eslint/no-extraneous-class": "off",

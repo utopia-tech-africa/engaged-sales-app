@@ -98,6 +98,7 @@ const locationPingSchema = z.object({
   userId: z.string(),
   latitude: z.number(),
   longitude: z.number(),
+  placeLabel: z.string().nullable().optional(),
   recordedAt: z.string()
 });
 
@@ -111,6 +112,7 @@ const locationHistoryPingSchema = z.object({
   id: z.string(),
   latitude: z.number(),
   longitude: z.number(),
+  placeLabel: z.string().nullable().optional(),
   recordedAt: z.string()
 });
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { type ReactElement } from "react";
 
-import { ReverseGeocodeLabel } from "@/components/reverse-geocode-label";
+import { LocationPlaceLine } from "@/components/location-place-line";
 import { useMeListLocationHistory } from "@/lib/api/generated/client";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseLocationHistoryFromOrval } from "@/lib/auth/orval-auth-adapter";
@@ -69,7 +69,11 @@ export default function FieldHistoryPage(): ReactElement {
                 {formatFieldCheckInDateTime(row.recordedAt)}
               </p>
               <p className="mt-1 text-xs leading-snug">
-                <ReverseGeocodeLabel latitude={row.latitude} longitude={row.longitude} />
+                <LocationPlaceLine
+                  placeLabel={row.placeLabel}
+                  latitude={row.latitude}
+                  longitude={row.longitude}
+                />
               </p>
             </li>
           ))}
