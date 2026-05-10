@@ -4022,6 +4022,158 @@ export function useMeGetMe<TData = Awaited<ReturnType<typeof meGetMe>>, TError =
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
+/** GET /me/location/history — hand-maintained until OpenAPI regen includes this route. */
+const clampLocationHistoryLimit = (limit: number): number =>
+  Math.min(100, Math.max(1, Number.isFinite(limit) ? Math.trunc(limit) : 50));
+
+export type meListLocationHistoryResponse200 = {
+  data: unknown;
+  status: 200;
+};
+
+export type meListLocationHistoryResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type meListLocationHistoryResponseSuccess = meListLocationHistoryResponse200 & {
+  headers: Headers;
+};
+export type meListLocationHistoryResponseError = meListLocationHistoryResponse401 & {
+  headers: Headers;
+};
+
+export type meListLocationHistoryResponse =
+  | meListLocationHistoryResponseSuccess
+  | meListLocationHistoryResponseError;
+
+export const getMeListLocationHistoryUrl = (limit: number) => {
+  const take = clampLocationHistoryLimit(limit);
+  return `/me/location/history?limit=${String(take)}`;
+};
+
+export const meListLocationHistory = async (
+  limit: number,
+  options?: RequestInit
+): Promise<meListLocationHistoryResponse> => {
+  return orvalFetcher<meListLocationHistoryResponse>(getMeListLocationHistoryUrl(limit), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getMeListLocationHistoryQueryKey = (limit: number) => {
+  return [`/me/location/history`, clampLocationHistoryLimit(limit)] as const;
+};
+
+export const getMeListLocationHistoryQueryOptions = <
+  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
+  TError = void
+>(
+  limit: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  const take = clampLocationHistoryLimit(limit);
+  const queryKey = queryOptions?.queryKey ?? getMeListLocationHistoryQueryKey(take);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof meListLocationHistory>>> = ({ signal }) =>
+    meListLocationHistory(take, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof meListLocationHistory>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MeListLocationHistoryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof meListLocationHistory>>
+>;
+export type MeListLocationHistoryQueryError = void;
+
+export function useMeListLocationHistory<
+  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
+  TError = void
+>(
+  limit: number,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof meListLocationHistory>>,
+          TError,
+          Awaited<ReturnType<typeof meListLocationHistory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useMeListLocationHistory<
+  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
+  TError = void
+>(
+  limit: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof meListLocationHistory>>,
+          TError,
+          Awaited<ReturnType<typeof meListLocationHistory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useMeListLocationHistory<
+  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
+  TError = void
+>(
+  limit: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useMeListLocationHistory<
+  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
+  TError = void
+>(
+  limit: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getMeListLocationHistoryQueryOptions(limit, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
 export type meUpdateMeResponse200 = {
   data: unknown;
   status: 200;

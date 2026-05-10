@@ -106,3 +106,18 @@ export type LocationPing = z.infer<typeof locationPingSchema>;
 export const parseLocationPingFromOrval = (result: unknown): LocationPing => {
   return locationPingSchema.parse(unwrapOrvalResponseBody(result));
 };
+
+const locationHistoryPingSchema = z.object({
+  id: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  recordedAt: z.string()
+});
+
+const locationHistorySchema = z.array(locationHistoryPingSchema);
+
+export type LocationHistoryPing = z.infer<typeof locationHistoryPingSchema>;
+
+export const parseLocationHistoryFromOrval = (result: unknown): LocationHistoryPing[] => {
+  return locationHistorySchema.parse(unwrapOrvalResponseBody(result));
+};

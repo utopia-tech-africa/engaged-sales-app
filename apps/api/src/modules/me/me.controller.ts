@@ -1,10 +1,22 @@
-import { Body, Controller, Get, Inject, Patch, Post, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Get,
+  Inject,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards
+} from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiBody,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse
 } from "@nestjs/swagger";
@@ -82,6 +94,39 @@ export class MeController {
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT token" })
   public updateMe(@CurrentUser() currentUser: AuthenticatedUser, @Body() body: UpdateMeDto) {
     return this.meService.updateCurrentUser(currentUser, body);
+  }
+
+  @Get("location/history")
+  @ApiOperation({
+    operationId: "Me_listLocationHistory",
+    summary: "List own location check-ins",
+    description: "Returns recent location pings for the authenticated user, newest first."
+  })
+  @ApiOkResponse({
+    description: "Location ping rows",
+    schema: {
+      example: [
+        {
+          id: "cmad4p0bo0000iib0i0l9e8wk",
+          latitude: -1.286389,
+          longitude: 36.817223,
+          recordedAt: "2026-05-08T18:20:00.000Z"
+        }
+      ]
+    }
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Maximum rows to return (1–100, default 50)",
+    schema: { type: "integer", default: 50, minimum: 1, maximum: 100 }
+  })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid JWT token" })
+  public listLocationHistory(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Query("limit", new DefaultValuePipe(50), ParseIntPipe) limit: number
+  ) {
+    return this.meService.listLocationHistory(currentUser, limit);
   }
 
   @Post("location")

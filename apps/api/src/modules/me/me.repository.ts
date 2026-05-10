@@ -61,4 +61,18 @@ export class MeRepository {
       }
     });
   }
+
+  public listLocationPingsByUser(userId: string, take: number) {
+    return this.prisma.locationPing.findMany({
+      where: { userId },
+      orderBy: { recordedAt: "desc" },
+      take,
+      select: {
+        id: true,
+        latitude: true,
+        longitude: true,
+        recordedAt: true
+      }
+    });
+  }
 }

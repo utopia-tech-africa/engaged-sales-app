@@ -1,43 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { type ReactElement, useEffect, useState } from "react";
+import { type ReactElement } from "react";
 
-import { MobileShell } from "@/components/mobile-shell";
-import {
-  useAuthListSessions,
-  useAuthSignOut,
-  useMeGetMe,
-  useMeUpdateMeLocation
-} from "@/lib/api/generated/client";
-import { useAuthStore, useAuthStoreHydrated } from "@/lib/auth/auth-store";
-import {
-  parseLocationPingFromOrval,
-  parseMeProfileFromOrval,
-  parseSessionsFromOrval,
-  type LocationPing
-} from "@/lib/auth/orval-auth-adapter";
-import {
-  calmMutedLinkClass,
-  calmPrimaryButtonClass,
-  calmSecondaryButtonClass
-} from "@/lib/calm-ui";
-import { requestCurrentPosition } from "@/lib/geolocation/request-current-position";
-import { isOpsRole } from "@/lib/ops/ops-adapters";
+import { fieldNavItems } from "@/components/field-shell";
+import { useAuthListSessions, useMeGetMe } from "@/lib/api/generated/client";
+import { useAuthStore } from "@/lib/auth/auth-store";
+import { parseMeProfileFromOrval, parseSessionsFromOrval } from "@/lib/auth/orval-auth-adapter";
+import { calmMutedLinkClass } from "@/lib/calm-ui";
+import { cn } from "@/lib/utils";
 
-export default function DashboardPage(): ReactElement {
-  const router = useRouter();
-  const authHydrated = useAuthStoreHydrated();
+export default function DashboardHomePage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
-  const refreshToken = useAuthStore((state) => state.refreshToken);
-  const clearSession = useAuthStore((state) => state.clearSession);
-
-  useEffect(() => {
-    if (authHydrated && accessToken === null) {
-      router.replace("/auth/sign-in");
-    }
-  }, [authHydrated, accessToken, router]);
 
   const meQuery = useMeGetMe({
     query: {
@@ -46,81 +20,44 @@ export default function DashboardPage(): ReactElement {
     }
   });
 
-  useEffect(() => {
-    if (meQuery.data !== undefined && isOpsRole(meQuery.data.role)) {
-      router.replace("/ops");
-    }
-  }, [meQuery.data, router]);
-
   const sessionsQuery = useAuthListSessions({
     query: {
       enabled: accessToken !== null,
       select: (result) => parseSessionsFromOrval(result)
     }
   });
-  const signOutMutation = useAuthSignOut();
-  const locationMutation = useMeUpdateMeLocation();
-  const [isLocating, setIsLocating] = useState(false);
-  const [geoError, setGeoError] = useState<string | null>(null);
-  const [lastPing, setLastPing] = useState<LocationPing | null>(null);
-
-  const handleCheckIn = (): void => {
-    setGeoError(null);
-    setIsLocating(true);
-    void (async () => {
-      const pos = await requestCurrentPosition();
-      if (!pos.ok) {
-        setIsLocating(false);
-        setGeoError(pos.message);
-        return;
-      }
-      locationMutation.mutate(
-        {
-          data: {
-            latitude: pos.latitude,
-            longitude: pos.longitude
-          }
-        },
-        {
-          onSuccess: (result) => {
-            setLastPing(parseLocationPingFromOrval(result));
-          },
-          onSettled: () => {
-            setIsLocating(false);
-          }
-        }
-      );
-    })();
-  };
-
-  const handleSignOut = (): void => {
-    void (async () => {
-      if (refreshToken !== null) {
-        await signOutMutation
-          .mutateAsync({
-            data: { refreshToken }
-          })
-          .catch(() => undefined);
-      }
-      clearSession();
-      router.replace("/auth/sign-in");
-    })();
-  };
-
-  if (!authHydrated || accessToken === null) {
-    return <MobileShell title="Loading…" subtitle="Restoring your session." />;
-  }
 
   return (
-    <MobileShell
-      variant="app"
-      title="Dashboard"
-      subtitle="Your active auth session and profile details."
-    >
-      <section className="mb-4 rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">Home</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Profile, sessions, and shortcuts to field tools.
+        </p>
+      </div>
+
+      <nav aria-label="Shortcuts">
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {fieldNavItems.slice(1).map(({ href, label, Icon }) => (
+            <li key={href}>
+              <Link
+                href={href}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card/80 px-3 py-4 text-center text-sm font-medium text-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-muted/30 dark:bg-card/50"
+                )}
+              >
+                <Icon className="size-6 text-primary" aria-hidden />
+                {label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
         <h2 className="text-base font-semibold text-foreground">Profile</h2>
         {meQuery.isLoading ? (
-          <p className="mt-2 text-sm text-muted-foreground">Loading profile...</p>
+          <p className="mt-2 text-sm text-muted-foreground">Loading profile…</p>
         ) : null}
         {meQuery.isError ? (
           <p className="mt-2 text-sm text-destructive" role="alert">
@@ -139,7 +76,7 @@ export default function DashboardPage(): ReactElement {
             </div>
             <div>
               <dt className="inline font-medium text-foreground">Role: </dt>
-              <dd className="inline">{meQuery.data.role}</dd>
+              <dd className="inline capitalize">{meQuery.data.role}</dd>
             </div>
             <div>
               <dt className="inline font-medium text-foreground">Region: </dt>
@@ -149,10 +86,10 @@ export default function DashboardPage(): ReactElement {
         ) : null}
       </section>
 
-      <section className="mb-4 rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
+      <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
         <h2 className="text-base font-semibold text-foreground">Sessions</h2>
         {sessionsQuery.isLoading ? (
-          <p className="mt-2 text-sm text-muted-foreground">Loading sessions...</p>
+          <p className="mt-2 text-sm text-muted-foreground">Loading sessions…</p>
         ) : null}
         {sessionsQuery.isError ? (
           <p className="mt-2 text-sm text-destructive" role="alert">
@@ -177,55 +114,11 @@ export default function DashboardPage(): ReactElement {
         ) : null}
       </section>
 
-      <section className="mb-4 rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
-        <h2 className="text-base font-semibold text-foreground">Field check-in</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Record where you are right now. Your browser will ask for location permission—only
-          coordinates are sent to the server.
-        </p>
-        {geoError ? (
-          <p className="mt-3 text-sm text-destructive" role="alert">
-            {geoError}
-          </p>
-        ) : null}
-        {locationMutation.isError ? (
-          <p className="mt-3 text-sm text-destructive" role="alert">
-            Could not save check-in. Try again.
-          </p>
-        ) : null}
-        {lastPing ? (
-          <p className="mt-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-foreground dark:bg-muted/15">
-            <span className="font-medium">Last saved: </span>
-            {new Date(lastPing.recordedAt).toLocaleString()}
-            <br />
-            <span className="text-muted-foreground">
-              {lastPing.latitude.toFixed(5)}, {lastPing.longitude.toFixed(5)}
-            </span>
-          </p>
-        ) : null}
-        <button
-          type="button"
-          className={`${calmPrimaryButtonClass} mt-4`}
-          disabled={isLocating || locationMutation.isPending}
-          onClick={handleCheckIn}
-        >
-          {isLocating || locationMutation.isPending ? "Saving check-in…" : "Check in with location"}
-        </button>
-      </section>
-
-      <div className="mt-5 flex flex-col gap-3">
-        <button
-          type="button"
-          className={calmSecondaryButtonClass}
-          disabled={signOutMutation.isPending}
-          onClick={handleSignOut}
-        >
-          {signOutMutation.isPending ? "Signing out..." : "Sign out"}
-        </button>
+      <p className="text-center text-sm">
         <Link href="/auth/sign-in" className={calmMutedLinkClass}>
-          Back to auth
+          Switch account
         </Link>
-      </div>
-    </MobileShell>
+      </p>
+    </div>
   );
 }

@@ -44,4 +44,9 @@ export class MeService {
   public updateLocation(currentUser: AuthenticatedUser, payload: UpdateLocationDto) {
     return this.meRepository.addLocation(currentUser.id, payload.latitude, payload.longitude);
   }
+
+  public listLocationHistory(currentUser: AuthenticatedUser, limit: number) {
+    const take = Math.min(100, Math.max(1, limit));
+    return this.meRepository.listLocationPingsByUser(currentUser.id, take);
+  }
 }
