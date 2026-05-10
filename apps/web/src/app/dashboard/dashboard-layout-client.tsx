@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type PropsWithChildren, type ReactElement, useEffect } from "react";
 
 import { FieldShell } from "@/components/field-shell";
@@ -10,6 +10,8 @@ import { isOpsRole } from "@/lib/ops/ops-adapters";
 
 export const DashboardLayoutClient = ({ children }: PropsWithChildren): ReactElement => {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const authHydrated = useAuthStoreHydrated();
   const accessToken = useAuthStore((state) => state.accessToken);
   const refreshToken = useAuthStore((state) => state.refreshToken);
@@ -19,9 +21,11 @@ export const DashboardLayoutClient = ({ children }: PropsWithChildren): ReactEle
 
   useEffect(() => {
     if (authHydrated && accessToken === null) {
-      router.replace("/auth/sign-in");
+      const qs = searchParams.toString();
+      const returnTo = qs.length > 0 ? `${pathname}?${qs}` : pathname;
+      router.replace(`/auth/sign-in?redirect=${encodeURIComponent(returnTo)}`);
     }
-  }, [authHydrated, accessToken, router]);
+  }, [authHydrated, accessToken, pathname, router, searchParams]);
 
   useEffect(() => {
     if (user !== null && isOpsRole(user.role)) {

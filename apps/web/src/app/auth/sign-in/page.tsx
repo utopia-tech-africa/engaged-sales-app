@@ -4,20 +4,24 @@ import { FormControl } from "baseui/form-control";
 import { Input } from "baseui/input";
 import { Select } from "baseui/select";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { type ReactElement, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, type ReactElement, useState } from "react";
 
 import { MobileShell } from "@/components/mobile-shell";
 import { useAuthSignIn } from "@/lib/api/generated/client";
 import { ApiError } from "@/lib/api/problem-details";
+import { resolvePostSignInRedirect } from "@/lib/auth/safe-post-sign-in-redirect";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseAuthResponseFromOrval } from "@/lib/auth/orval-auth-adapter";
 import { calmPrimaryButtonClass, calmTextLinkClass } from "@/lib/calm-ui";
 import { requestCurrentPosition } from "@/lib/geolocation/request-current-position";
 import { isOpsRole } from "@/lib/ops/ops-adapters";
 
-export default function SignInPage(): ReactElement {
+function SignInForm(): ReactElement {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectAfterAuth = searchParams.get("redirect");
+
   const setSession = useAuthStore((state) => state.setSession);
   const [phone, setPhone] = useState("");
   const [uniqueCode, setUniqueCode] = useState("");
@@ -42,7 +46,8 @@ export default function SignInPage(): ReactElement {
           accessToken: parsed.accessToken,
           refreshToken: parsed.refreshToken
         });
-        router.replace(isOpsRole(parsed.user.role) ? "/ops" : "/dashboard");
+        const next = resolvePostSignInRedirect(redirectAfterAuth, parsed.user.role);
+        router.replace(next);
       }
     }
   });
@@ -172,5 +177,19 @@ export default function SignInPage(): ReactElement {
         </Link>
       </p>
     </MobileShell>
+  );
+}
+
+export default function SignInPage(): ReactElement {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-dvh items-center justify-center bg-background text-muted-foreground">
+          Loading…
+        </div>
+      }
+    >
+      <SignInForm />
+    </Suspense>
   );
 }

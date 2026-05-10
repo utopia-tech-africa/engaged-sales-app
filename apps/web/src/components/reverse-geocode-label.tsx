@@ -3,16 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 
+import { shortenPlaceNameForDisplay } from "@/lib/format-short-place-name";
 import { cn } from "@/lib/utils";
 
 const formatCoordPair = (latitude: number, longitude: number): string =>
   `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-
-const shortenPlaceName = (displayName: string): string => {
-  const parts = displayName.split(",").map((p) => p.trim());
-  const head = parts.slice(0, 3).join(", ");
-  return head.length > 0 ? head : displayName;
-};
 
 const fetchReverseDisplayName = async (latitude: number, longitude: number): Promise<string> => {
   const params = new URLSearchParams({
@@ -26,7 +21,7 @@ const fetchReverseDisplayName = async (latitude: number, longitude: number): Pro
       typeof data === "object" &&
       data !== null &&
       "error" in data &&
-      typeof (data).error === "string"
+      typeof (data as { error?: unknown }).error === "string"
         ? (data as { error: string }).error
         : "Could not resolve place name.";
     throw new Error(message);
@@ -35,7 +30,7 @@ const fetchReverseDisplayName = async (latitude: number, longitude: number): Pro
     typeof data === "object" &&
     data !== null &&
     "displayName" in data &&
-    typeof (data).displayName === "string"
+    typeof data.displayName === "string"
   ) {
     return (data as { displayName: string }).displayName;
   }
@@ -84,7 +79,7 @@ export function ReverseGeocodeLabel({
   }
 
   const full = query.data;
-  const short = shortenPlaceName(full);
+  const short = shortenPlaceNameForDisplay(full);
   const showEllipsis = short.length < full.length;
 
   return (

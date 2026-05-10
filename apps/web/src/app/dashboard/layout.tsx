@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { type ReactElement, type ReactNode } from "react";
+import { Suspense, type ReactElement, type ReactNode } from "react";
 
 import { DashboardLayoutClient } from "./dashboard-layout-client";
 
@@ -9,5 +9,15 @@ export const metadata: Metadata = {
 };
 
 export default function DashboardLayout({ children }: { children: ReactNode }): ReactElement {
-  return <DashboardLayoutClient>{children}</DashboardLayoutClient>;
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-dvh items-center justify-center bg-background text-muted-foreground">
+          Loading…
+        </div>
+      }
+    >
+      <DashboardLayoutClient>{children}</DashboardLayoutClient>
+    </Suspense>
+  );
 }

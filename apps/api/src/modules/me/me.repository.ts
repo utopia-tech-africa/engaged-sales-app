@@ -2,6 +2,15 @@ import { Inject, Injectable } from "@nestjs/common";
 
 import { PrismaService } from "../prisma/prisma.service";
 
+/** Shape returned by {@link MeRepository.listLocationPingsByUser} (explicit for ESLint / Prisma inference). */
+export type LocationPingHistoryRow = {
+  id: string;
+  latitude: number;
+  longitude: number;
+  placeLabel: string | null;
+  recordedAt: Date;
+};
+
 @Injectable()
 export class MeRepository {
   public constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
@@ -46,23 +55,33 @@ export class MeRepository {
     });
   }
 
-  public addLocation(userId: string, latitude: number, longitude: number) {
+  public addLocation(
+    userId: string,
+    latitude: number,
+    longitude: number,
+    placeLabel: string | null
+  ) {
     return this.prisma.locationPing.create({
       data: {
         userId,
         latitude,
-        longitude
+        longitude,
+        placeLabel
       },
       select: {
         userId: true,
         latitude: true,
         longitude: true,
+        placeLabel: true,
         recordedAt: true
       }
     });
   }
 
-  public listLocationPingsByUser(userId: string, take: number) {
+  public async listLocationPingsByUser(
+    userId: string,
+    take: number
+  ): Promise<LocationPingHistoryRow[]> {
     return this.prisma.locationPing.findMany({
       where: { userId },
       orderBy: { recordedAt: "desc" },
@@ -71,6 +90,7 @@ export class MeRepository {
         id: true,
         latitude: true,
         longitude: true,
+        placeLabel: true,
         recordedAt: true
       }
     });

@@ -5,6 +5,7 @@ import { type ReactElement } from "react";
 
 import { fieldNavItems } from "@/components/field-shell";
 import { useAuthListSessions, useMeGetMe } from "@/lib/api/generated/client";
+import { CHECK_IN_PATH, fieldCheckInHref } from "@/lib/field/check-in-deep-link";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseMeProfileFromOrval, parseSessionsFromOrval } from "@/lib/auth/orval-auth-adapter";
 import { calmMutedLinkClass } from "@/lib/calm-ui";
@@ -41,7 +42,7 @@ export default function DashboardHomePage(): ReactElement {
           {fieldNavItems.slice(1).map(({ href, label, Icon }) => (
             <li key={href}>
               <Link
-                href={href}
+                href={href === CHECK_IN_PATH ? fieldCheckInHref({ source: "home" }) : href}
                 className={cn(
                   "flex flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card/80 px-3 py-4 text-center text-sm font-medium text-foreground shadow-sm transition-colors hover:border-primary/40 hover:bg-muted/30 dark:bg-card/50"
                 )}

@@ -77,12 +77,14 @@ model AuthSession {
 }
 
 model LocationPing {
-  id        String   @id @default(cuid())
-  userId    String
-  latitude  Float
-  longitude Float
+  id         String   @id @default(cuid())
+  userId     String
+  latitude   Float
+  longitude  Float
+  /// Human-readable place from reverse geocoding when the ping was saved (nullable for legacy rows).
+  placeLabel String?
   recordedAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, recordedAt(sort: Desc)])
 }
