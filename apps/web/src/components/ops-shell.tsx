@@ -75,10 +75,10 @@ export const OpsShell = ({
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-background">
+    <div className="relative h-dvh overflow-hidden bg-background">
       <CalmBackground />
-      <div className="relative z-10 flex min-h-screen">
-        <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card/90 backdrop-blur-sm lg:flex dark:bg-card/70">
+      <div className="relative z-10 flex h-dvh min-h-0 flex-row overflow-hidden">
+        <aside className="hidden h-dvh w-60 shrink-0 flex-col overflow-hidden border-r border-border bg-card/90 backdrop-blur-sm lg:flex dark:bg-card/70">
           <div className="flex h-14 items-center border-b border-border px-4">
             <Link href="/ops" className="text-sm font-semibold text-foreground">
               Engaged Sales
@@ -87,9 +87,11 @@ export const OpsShell = ({
               Ops
             </span>
           </div>
-          <div className="flex flex-1 flex-col p-3">
-            <OpsNavLinks role={user.role} />
-            <div className="mt-auto border-t border-border pt-4">
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 overflow-y-auto p-3 pb-2">
+              <OpsNavLinks role={user.role} />
+            </div>
+            <div className="shrink-0 border-t border-border p-3 pt-4">
               <p className="truncate px-3 text-xs text-muted-foreground" title={user.fullName}>
                 {user.fullName}
               </p>
@@ -161,8 +163,8 @@ export const OpsShell = ({
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-sm lg:hidden">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <header className="z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/90 px-4 backdrop-blur-sm lg:hidden">
             <button
               type="button"
               className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground"
@@ -175,7 +177,7 @@ export const OpsShell = ({
             </button>
             <span className="truncate text-sm font-semibold text-foreground">Operations</span>
           </header>
-          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <main className="mx-auto min-h-0 w-full max-w-6xl flex-1 overflow-y-auto overscroll-y-contain px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
             {children}
           </main>
         </div>

@@ -137,7 +137,7 @@ function Calendar({
         range_middle: cn("rounded-none", defaultClassNames.range_middle),
         range_end: cn("rounded-r-md bg-accent", defaultClassNames.range_end),
         today: cn(
-          "rounded-md bg-accent text-accent-foreground data-[selected=true]:rounded-none",
+          "rounded-[var(--radius)] bg-accent text-accent-foreground data-[selected=true]:rounded-none",
           defaultClassNames.today
         ),
         outside: cn(
@@ -149,8 +149,19 @@ function Calendar({
         ...classNames
       }}
       components={{
-        Root: ({ className: rootClassName, rootRef, ...rootProps }) => (
-          <div data-slot="calendar" ref={rootRef} className={cn(rootClassName)} {...rootProps} />
+        Root: ({ className: rootClassName, rootRef, style, ...rootProps }) => (
+          <div
+            data-slot="calendar"
+            ref={rootRef}
+            className={cn(rootClassName)}
+            {...rootProps}
+            style={Object.assign({}, style ?? {}, {
+              // RDP style.css sets 100% on .rdp-root; that sheet can win over Tailwind utilities in cascade.
+              // Inline custom properties on this node override .rdp-root so day buttons are not circular.
+              "--rdp-day_button-border-radius": "var(--radius)",
+              "--rdp-week_number-border-radius": "var(--radius)"
+            } satisfies Record<string, string>)}
+          />
         ),
         Chevron: ({ className: chevronClassName, orientation, ...chevronProps }) => {
           if (orientation === "left") {
