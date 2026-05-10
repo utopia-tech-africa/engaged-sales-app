@@ -1419,6 +1419,55 @@
         "tags": ["Me"]
       }
     },
+    "/me/location/history": {
+      "get": {
+        "description": "Returns recent location pings for the authenticated user, newest first.",
+        "operationId": "Me_listLocationHistory",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum rows to return (1–100, default 50)",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Location ping rows",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": [
+                    {
+                      "id": "cmad4p0bo0000iib0i0l9e8wk",
+                      "latitude": -1.286389,
+                      "longitude": 36.817223,
+                      "recordedAt": "2026-05-08T18:20:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List own location check-ins",
+        "tags": ["Me"]
+      }
+    },
     "/me/location": {
       "post": {
         "description": "Stores a location ping for the authenticated user.",
