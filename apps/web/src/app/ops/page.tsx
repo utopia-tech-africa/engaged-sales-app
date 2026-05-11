@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { type ReactElement } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import {
   useActivationListActivations,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/api/generated/client";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseMeProfileFromOrval, parseSessionsFromOrval } from "@/lib/auth/orval-auth-adapter";
+import { listOutlets } from "@/lib/outlet/outlet-api";
 import {
   parseActivationsFromOrval,
   parseAdminUsersFromOrval,
@@ -77,6 +79,12 @@ export default function OpsOverviewPage(): ReactElement {
       enabled: accessToken !== null && canManageActivations,
       select: (r) => parseActivationsFromOrval(r)
     }
+  });
+
+  const outletsQuery = useQuery({
+    queryKey: ["ops", "outlets"],
+    queryFn: async () => listOutlets(accessToken ?? ""),
+    enabled: accessToken !== null
   });
 
   const sessionCount = sessionsQuery.data?.sessions.length ?? "—";
@@ -206,6 +214,25 @@ export default function OpsOverviewPage(): ReactElement {
             <p className="mt-2 text-2xl font-semibold text-foreground">{usersQuery.data.length}</p>
           ) : null}
           <Link href="/ops/users" className="mt-3 inline-block text-sm font-medium text-primary">
+            Manage →
+          </Link>
+        </div>
+        <div className={cardClass}>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Outlets
+          </p>
+          {outletsQuery.isLoading ? (
+            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
+          ) : null}
+          {outletsQuery.isError ? (
+            <p className="mt-2 text-sm text-destructive">Could not load</p>
+          ) : null}
+          {outletsQuery.data !== undefined ? (
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {outletsQuery.data.length}
+            </p>
+          ) : null}
+          <Link href="/ops/outlets" className="mt-3 inline-block text-sm font-medium text-primary">
             Manage →
           </Link>
         </div>

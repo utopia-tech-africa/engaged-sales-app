@@ -4,6 +4,13 @@ CREATE TYPE "UserRole" AS ENUM ('promoter', 'merchandizer', 'supervisor', 'admin
 -- CreateEnum
 CREATE TYPE "Gender" AS ENUM ('male', 'female', 'other');
 
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'AttendanceKind') THEN
+    CREATE TYPE "AttendanceKind" AS ENUM ('clock_in', 'clock_out');
+  END IF;
+END $$;
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -39,6 +46,7 @@ CREATE TABLE "AuthSession" (
 CREATE TABLE "LocationPing" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "attendanceKind" "AttendanceKind" NOT NULL DEFAULT 'clock_in',
     "latitude" DOUBLE PRECISION NOT NULL,
     "longitude" DOUBLE PRECISION NOT NULL,
     "recordedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

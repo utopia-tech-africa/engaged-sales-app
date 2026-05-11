@@ -20,6 +20,7 @@ export const fieldNavItems = [
     Icon: Store
   },
   { href: "/dashboard/check-in", label: "Check-in", segment: "check-in" as const, Icon: MapPin },
+  { href: "/dashboard/outlet-visits", label: "Outlets", segment: "outlets" as const, Icon: Store },
   { href: "/dashboard/history", label: "History", segment: "history" as const, Icon: History },
   { href: "/dashboard/support", label: "Support", segment: "support" as const, Icon: HelpCircle }
 ] as const;
