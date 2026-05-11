@@ -14,6 +14,7 @@ const navItemsForRole = (role: AuthUser["role"]): NavItem[] => {
   const items: NavItem[] = [
     { href: "/ops", label: "Overview" },
     { href: "/ops/stock", label: "Stock" },
+    { href: "/ops/targets", label: "Targets" },
     { href: "/ops/users", label: "Users" },
     { href: "/ops/regions", label: "Regions" },
     { href: "/ops/geofences", label: "Work areas" },

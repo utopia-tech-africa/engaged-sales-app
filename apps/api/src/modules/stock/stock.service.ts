@@ -14,6 +14,7 @@ import { StockRepository } from "./stock.repository";
 
 const FIELD_ROLES = new Set<UserRole>(["promoter", "merchandizer"]);
 const OPS_ROLES = new Set<UserRole>(["admin", "supervisor"]);
+const DAILY_TARGET_CASES = 10;
 
 type StockCounter = {
   openingStock: number;
@@ -22,6 +23,20 @@ type StockCounter = {
   closingBalance: number;
   dailySalesValue: number;
   dailyCaseAchievement: number | null;
+};
+
+type TargetUserRow = {
+  userId: string;
+  fullName: string;
+  phone: string;
+  role: UserRole;
+  dailyCasesSold: number;
+  dailyTargetCases: number;
+  dailyAchievementPercent: number;
+  monthlyCasesSold: number;
+  monthlyTargetCases: number;
+  monthlyAchievementPercent: number;
+  monthlyTargetContributionPercent: number;
 };
 
 @Injectable()
@@ -445,6 +460,186 @@ export class StockService {
       bySku,
       byUser,
       distributorAnalytics: distributorRows
+    };
+  }
+
+  public async getTargetMonitoring(
+    currentUser: AuthenticatedUser,
+    activationId: string,
+    dateRaw: string
+  ) {
+    this.assertOpsRole(currentUser);
+    const activation = await this.activationRepository.findById(activationId);
+    if (activation === null) {
+      throw new NotFoundException("Activation not found");
+    }
+
+    const selectedDate = new Date(`${dateRaw}T00:00:00.000Z`);
+    if (Number.isNaN(selectedDate.getTime())) {
+      throw new BadRequestException("date must be YYYY-MM-DD");
+    }
+
+    const dayStart = selectedDate;
+    const dayEnd = new Date(`${dateRaw}T23:59:59.999Z`);
+    const monthStart = new Date(
+      Date.UTC(selectedDate.getUTCFullYear(), selectedDate.getUTCMonth(), 1)
+    );
+    const monthEnd = new Date(
+      Date.UTC(selectedDate.getUTCFullYear(), selectedDate.getUTCMonth() + 1, 0, 23, 59, 59, 999)
+    );
+    const daysInMonth = monthEnd.getUTCDate();
+
+    const fieldRoster = activation.roster
+      .filter((entry) => FIELD_ROLES.has(entry.user.role))
+      .map((entry) => ({
+        userId: entry.user.id,
+        fullName: entry.user.fullName,
+        phone: entry.user.phone,
+        role: entry.user.role
+      }));
+    const rosterById = new Map(fieldRoster.map((member) => [member.userId, member]));
+
+    const [soldDaily, soldMonthly] = await Promise.all([
+      this.stockRepository.listSoldItemsForActivation({
+        activationId,
+        from: dayStart,
+        to: dayEnd
+      }),
+      this.stockRepository.listSoldItemsForActivation({
+        activationId,
+        from: monthStart,
+        to: monthEnd
+      })
+    ]);
+
+    const dailySoldByUser = new Map<string, number>();
+    const monthlySoldByUser = new Map<string, number>();
+
+    for (const row of soldDaily) {
+      if (!rosterById.has(row.sale.userId)) {
+        continue;
+      }
+      dailySoldByUser.set(
+        row.sale.userId,
+        (dailySoldByUser.get(row.sale.userId) ?? 0) + row.quantity
+      );
+    }
+    for (const row of soldMonthly) {
+      if (!rosterById.has(row.sale.userId)) {
+        continue;
+      }
+      monthlySoldByUser.set(
+        row.sale.userId,
+        (monthlySoldByUser.get(row.sale.userId) ?? 0) + row.quantity
+      );
+    }
+
+    const teamDailySold = [...dailySoldByUser.values()].reduce((sum, value) => sum + value, 0);
+    const teamMonthlySold = [...monthlySoldByUser.values()].reduce((sum, value) => sum + value, 0);
+    const teamSize = fieldRoster.length;
+    const teamDailyTarget = teamSize * DAILY_TARGET_CASES;
+
+    const teamAchievementPercent =
+      teamDailyTarget > 0 ? Number(((teamDailySold / teamDailyTarget) * 100).toFixed(2)) : 0;
+
+    const leaderboard: TargetUserRow[] = fieldRoster
+      .map((member) => {
+        const dailyCasesSold = dailySoldByUser.get(member.userId) ?? 0;
+        const monthlyCasesSold = monthlySoldByUser.get(member.userId) ?? 0;
+        const dailyTargetCases = DAILY_TARGET_CASES;
+        const monthlyTargetCases = DAILY_TARGET_CASES * daysInMonth;
+        const dailyAchievementPercent = Number(
+          ((dailyCasesSold / dailyTargetCases) * 100).toFixed(2)
+        );
+        const monthlyAchievementPercent = Number(
+          ((monthlyCasesSold / monthlyTargetCases) * 100).toFixed(2)
+        );
+        const monthlyTargetContributionPercent =
+          teamMonthlySold > 0 ? Number(((monthlyCasesSold / teamMonthlySold) * 100).toFixed(2)) : 0;
+
+        return {
+          userId: member.userId,
+          fullName: member.fullName,
+          phone: member.phone,
+          role: member.role,
+          dailyCasesSold,
+          dailyTargetCases,
+          dailyAchievementPercent,
+          monthlyCasesSold,
+          monthlyTargetCases,
+          monthlyAchievementPercent,
+          monthlyTargetContributionPercent
+        };
+      })
+      .sort((a, b) => {
+        if (b.dailyAchievementPercent !== a.dailyAchievementPercent) {
+          return b.dailyAchievementPercent - a.dailyAchievementPercent;
+        }
+        if (b.monthlyAchievementPercent !== a.monthlyAchievementPercent) {
+          return b.monthlyAchievementPercent - a.monthlyAchievementPercent;
+        }
+        return a.fullName.localeCompare(b.fullName);
+      });
+
+    const underperformerAlerts = leaderboard
+      .filter((row) => row.dailyCasesSold < row.dailyTargetCases)
+      .map((row) => {
+        const shortfall = row.dailyTargetCases - row.dailyCasesSold;
+        const severity = shortfall >= 5 ? "high" : shortfall >= 2 ? "medium" : "low";
+        return {
+          userId: row.userId,
+          fullName: row.fullName,
+          role: row.role,
+          shortfallCases: shortfall,
+          dailyAchievementPercent: row.dailyAchievementPercent,
+          severity
+        };
+      });
+
+    const averageDailyAchievementPercent =
+      leaderboard.length > 0
+        ? Number(
+            (
+              leaderboard.reduce((sum, row) => sum + row.dailyAchievementPercent, 0) /
+              leaderboard.length
+            ).toFixed(2)
+          )
+        : 0;
+    const onTargetCount = leaderboard.filter(
+      (row) => row.dailyCasesSold >= row.dailyTargetCases
+    ).length;
+    const topPerformer = leaderboard[0] ?? null;
+
+    return {
+      date: dateRaw,
+      activationId,
+      activationName: activation.name,
+      dailyTargetCases: DAILY_TARGET_CASES,
+      monthlyTargetCasesPerUser: DAILY_TARGET_CASES * daysInMonth,
+      teamAchievementPercent,
+      leaderboard,
+      underperformerAlerts,
+      summary: {
+        teamSize,
+        teamDailyTargetCases: teamDailyTarget,
+        teamDailyCasesSold: teamDailySold,
+        teamMonthlyCasesSold: teamMonthlySold,
+        averageDailyAchievementPercent,
+        onTargetCount
+      },
+      supervisorSummary: {
+        generatedByRole: currentUser.role,
+        topPerformer:
+          topPerformer === null
+            ? null
+            : {
+                userId: topPerformer.userId,
+                fullName: topPerformer.fullName,
+                dailyAchievementPercent: topPerformer.dailyAchievementPercent
+              },
+        underperformerCount: underperformerAlerts.length,
+        needsAttentionCount: underperformerAlerts.filter((row) => row.severity === "high").length
+      }
     };
   }
 }

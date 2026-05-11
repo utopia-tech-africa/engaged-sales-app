@@ -181,6 +181,12 @@ export default function OpsOverviewPage(): ReactElement {
             >
               Daily attendance →
             </Link>
+            <Link
+              href="/ops/targets"
+              className="mt-2 inline-block text-sm font-medium text-primary"
+            >
+              Daily targets →
+            </Link>
           </div>
         ) : null}
         <div className={cardClass}>

@@ -107,4 +107,25 @@ export class StockController {
     }
     return this.stockService.getAdminOverview(currentUser, activationId, date);
   }
+
+  @Get("/target-monitoring")
+  @ApiOperation({
+    operationId: "Stock_getTargetMonitoring",
+    summary: "Get daily target monitoring for team performance",
+    description:
+      "Returns daily achievement %, team achievement %, leaderboard, underperformer alerts and supervisor summary for trade developers."
+  })
+  @ApiQuery({ name: "activationId", required: true })
+  @ApiQuery({ name: "date", required: true, description: "YYYY-MM-DD" })
+  @ApiOkResponse({ description: "Daily target monitoring payload" })
+  public getTargetMonitoring(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Query("activationId") activationId: string,
+    @Query("date") date: string
+  ) {
+    if (activationId.trim().length === 0 || date.trim().length === 0) {
+      throw new BadRequestException("activationId and date are required");
+    }
+    return this.stockService.getTargetMonitoring(currentUser, activationId, date);
+  }
 }

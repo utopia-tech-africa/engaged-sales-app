@@ -63,6 +63,54 @@ export type StockAdminOverview = {
   }[];
 };
 
+export type StockTargetMonitoring = {
+  date: string;
+  activationId: string;
+  activationName: string;
+  dailyTargetCases: number;
+  monthlyTargetCasesPerUser: number;
+  teamAchievementPercent: number;
+  leaderboard: {
+    userId: string;
+    fullName: string;
+    phone: string;
+    role: "promoter" | "merchandizer" | "supervisor" | "admin";
+    dailyCasesSold: number;
+    dailyTargetCases: number;
+    dailyAchievementPercent: number;
+    monthlyCasesSold: number;
+    monthlyTargetCases: number;
+    monthlyAchievementPercent: number;
+    monthlyTargetContributionPercent: number;
+  }[];
+  underperformerAlerts: {
+    userId: string;
+    fullName: string;
+    role: "promoter" | "merchandizer" | "supervisor" | "admin";
+    shortfallCases: number;
+    dailyAchievementPercent: number;
+    severity: "low" | "medium" | "high";
+  }[];
+  summary: {
+    teamSize: number;
+    teamDailyTargetCases: number;
+    teamDailyCasesSold: number;
+    teamMonthlyCasesSold: number;
+    averageDailyAchievementPercent: number;
+    onTargetCount: number;
+  };
+  supervisorSummary: {
+    generatedByRole: "supervisor" | "admin";
+    topPerformer: {
+      userId: string;
+      fullName: string;
+      dailyAchievementPercent: number;
+    } | null;
+    underperformerCount: number;
+    needsAttentionCount: number;
+  };
+};
+
 export const recordStockPickup = async (token: string, payload: StockPickupPayload) =>
   apiRequest("/stock/pickups", { method: "POST", token, body: payload });
 
@@ -84,5 +132,14 @@ export const getStockAdminOverview = async (
 ) =>
   apiRequest<StockAdminOverview>(
     `/stock/admin-overview?activationId=${encodeURIComponent(args.activationId)}&date=${encodeURIComponent(args.date)}`,
+    { token }
+  );
+
+export const getStockTargetMonitoring = async (
+  token: string,
+  args: { activationId: string; date: string }
+) =>
+  apiRequest<StockTargetMonitoring>(
+    `/stock/target-monitoring?activationId=${encodeURIComponent(args.activationId)}&date=${encodeURIComponent(args.date)}`,
     { token }
   );
