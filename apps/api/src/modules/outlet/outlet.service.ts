@@ -77,6 +77,7 @@ export class OutletService {
     currentUser: AuthenticatedUser,
     params: {
       limit: number;
+      skip?: number;
       outletId?: string;
       userId?: string;
       from?: string;
@@ -85,6 +86,7 @@ export class OutletService {
   ) {
     this.assertOutletManager(currentUser);
     const take = Math.min(200, Math.max(1, params.limit));
+    const skip = Math.max(0, params.skip ?? 0);
     const fromDate = params.from !== undefined ? new Date(params.from) : undefined;
     const toDate = params.to !== undefined ? new Date(params.to) : undefined;
     if (fromDate !== undefined && Number.isNaN(fromDate.getTime())) {
@@ -95,6 +97,7 @@ export class OutletService {
     }
     return this.outletRepository.listVisitsForAdmin({
       take,
+      ...(skip > 0 ? { skip } : {}),
       ...(params.outletId !== undefined ? { outletId: params.outletId } : {}),
       ...(params.userId !== undefined ? { userId: params.userId } : {}),
       ...(fromDate !== undefined ? { from: fromDate } : {}),

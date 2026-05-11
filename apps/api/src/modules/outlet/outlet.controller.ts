@@ -64,6 +64,12 @@ export class OutletController {
     description: "Max rows (1-200, default 100)",
     schema: { type: "integer", default: 100, minimum: 1, maximum: 200 }
   })
+  @ApiQuery({
+    name: "skip",
+    required: false,
+    description: "Rows to skip for pagination (default 0)",
+    schema: { type: "integer", default: 0, minimum: 0 }
+  })
   @ApiQuery({ name: "outletId", required: false, description: "Filter one outlet id" })
   @ApiQuery({ name: "userId", required: false, description: "Filter one field user id" })
   @ApiQuery({ name: "from", required: false, description: "ISO datetime inclusive lower bound" })
@@ -74,6 +80,7 @@ export class OutletController {
   public listOutletVisits(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Query("limit", new DefaultValuePipe(100), ParseIntPipe) limit: number,
+    @Query("skip", new DefaultValuePipe(0), ParseIntPipe) skip: number,
     @Query("outletId") outletId?: string,
     @Query("userId") userId?: string,
     @Query("from") from?: string,
@@ -81,6 +88,7 @@ export class OutletController {
   ) {
     return this.outletService.listVisitsForAdmin(currentUser, {
       limit,
+      ...(skip > 0 ? { skip } : {}),
       ...(outletId !== undefined ? { outletId } : {}),
       ...(userId !== undefined ? { userId } : {}),
       ...(from !== undefined ? { from } : {}),

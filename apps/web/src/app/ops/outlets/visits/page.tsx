@@ -6,6 +6,7 @@ import * as XLSX from "xlsx";
 
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { listOutletVisitReports, listOutlets } from "@/lib/outlet/outlet-api";
+import { toast } from "@/lib/toast";
 
 const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark:bg-card/50";
 const inputClass =
@@ -17,6 +18,7 @@ export default function OpsOutletVisitsReportPage(): ReactElement {
   const [userId, setUserId] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [isExportingAll, setIsExportingAll] = useState(false);
 
   const outletsQuery = useQuery({
     queryKey: ["ops", "outlets"],
@@ -78,6 +80,68 @@ export default function OpsOutletVisitsReportPage(): ReactElement {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Outlet Visits");
     const now = new Date().toISOString().slice(0, 10);
     XLSX.writeFile(workbook, `outlet-visit-reports-${now}.xlsx`);
+    toast.success(`Exported ${String(rows.length)} rows to Excel.`);
+  };
+
+  const exportAllPagesExcel = async (): Promise<void> => {
+    if (accessToken === null) {
+      return;
+    }
+    setIsExportingAll(true);
+    try {
+      const pageSize = 200;
+      let skip = 0;
+      const allRows: Awaited<ReturnType<typeof listOutletVisitReports>> = [];
+      for (;;) {
+        const page = await listOutletVisitReports(accessToken, {
+          limit: pageSize,
+          skip,
+          ...(outletId ? { outletId } : {}),
+          ...(userId.trim() ? { userId: userId.trim() } : {}),
+          ...(from ? { from: new Date(`${from}T00:00:00.000Z`).toISOString() } : {}),
+          ...(to ? { to: new Date(`${to}T23:59:59.999Z`).toISOString() } : {})
+        });
+        allRows.push(...page);
+        if (page.length < pageSize) {
+          break;
+        }
+        skip += pageSize;
+      }
+
+      if (allRows.length === 0) {
+        toast.info("No rows matched the selected filters.");
+        return;
+      }
+
+      const rows = allRows.map((visit) => ({
+        checkedInAt: visit.checkedInAt,
+        outletName: visit.outlet?.name ?? visit.outletId,
+        outletCategory: visit.outlet?.category ?? "",
+        distributorName: visit.outlet?.distributorName ?? "",
+        locationArea: visit.outlet?.locationArea ?? "",
+        userName: visit.user?.fullName ?? visit.userId,
+        userPhone: visit.user?.phone ?? "",
+        userRole: visit.user?.role ?? "",
+        latitude: visit.latitude,
+        longitude: visit.longitude,
+        hasOutletPhoto: visit.hasOutletPhoto ? "Yes" : "No",
+        stockAvailabilityNotes: visit.stockAvailabilityNotes ?? "",
+        salesMadeNotes: visit.salesMadeNotes ?? "",
+        consumerEngagementNotes: visit.consumerEngagementNotes ?? "",
+        visibilityExecutionNotes: visit.visibilityExecutionNotes ?? ""
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Outlet Visits");
+      const now = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(workbook, `outlet-visit-reports-all-pages-${now}.xlsx`);
+      toast.success(`Exported ${String(rows.length)} rows from all pages.`);
+    } catch {
+      toast.error("Failed to export all pages. Please try again.");
+    } finally {
+      setIsExportingAll(false);
+    }
   };
 
   return (
@@ -154,14 +218,26 @@ export default function OpsOutletVisitsReportPage(): ReactElement {
       <section className={cardClass}>
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-base font-semibold text-foreground">Results</h2>
-          <button
-            type="button"
-            className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={visitsQuery.data === undefined || visitsQuery.data.length === 0}
-            onClick={exportExcel}
-          >
-            Export Excel
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={visitsQuery.data === undefined || visitsQuery.data.length === 0}
+              onClick={exportExcel}
+            >
+              Export current page
+            </button>
+            <button
+              type="button"
+              className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isExportingAll || accessToken === null}
+              onClick={() => {
+                void exportAllPagesExcel();
+              }}
+            >
+              {isExportingAll ? "Exporting all..." : "Export all pages"}
+            </button>
+          </div>
         </div>
         {visitsQuery.isLoading ? (
           <p className="mt-3 text-sm text-muted-foreground">Loading...</p>

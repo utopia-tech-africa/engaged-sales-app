@@ -113,6 +113,7 @@ export class OutletRepository {
 
   public listVisitsForAdmin(params: {
     take: number;
+    skip?: number;
     outletId?: string;
     userId?: string;
     from?: Date;
@@ -140,6 +141,7 @@ export class OutletRepository {
       where,
       orderBy: { checkedInAt: "desc" },
       take: params.take,
+      ...(params.skip !== undefined ? { skip: params.skip } : {}),
       select: {
         id: true,
         outletId: true,

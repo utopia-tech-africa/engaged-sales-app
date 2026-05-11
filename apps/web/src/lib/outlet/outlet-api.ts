@@ -92,6 +92,7 @@ export const listOutletVisitReports = async (
   token: string,
   params: {
     limit?: number;
+    skip?: number;
     outletId?: string;
     userId?: string;
     from?: string;
@@ -100,6 +101,7 @@ export const listOutletVisitReports = async (
 ): Promise<OutletVisitRecord[]> => {
   const query = new URLSearchParams();
   query.set("limit", String(params.limit ?? 100));
+  query.set("skip", String(params.skip ?? 0));
   if (params.outletId !== undefined && params.outletId.trim().length > 0) {
     query.set("outletId", params.outletId.trim());
   }
