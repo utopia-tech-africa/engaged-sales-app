@@ -5,6 +5,13 @@ import { useEffect } from "react";
 import { io, type Socket } from "socket.io-client";
 
 import { ActivationFieldActivityMap } from "@/components/activation-field-activity-map";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { useAuthStore } from "@/lib/auth/auth-store";
 
 type LiveTrackingRow = {
@@ -29,6 +36,7 @@ type LiveTrackingRow = {
 const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark:bg-card/50";
 const inputClass =
   "mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const SELECT_ALL = "__all__";
 
 const getTrackingSocketOrigin = (): string => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:5000/api/v1";
@@ -179,20 +187,24 @@ export default function OpsTrackingPage() {
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="block text-xs font-medium text-muted-foreground">
             Region
-            <select
-              className={inputClass}
-              value={regionFilter}
-              onChange={(event) => {
-                setRegionFilter(event.target.value);
+            <Select
+              value={regionFilter === "all" ? SELECT_ALL : regionFilter}
+              onValueChange={(value) => {
+                setRegionFilter(value === SELECT_ALL ? "all" : value);
               }}
             >
-              <option value="all">All regions</option>
-              {regions.map((region) => (
-                <option key={region.id} value={region.id}>
-                  {region.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="All regions" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={SELECT_ALL}>All regions</SelectItem>
+                {regions.map((region) => (
+                  <SelectItem key={region.id} value={region.id}>
+                    {region.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </label>
           <label className="block text-xs font-medium text-muted-foreground">
             Name / phone

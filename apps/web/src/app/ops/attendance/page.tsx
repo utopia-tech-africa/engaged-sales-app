@@ -3,6 +3,14 @@
 import { format } from "date-fns";
 import { type ReactElement, useMemo, useState } from "react";
 
+import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import {
   useAdminAttendanceGetDailySummary,
   useAdminRegionListRegions
@@ -17,9 +25,7 @@ import { type RegionRow, parseRegionsFromOrval } from "@/lib/ops/ops-adapters";
 import { cn } from "@/lib/utils";
 
 const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark:bg-card/50";
-
-const inputClass =
-  "mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const SELECT_ALL = "__all__";
 
 const statusPill = (label: string, tone: "ok" | "warn" | "bad"): string =>
   cn(
@@ -122,31 +128,28 @@ export default function OpsAttendancePage(): ReactElement {
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <label className="block text-xs font-medium text-muted-foreground">
             Date
-            <input
-              type="date"
-              className={inputClass}
-              value={date}
-              onChange={(e) => {
-                setDate(e.target.value);
-              }}
-            />
+            <DatePicker value={date} onChange={setDate} placeholder="Select date" />
           </label>
           <label className="block text-xs font-medium text-muted-foreground">
             Region (optional)
-            <select
-              className={inputClass}
-              value={regionId}
-              onChange={(e) => {
-                setRegionId(e.target.value);
+            <Select
+              value={regionId.length > 0 ? regionId : SELECT_ALL}
+              onValueChange={(value) => {
+                setRegionId(value === SELECT_ALL ? "" : value);
               }}
             >
-              <option value="">All regions</option>
-              {regions.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="All regions" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={SELECT_ALL}>All regions</SelectItem>
+                {regions.map((region) => (
+                  <SelectItem key={region.id} value={region.id}>
+                    {region.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </label>
           <div className="flex items-end gap-2">
             <button

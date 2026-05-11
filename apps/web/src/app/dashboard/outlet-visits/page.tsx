@@ -4,6 +4,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { type ChangeEvent, type ReactElement, type SyntheticEvent, useState } from "react";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { ApiError } from "@/lib/api/problem-details";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { calmPrimaryButtonClass } from "@/lib/calm-ui";
@@ -15,6 +22,7 @@ import {
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const SELECT_NONE = "__none__";
 
 const readFileAsDataUrl = async (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -164,21 +172,24 @@ export default function OutletVisitsPage(): ReactElement {
       >
         <label className="block text-xs font-medium text-muted-foreground">
           Outlet
-          <select
-            className={inputClass}
-            value={outletId}
-            onChange={(event) => {
-              setOutletId(event.target.value);
+          <Select
+            value={outletId.length > 0 ? outletId : SELECT_NONE}
+            onValueChange={(value) => {
+              setOutletId(value === SELECT_NONE ? "" : value);
             }}
-            required
           >
-            <option value="">Select outlet</option>
-            {outletsQuery.data?.map((outlet) => (
-              <option key={outlet.id} value={outlet.id}>
-                {outlet.name} - {outlet.locationArea}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="mt-1">
+              <SelectValue placeholder="Select outlet" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={SELECT_NONE}>Select outlet</SelectItem>
+              {outletsQuery.data?.map((outlet) => (
+                <SelectItem key={outlet.id} value={outlet.id}>
+                  {outlet.name} - {outlet.locationArea}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
 
         <div className="grid gap-3 sm:grid-cols-2">

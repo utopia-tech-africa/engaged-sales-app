@@ -21,6 +21,7 @@ import { RegionCoreModule } from "./modules/region/region-core.module";
 import { RedisModule } from "./modules/redis/redis.module";
 import { TrackingModule } from "./modules/tracking/tracking.module";
 import { OutletAdminModule } from "./modules/outlet/outlet-admin.module";
+import { StockModule } from "./modules/stock/stock.module";
 
 /** Mirrors `ModuleMetadata["imports"]` using only `@nestjs/common` entry types (avoids deep imports). */
 type NestModuleImport = Type | DynamicModule | Promise<DynamicModule> | ForwardReference;
@@ -54,7 +55,8 @@ const APP_IMPORTS = asNestImports(
   TrackingModule,
   HealthModule,
   MeModule,
-  SaleModule
+  SaleModule,
+  StockModule
 );
 
 @Module({

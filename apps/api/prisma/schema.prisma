@@ -50,6 +50,7 @@ model User {
   activationRosters ActivationRoster[]
   sales      Sale[]
   outletVisits OutletVisit[]
+  stockPickups StockPickup[]
 
   @@index([regionId])
 }
@@ -137,6 +138,7 @@ model Activation {
   products    ActivationProduct[]
   roster      ActivationRoster[]
   sales       Sale[]
+  stockPickups StockPickup[]
 
   @@index([regionId])
   @@index([startsAt])
@@ -153,6 +155,7 @@ model ActivationProduct {
   updatedAt    DateTime   @updatedAt
   activation   Activation @relation(fields: [activationId], references: [id], onDelete: Cascade)
   saleItems    SaleItem[]
+  stockPickupItems StockPickupItem[]
 
   @@index([activationId])
 }
@@ -251,4 +254,36 @@ model OutletVisit {
 
   @@index([outletId, checkedInAt(sort: Desc)])
   @@index([userId, checkedInAt(sort: Desc)])
+}
+
+/// Stock receipt event when field staff picks inventory from a distributor.
+model StockPickup {
+  id              String   @id @default(cuid())
+  userId          String
+  activationId    String
+  distributorName String
+  pickedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activation      Activation @relation(fields: [activationId], references: [id], onDelete: Cascade)
+  items           StockPickupItem[]
+
+  @@index([userId, pickedAt(sort: Desc)])
+  @@index([activationId, pickedAt(sort: Desc)])
+}
+
+/// Line item for picked stock (SKU, quantity, and distributor cost price).
+model StockPickupItem {
+  id         String   @id @default(cuid())
+  pickupId   String
+  productId  String
+  quantity   Int
+  costPrice  Float
+  createdAt  DateTime @default(now())
+  pickup     StockPickup      @relation(fields: [pickupId], references: [id], onDelete: Cascade)
+  product    ActivationProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([pickupId])
+  @@index([productId])
 }
