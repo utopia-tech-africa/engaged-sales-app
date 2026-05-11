@@ -176,8 +176,14 @@ export type EnvironmentVariables = {
 };
 
 export const validateEnvironment = (config: Record<string, unknown>): EnvironmentVariables => {
+  const nodeEnv =
+    typeof config["NODE_ENV"] === "string" && config["NODE_ENV"].trim().length > 0
+      ? config["NODE_ENV"].trim()
+      : undefined;
+  const defaultHost = nodeEnv === "production" ? "0.0.0.0" : "127.0.0.1";
+
   const rawEnvironment: Record<string, unknown> = {
-    HOST: config["HOST"] ?? "127.0.0.1",
+    HOST: config["HOST"] ?? defaultHost,
     PORT: config["PORT"] ?? 3001,
     DATABASE_URL:
       config["DATABASE_URL"] ?? "postgresql://postgres:postgres@localhost:5432/engaged_sales_app",
