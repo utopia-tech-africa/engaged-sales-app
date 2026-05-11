@@ -830,6 +830,47 @@
       "post": {
         "operationId": "Activation_createActivation",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "startsAt"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "slug": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 64
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "regionId": {
+                    "type": "string"
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "endsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": "Activation created"
@@ -853,6 +894,189 @@
           }
         ],
         "summary": "Create activation",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/admin/activations/{id}/field-activity/sales": {
+      "get": {
+        "description": "Sales on this activation from roster members only, with seller and line items. Optional userId, from, and to (ISO 8601) narrow results; time range is intersected with the activation window. Supervisor or admin only.",
+        "operationId": "Activation_listFieldActivitySales",
+        "parameters": [
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Upper bound on sale createdAt (ISO 8601), intersected with activation endsAt when set",
+            "schema": {}
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Lower bound on sale createdAt (ISO 8601), intersected with activation startsAt",
+            "schema": {}
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to this roster user (must be on the activation roster)",
+            "schema": {}
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 100,
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sales newest first"
+          },
+          "400": {
+            "description": "Invalid date or userId not on roster"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List sales on activation (field activity)",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/admin/activations/{id}/field-activity/locations": {
+      "get": {
+        "description": "Location pings for users on this activation roster. Time range defaults to the activation window; optional from/to narrow it. Optional userId must be on the roster. Supervisor or admin only.",
+        "operationId": "Activation_listFieldActivityLocations",
+        "parameters": [
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601 upper bound on recordedAt",
+            "schema": {}
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601 lower bound on recordedAt",
+            "schema": {}
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "Single roster user",
+            "schema": {}
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 500,
+              "minimum": 1,
+              "maximum": 2000
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Location pings, newest first (global ordering)"
+          },
+          "400": {
+            "description": "Invalid date or userId not on roster"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List roster location pings (field activity)",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/admin/activations/{id}/field-activity/check-ins/{pingId}": {
+      "get": {
+        "description": "Returns coordinates, time, place label, staff member, and selfie as a data URL when verification was recorded. The ping must be from a roster user within the activation window.",
+        "operationId": "Activation_getFieldActivityCheckIn",
+        "parameters": [
+          {
+            "name": "pingId",
+            "required": true,
+            "in": "path",
+            "description": "LocationPing id (cuid)",
+            "schema": {}
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Check-in detail"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation or check-in not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one roster check-in (with selfie)",
         "tags": ["Admin activations (supervisor / admin)"]
       }
     },
@@ -901,6 +1125,16 @@
             "schema": {}
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateActivationDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Activation updated"
@@ -1147,6 +1381,160 @@
         ],
         "summary": "Remove user from activation roster",
         "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/activations": {
+      "get": {
+        "description": "Promoters and merchandizers see activations they are rostered on that are currently active. Supervisors and admins see all activations in their active date window.",
+        "operationId": "Activations_listForField",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Activation rows with region and product count"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List activations (field)",
+        "tags": ["Activations (field)"]
+      }
+    },
+    "/activations/{id}/products": {
+      "get": {
+        "operationId": "Activations_listProductsForField",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paged activation products"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Caller is not assigned to this activation"
+          },
+          "404": {
+            "description": "Activation not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List products for an activation (field)",
+        "tags": ["Activations (field)"]
+      }
+    },
+    "/activations/{id}": {
+      "get": {
+        "description": "Full detail including products for supervisor/admin; promoters and merchandizers receive the same shape without the roster list.",
+        "operationId": "Activations_getByIdForField",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activation detail"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Caller is not assigned to this activation"
+          },
+          "404": {
+            "description": "Activation not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get activation (field)",
+        "tags": ["Activations (field)"]
+      }
+    },
+    "/admin/attendance/daily": {
+      "get": {
+        "description": "Per-field-staff roll-up for a calendar day in ATTENDANCE_TIMEZONE: first clock-in, last clock-out, missed, late (vs ATTENDANCE_EXPECTED_CHECK_IN_HHMM), and missing clock-out.",
+        "operationId": "AdminAttendance_getDailySummary",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "description": "Optional region id (cuid) to restrict to one city/territory",
+            "schema": {}
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "Calendar date YYYY-MM-DD (interpreted in ATTENDANCE_TIMEZONE)",
+            "schema": {
+              "example": "2026-05-08"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daily attendance rows and summary counts"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Daily attendance summary",
+        "tags": ["Admin attendance (supervisor / admin)"]
       }
     },
     "/admin/users": {
@@ -1419,6 +1807,48 @@
         "tags": ["Me"]
       }
     },
+    "/me/sales": {
+      "get": {
+        "description": "BACKEND_PRD §7.2 — the authenticated promoter's or merchandizer's sales, newest first.",
+        "operationId": "Me_listMySales",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Max rows (1–100, default 50)",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "activationId",
+            "required": false,
+            "in": "query",
+            "description": "Filter to one activation (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sales with line items"
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List my sales",
+        "tags": ["Me"]
+      }
+    },
     "/me/location/history": {
       "get": {
         "description": "Returns recent location pings for the authenticated user, newest first.",
@@ -1446,9 +1876,14 @@
                   "example": [
                     {
                       "id": "cmad4p0bo0000iib0i0l9e8wk",
+                      "attendanceKind": "clock_in",
+                      "geofenceId": "cmad4p0bo0000iib0i0l9e8wk",
+                      "distanceToGeofenceMeters": 42.7,
+                      "dwellSecondsAtGeofence": 480,
                       "latitude": -1.286389,
                       "longitude": 36.817223,
                       "placeLabel": "City Square, Nairobi, Kenya",
+                      "hasSelfieVerification": true,
                       "recordedAt": "2026-05-08T18:20:00.000Z"
                     }
                   ]
@@ -1471,7 +1906,7 @@
     },
     "/me/location": {
       "post": {
-        "description": "Stores a location ping for the authenticated user.",
+        "description": "Stores a location ping with a required selfie image for attendance verification (JPEG/PNG).",
         "operationId": "Me_updateMeLocation",
         "parameters": [],
         "requestBody": {
@@ -1483,10 +1918,12 @@
               },
               "examples": {
                 "nairobiDowntown": {
-                  "summary": "Nairobi CBD location ping",
+                  "summary": "Nairobi CBD check-in with selfie",
                   "value": {
                     "latitude": -1.286389,
-                    "longitude": 36.817223
+                    "longitude": 36.817223,
+                    "attendanceKind": "clock_in",
+                    "selfieImageBase64": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
                   }
                 }
               }
@@ -1501,9 +1938,14 @@
                 "schema": {
                   "example": {
                     "userId": "cmad4p0bo0000iib0i0l9e8wk",
+                    "attendanceKind": "clock_in",
+                    "geofenceId": "cmad4p0bo0000iib0i0l9e8wk",
+                    "distanceToGeofenceMeters": 42.7,
+                    "dwellSecondsAtGeofence": 480,
                     "latitude": -1.286389,
                     "longitude": 36.817223,
                     "placeLabel": "City Square, Nairobi, Kenya",
+                    "hasSelfieVerification": true,
                     "recordedAt": "2026-05-08T18:20:00.000Z"
                   }
                 }
@@ -1521,6 +1963,51 @@
         ],
         "summary": "Record user location",
         "tags": ["Me"]
+      }
+    },
+    "/sales": {
+      "post": {
+        "description": "BACKEND_PRD §7.4 — creates a sale with line items. Optional `Idempotency-Key` header dedupes retries per user.",
+        "operationId": "Sales_create",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Optional UUID or opaque string; duplicate requests return the original sale.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sale with line items and activation summary"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Not assigned to activation or not a field role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Record a sale",
+        "tags": ["Sales (field)"]
       }
     }
   },
@@ -1707,6 +2194,10 @@
         },
         "required": ["refreshToken"]
       },
+      "UpdateActivationDto": {
+        "type": "object",
+        "properties": {}
+      },
       "CreateActivationProductDto": {
         "type": "object",
         "properties": {}
@@ -1758,9 +2249,24 @@
             "type": "number",
             "example": 36.817223,
             "description": "Longitude in decimal degrees"
+          },
+          "attendanceKind": {
+            "type": "string",
+            "enum": ["clock_in", "clock_out"],
+            "description": "Attendance event type. Defaults to clock_in when omitted.",
+            "default": "clock_in"
+          },
+          "selfieImageBase64": {
+            "type": "string",
+            "description": "Base64-encoded selfie (JPEG or PNG) for attendance verification. May be a data URL (`data:image/jpeg;base64,...`).",
+            "example": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
           }
         },
-        "required": ["latitude", "longitude"]
+        "required": ["latitude", "longitude", "selfieImageBase64"]
+      },
+      "CreateSaleDto": {
+        "type": "object",
+        "properties": {}
       }
     }
   }

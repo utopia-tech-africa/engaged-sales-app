@@ -34,6 +34,54 @@ export class ActivationService {
     }
   }
 
+  private parseOptionalIsoDate(raw: string | undefined, field: string): Date | undefined {
+    if (raw === undefined) {
+      return undefined;
+    }
+    const trimmed = raw.trim();
+    if (trimmed.length === 0) {
+      return undefined;
+    }
+    const d = new Date(trimmed);
+    if (Number.isNaN(d.getTime())) {
+      throw new BadRequestException(`Invalid ${field}: use an ISO 8601 date-time`);
+    }
+    return d;
+  }
+
+  /**
+   * Intersect optional filters with the activation window. Returns null if the range is empty.
+   */
+  private mergeActivationTimeRange(args: {
+    activationStartsAt: Date;
+    activationEndsAt: Date | null;
+    filterFrom?: Date;
+    filterTo?: Date;
+  }): { gte: Date; lte?: Date } | null {
+    let gte = args.activationStartsAt;
+    let lte: Date | undefined = args.activationEndsAt ?? undefined;
+
+    if (args.filterFrom !== undefined && args.filterFrom > gte) {
+      gte = args.filterFrom;
+    }
+    if (args.filterTo !== undefined) {
+      if (lte === undefined || args.filterTo < lte) {
+        lte = args.filterTo;
+      }
+    }
+
+    if (lte !== undefined && gte > lte) {
+      return null;
+    }
+    return { gte, ...(lte !== undefined ? { lte } : {}) };
+  }
+
+  private assertRosterUserOrThrow(rosterIds: readonly string[], userId: string): void {
+    if (!rosterIds.includes(userId)) {
+      throw new BadRequestException("userId is not on this activation roster");
+    }
+  }
+
   private static isUniqueViolation(error: unknown): boolean {
     return (
       typeof error === "object" &&
@@ -321,5 +369,215 @@ export class ActivationService {
     if (removed.count === 0) {
       throw new NotFoundException("Roster entry not found");
     }
+  }
+
+  private async assertFieldCanAccessActivation(
+    currentUser: AuthenticatedUser,
+    activationId: string
+  ): Promise<void> {
+    if (OPS_ROLES.has(currentUser.role)) {
+      return;
+    }
+    const membership = await this.repository.findRosterMembership(activationId, currentUser.id);
+    if (membership === null) {
+      throw new ForbiddenException("You are not assigned to this activation");
+    }
+  }
+
+  /** BACKEND_PRD §7.3 — field list (roster-scoped for promoters/merchandizers; all current for ops). */
+  public listForField(currentUser: AuthenticatedUser) {
+    const now = new Date();
+    if (OPS_ROLES.has(currentUser.role)) {
+      return this.repository.findActivationsCurrentForOps(now);
+    }
+    return this.repository.findActivationsForRosterUser(currentUser.id, now);
+  }
+
+  public async getByIdForField(currentUser: AuthenticatedUser, id: string) {
+    await this.assertFieldCanAccessActivation(currentUser, id);
+    const row = await this.repository.findById(id);
+    if (row === null) {
+      throw new NotFoundException("Activation not found");
+    }
+    if (OPS_ROLES.has(currentUser.role)) {
+      return row;
+    }
+    const { roster, ...rest } = row;
+    void roster;
+    return rest;
+  }
+
+  public async listProductsForField(
+    currentUser: AuthenticatedUser,
+    activationId: string,
+    limit: number,
+    offset: number
+  ) {
+    await this.assertFieldCanAccessActivation(currentUser, activationId);
+    const activation = await this.repository.findById(activationId);
+    if (activation === null) {
+      throw new NotFoundException("Activation not found");
+    }
+    const take = Math.min(100, Math.max(1, limit));
+    const skip = Math.max(0, offset);
+    const [data, total] = await Promise.all([
+      this.repository.findActivationProducts(activationId, { take, skip }),
+      this.repository.countActivationProducts(activationId)
+    ]);
+    return { data, total, limit: take, offset: skip };
+  }
+
+  /**
+   * Supervisor/admin: sales on this activation from roster members only, optionally filtered
+   * by user and time (intersected with the activation date window).
+   */
+  public async listFieldActivitySalesForAdmin(
+    currentUser: AuthenticatedUser,
+    activationId: string,
+    limit: number,
+    userIdFilter?: string,
+    fromRaw?: string,
+    toRaw?: string
+  ) {
+    this.requireSupervisorOrAdmin(currentUser);
+    const row = await this.repository.findById(activationId);
+    if (row === null) {
+      throw new NotFoundException("Activation not found");
+    }
+    const rosterIds = row.roster.map((r) => r.userId);
+    const trimmedUser =
+      userIdFilter !== undefined && userIdFilter.trim().length > 0
+        ? userIdFilter.trim()
+        : undefined;
+    if (trimmedUser !== undefined) {
+      this.assertRosterUserOrThrow(rosterIds, trimmedUser);
+    }
+
+    const filterFrom = this.parseOptionalIsoDate(fromRaw, "from");
+    const filterTo = this.parseOptionalIsoDate(toRaw, "to");
+    const range = this.mergeActivationTimeRange({
+      activationStartsAt: row.startsAt,
+      activationEndsAt: row.endsAt,
+      ...(filterFrom !== undefined ? { filterFrom } : {}),
+      ...(filterTo !== undefined ? { filterTo } : {})
+    });
+    if (range === null) {
+      return [];
+    }
+
+    return this.repository.listFieldSalesForActivation({
+      activationId,
+      rosterUserIds: rosterIds,
+      take: limit,
+      ...(trimmedUser !== undefined ? { userId: trimmedUser } : {}),
+      createdFrom: range.gte,
+      ...(range.lte !== undefined ? { createdTo: range.lte } : {})
+    });
+  }
+
+  /**
+   * Supervisor/admin: recent location pings for roster users, intersected with the activation
+   * window and optional narrower time range / single user.
+   */
+  public async listFieldActivityLocationsForAdmin(
+    currentUser: AuthenticatedUser,
+    activationId: string,
+    limit: number,
+    userIdFilter?: string,
+    fromRaw?: string,
+    toRaw?: string
+  ) {
+    this.requireSupervisorOrAdmin(currentUser);
+    const row = await this.repository.findById(activationId);
+    if (row === null) {
+      throw new NotFoundException("Activation not found");
+    }
+    const rosterIds = row.roster.map((r) => r.userId);
+    const trimmedUser =
+      userIdFilter !== undefined && userIdFilter.trim().length > 0
+        ? userIdFilter.trim()
+        : undefined;
+    if (trimmedUser !== undefined) {
+      this.assertRosterUserOrThrow(rosterIds, trimmedUser);
+    }
+
+    const filterFrom = this.parseOptionalIsoDate(fromRaw, "from");
+    const filterTo = this.parseOptionalIsoDate(toRaw, "to");
+    const range = this.mergeActivationTimeRange({
+      activationStartsAt: row.startsAt,
+      activationEndsAt: row.endsAt,
+      ...(filterFrom !== undefined ? { filterFrom } : {}),
+      ...(filterTo !== undefined ? { filterTo } : {})
+    });
+    if (range === null) {
+      return [];
+    }
+
+    return this.repository.listFieldLocationPingsForUsers(rosterIds, limit, range, trimmedUser);
+  }
+
+  /**
+   * Supervisor/admin: full check-in for one location ping on this activation (roster + time window).
+   * Includes selfie as a data URL when present.
+   */
+  public async getFieldActivityCheckInForAdmin(
+    currentUser: AuthenticatedUser,
+    activationId: string,
+    pingId: string
+  ) {
+    this.requireSupervisorOrAdmin(currentUser);
+    const activation = await this.repository.findById(activationId);
+    if (activation === null) {
+      throw new NotFoundException("Activation not found");
+    }
+    const rosterIds = new Set(activation.roster.map((r) => r.userId));
+
+    const ping = await this.repository.findLocationPingByIdWithUserAndSelfie(pingId);
+    if (ping === null) {
+      throw new NotFoundException("Check-in not found");
+    }
+    if (!rosterIds.has(ping.userId)) {
+      throw new NotFoundException("Check-in not found");
+    }
+
+    const recordedAt = ping.recordedAt;
+    if (recordedAt < activation.startsAt) {
+      throw new NotFoundException("Check-in not found");
+    }
+    if (activation.endsAt !== null && recordedAt > activation.endsAt) {
+      throw new NotFoundException("Check-in not found");
+    }
+
+    let selfieDataUrl: string | null = null;
+    if (
+      ping.hasSelfieVerification &&
+      ping.selfieMimeType !== null &&
+      ping.selfieImage !== null &&
+      ping.selfieImage.byteLength > 0
+    ) {
+      const b64 = Buffer.from(ping.selfieImage).toString("base64");
+      selfieDataUrl = `data:${ping.selfieMimeType};base64,${b64}`;
+    }
+
+    return {
+      id: ping.id,
+      userId: ping.userId,
+      attendanceKind: ping.attendanceKind,
+      geofenceId: ping.geofenceId,
+      distanceToGeofenceMeters: ping.distanceToGeofenceMeters,
+      dwellSecondsAtGeofence: ping.dwellSecondsAtGeofence,
+      latitude: ping.latitude,
+      longitude: ping.longitude,
+      placeLabel: ping.placeLabel,
+      recordedAt: ping.recordedAt.toISOString(),
+      hasSelfieVerification: ping.hasSelfieVerification,
+      selfieDataUrl,
+      user: {
+        id: ping.user.id,
+        fullName: ping.user.fullName,
+        phone: ping.user.phone,
+        role: ping.user.role
+      }
+    };
   }
 }

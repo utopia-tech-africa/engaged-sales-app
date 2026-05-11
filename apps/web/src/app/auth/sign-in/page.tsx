@@ -15,6 +15,7 @@ import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseAuthResponseFromOrval } from "@/lib/auth/orval-auth-adapter";
 import { calmPrimaryButtonClass, calmTextLinkClass } from "@/lib/calm-ui";
 import { requestCurrentPosition } from "@/lib/geolocation/request-current-position";
+import { toast } from "@/lib/toast";
 import { isOpsRole } from "@/lib/ops/ops-adapters";
 
 function SignInForm(): ReactElement {
@@ -29,7 +30,6 @@ function SignInForm(): ReactElement {
     "promoter"
   );
   const [isLocating, setIsLocating] = useState(false);
-  const [geoError, setGeoError] = useState<string | null>(null);
   const roleOptions: { id: string; label: string }[] = [
     { id: "promoter", label: "Promoter" },
     { id: "merchandizer", label: "Merchandizer" },
@@ -52,12 +52,6 @@ function SignInForm(): ReactElement {
     }
   });
 
-  const signInErrorUnknown: unknown = signInMutation.error;
-  const apiErrorMessage =
-    signInErrorUnknown instanceof ApiError
-      ? (signInErrorUnknown.problem?.detail ?? signInErrorUnknown.message)
-      : "Sign-in failed. Please check your credentials and try again.";
-
   return (
     <MobileShell
       title="Sign in"
@@ -67,13 +61,19 @@ function SignInForm(): ReactElement {
         className="flex flex-col gap-3"
         onSubmit={(event) => {
           event.preventDefault();
-          setGeoError(null);
           if (isOpsRole(role)) {
             signInMutation.mutate(
               { data: { phone, uniqueCode, role } },
               {
                 onSettled: () => {
                   setIsLocating(false);
+                },
+                onError: (err: unknown) => {
+                  if (err instanceof ApiError) {
+                    toast.error(err.problem?.detail ?? err.message);
+                  } else {
+                    toast.error("Sign-in failed. Please check your credentials and try again.");
+                  }
                 }
               }
             );
@@ -96,7 +96,11 @@ function SignInForm(): ReactElement {
                 },
                 onError: (err: unknown) => {
                   if (!pos.ok && err instanceof ApiError && err.status !== 401) {
-                    setGeoError(`${pos.message} (${err.problem?.detail ?? err.message})`);
+                    toast.error(`${pos.message} (${err.problem?.detail ?? err.message})`);
+                  } else if (err instanceof ApiError) {
+                    toast.error(err.problem?.detail ?? err.message);
+                  } else {
+                    toast.error("Sign-in failed. Please check your credentials and try again.");
                   }
                 }
               }
@@ -142,24 +146,6 @@ function SignInForm(): ReactElement {
             }}
           />
         </FormControl>
-
-        {geoError ? (
-          <p
-            role="alert"
-            className="rounded-lg border border-destructive/35 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-          >
-            {geoError}
-          </p>
-        ) : null}
-
-        {signInMutation.isError && !geoError ? (
-          <p
-            role="alert"
-            className="rounded-lg border border-destructive/35 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-          >
-            {apiErrorMessage}
-          </p>
-        ) : null}
 
         <button
           type="submit"

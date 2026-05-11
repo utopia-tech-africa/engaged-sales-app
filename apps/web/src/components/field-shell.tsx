@@ -1,6 +1,6 @@
 "use client";
 
-import { HelpCircle, History, Home, MapPin } from "lucide-react";
+import { HelpCircle, History, Home, MapPin, Store } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type PropsWithChildren, type ReactElement } from "react";
@@ -13,6 +13,12 @@ import { cn } from "@/lib/utils";
 /** Primary navigation for field roles (promoter / merchandizer): home, check-in, history, support. */
 export const fieldNavItems = [
   { href: "/dashboard", label: "Home", segment: "home" as const, Icon: Home },
+  {
+    href: "/dashboard/activations",
+    label: "Activations",
+    segment: "activations" as const,
+    Icon: Store
+  },
   { href: "/dashboard/check-in", label: "Check-in", segment: "check-in" as const, Icon: MapPin },
   { href: "/dashboard/history", label: "History", segment: "history" as const, Icon: History },
   { href: "/dashboard/support", label: "Support", segment: "support" as const, Icon: HelpCircle }
@@ -126,7 +132,7 @@ export const FieldShell = ({
             style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
             aria-label="Field app tabs"
           >
-            <ul className="mx-auto grid max-w-lg grid-cols-4 gap-0 px-1 py-1.5">
+            <ul className="mx-auto grid max-w-lg grid-cols-5 gap-0 px-0.5 py-1.5 sm:px-1">
               {fieldNavItems.map(({ href, label, Icon }) => {
                 const active = isNavActive(pathname, href);
                 return (

@@ -5,7 +5,7 @@
  * API documentation for Engaged Sales backend
  * OpenAPI spec version: 1.0.0
  */
-import type { SignUpDtoGender } from "./signUpDtoGender";
+import type { SignUpDtoGender } from './signUpDtoGender';
 
 export type SignUpDto = {
   /** Full name of the user */

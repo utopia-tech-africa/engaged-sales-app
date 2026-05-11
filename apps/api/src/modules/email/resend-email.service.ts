@@ -57,6 +57,48 @@ export class ResendEmailService {
     }
   }
 
+  /** Operational / reporting email to one or more recipients (e.g. attendance digest). */
+  public async sendOperationalEmail(params: {
+    to: string[];
+    subject: string;
+    html: string;
+    text: string;
+  }): Promise<void> {
+    const uniqueRecipients = [
+      ...new Set(params.to.map((e) => e.trim()).filter((e) => e.length > 0))
+    ];
+    if (!this.client) {
+      this.logger.warn("RESEND_API_KEY is not set; skipping operational email.");
+      return;
+    }
+    if (uniqueRecipients.length === 0) {
+      this.logger.warn("No recipients for operational email; skipping.");
+      return;
+    }
+
+    const configuredFrom = this.configService.get("RESEND_FROM_EMAIL", { infer: true }).trim();
+    const from =
+      configuredFrom.length > 0 ? configuredFrom : "Engaged Sales <onboarding@resend.dev>";
+
+    try {
+      const { error } = await this.client.emails.send({
+        from,
+        to: uniqueRecipients,
+        subject: params.subject,
+        html: params.html,
+        text: params.text
+      });
+      if (error) {
+        this.logger.error(`Resend rejected operational email: ${error.message}`);
+      }
+    } catch (err: unknown) {
+      this.logger.error(
+        "Failed to send operational email",
+        err instanceof Error ? err.stack : String(err)
+      );
+    }
+  }
+
   private static buildInviteHtml(params: {
     fullName: string;
     phone: string;

@@ -24,6 +24,7 @@ import {
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.type";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { SaleService } from "../sale/sale.service";
 import { UpdateLocationDto } from "./dto/update-location.dto";
 import { UpdateMeDto } from "./dto/update-me.dto";
 import { MeService } from "./me.service";
@@ -33,7 +34,10 @@ import { MeService } from "./me.service";
 @ApiTags("Me")
 @ApiBearerAuth("bearer")
 export class MeController {
-  public constructor(@Inject(MeService) private readonly meService: MeService) {}
+  public constructor(
+    @Inject(MeService) private readonly meService: MeService,
+    @Inject(SaleService) private readonly saleService: SaleService
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -96,6 +100,38 @@ export class MeController {
     return this.meService.updateCurrentUser(currentUser, body);
   }
 
+  @Get("sales")
+  @ApiOperation({
+    operationId: "Me_listMySales",
+    summary: "List my sales",
+    description:
+      "BACKEND_PRD §7.2 — the authenticated promoter's or merchandizer's sales, newest first."
+  })
+  @ApiQuery({
+    name: "activationId",
+    required: false,
+    description: "Filter to one activation (cuid)"
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Max rows (1–100, default 50)",
+    schema: { type: "integer", default: 50, minimum: 1, maximum: 100 }
+  })
+  @ApiOkResponse({ description: "Sales with line items" })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid JWT token" })
+  public listMySales(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Query("activationId") activationId: string | undefined,
+    @Query("limit", new DefaultValuePipe(50), ParseIntPipe) limit: number
+  ) {
+    const trimmed =
+      activationId !== undefined && activationId.trim().length > 0
+        ? activationId.trim()
+        : undefined;
+    return this.saleService.listMySales(currentUser, trimmed, limit);
+  }
+
   @Get("location/history")
   @ApiOperation({
     operationId: "Me_listLocationHistory",
@@ -108,9 +144,14 @@ export class MeController {
       example: [
         {
           id: "cmad4p0bo0000iib0i0l9e8wk",
+          attendanceKind: "clock_in",
+          geofenceId: "cmad4p0bo0000iib0i0l9e8wk",
+          distanceToGeofenceMeters: 42.7,
+          dwellSecondsAtGeofence: 480,
           latitude: -1.286389,
           longitude: 36.817223,
           placeLabel: "City Square, Nairobi, Kenya",
+          hasSelfieVerification: true,
           recordedAt: "2026-05-08T18:20:00.000Z"
         }
       ]
@@ -134,16 +175,19 @@ export class MeController {
   @ApiOperation({
     operationId: "Me_updateMeLocation",
     summary: "Record user location",
-    description: "Stores a location ping for the authenticated user."
+    description:
+      "Stores a location ping with a required selfie image for attendance verification (JPEG/PNG)."
   })
   @ApiBody({
     type: UpdateLocationDto,
     examples: {
       nairobiDowntown: {
-        summary: "Nairobi CBD location ping",
+        summary: "Nairobi CBD check-in with selfie",
         value: {
           latitude: -1.286389,
-          longitude: 36.817223
+          longitude: 36.817223,
+          attendanceKind: "clock_in",
+          selfieImageBase64: "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
         }
       }
     }
@@ -153,9 +197,14 @@ export class MeController {
     schema: {
       example: {
         userId: "cmad4p0bo0000iib0i0l9e8wk",
+        attendanceKind: "clock_in",
+        geofenceId: "cmad4p0bo0000iib0i0l9e8wk",
+        distanceToGeofenceMeters: 42.7,
+        dwellSecondsAtGeofence: 480,
         latitude: -1.286389,
         longitude: 36.817223,
         placeLabel: "City Square, Nairobi, Kenya",
+        hasSelfieVerification: true,
         recordedAt: "2026-05-08T18:20:00.000Z"
       }
     }

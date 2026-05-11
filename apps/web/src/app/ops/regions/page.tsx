@@ -14,6 +14,7 @@ import { useAuthStore } from "@/lib/auth/auth-store";
 import { calmPrimaryButtonClass, calmSecondaryButtonClass } from "@/lib/calm-ui";
 import { type RegionRow, parseRegionsFromOrval } from "@/lib/ops/ops-adapters";
 import { slugifyRegionNamePreview } from "@/lib/ops/region-slug";
+import { toast } from "@/lib/toast";
 
 const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark:bg-card/50";
 
@@ -50,7 +51,6 @@ export default function OpsRegionsPage(): ReactElement {
 
   const [createName, setCreateName] = useState("");
   const [createActive, setCreateActive] = useState(true);
-  const [formError, setFormError] = useState<string | null>(null);
 
   const [editing, setEditing] = useState<RegionRow | null>(null);
   const [editSlug, setEditSlug] = useState("");
@@ -72,14 +72,13 @@ export default function OpsRegionsPage(): ReactElement {
 
   const onCreateSubmit = (event: SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    setFormError(null);
     const name = createName.trim();
     if (!name) {
-      setFormError("Display name is required.");
+      toast.error("Display name is required.");
       return;
     }
     if (createSlugPreview.length < 2) {
-      setFormError(
+      toast.error(
         "Use a display name that includes at least 2 letters or numbers for the generated key (e.g. Nairobi West)."
       );
       return;
@@ -92,11 +91,12 @@ export default function OpsRegionsPage(): ReactElement {
         onSuccess: () => {
           setCreateName("");
           setCreateActive(true);
+          toast.success("Region created");
         },
         onError: (err: unknown) => {
           const msg =
             err instanceof ApiError ? (err.problem?.detail ?? err.message) : "Create failed.";
-          setFormError(msg);
+          toast.error(msg);
         }
       }
     );
@@ -108,10 +108,9 @@ export default function OpsRegionsPage(): ReactElement {
     const slug = editSlug.trim().toLowerCase();
     const name = editName.trim();
     if (!slug || !name) {
-      setFormError("Slug and name are required.");
+      toast.error("Slug and name are required.");
       return;
     }
-    setFormError(null);
     updateMutation.mutate(
       {
         id: editing.id,
@@ -120,28 +119,35 @@ export default function OpsRegionsPage(): ReactElement {
       {
         onSuccess: () => {
           cancelEdit();
+          toast.success("Region updated");
         },
         onError: (err: unknown) => {
           const msg =
             err instanceof ApiError ? (err.problem?.detail ?? err.message) : "Update failed.";
-          setFormError(msg);
+          toast.error(msg);
         }
       }
     );
   };
 
   const toggleQuick = (row: RegionRow): void => {
-    updateMutation.mutate({
-      id: row.id,
-      data: { isActive: !row.isActive }
-    });
+    updateMutation.mutate(
+      {
+        id: row.id,
+        data: { isActive: !row.isActive }
+      },
+      {
+        onSuccess: () => {
+          toast.success(row.isActive ? "Region deactivated" : "Region activated");
+        },
+        onError: (err: unknown) => {
+          const msg =
+            err instanceof ApiError ? (err.problem?.detail ?? err.message) : "Update failed.";
+          toast.error(msg);
+        }
+      }
+    );
   };
-
-  const createErrUnknown: unknown = createMutation.error;
-  const createApiErr =
-    createErrUnknown instanceof ApiError
-      ? (createErrUnknown.problem?.detail ?? createErrUnknown.message)
-      : null;
 
   return (
     <div className="space-y-8">
@@ -215,16 +221,6 @@ export default function OpsRegionsPage(): ReactElement {
             </button>
           </div>
         </form>
-        {formError ? (
-          <p className="mt-3 text-sm text-destructive" role="alert">
-            {formError}
-          </p>
-        ) : null}
-        {createApiErr ? (
-          <p className="mt-3 text-sm text-destructive" role="alert">
-            {createApiErr}
-          </p>
-        ) : null}
       </section>
 
       <section className={cardClass}>
@@ -276,6 +272,7 @@ export default function OpsRegionsPage(): ReactElement {
                           className="text-xs font-medium text-primary hover:underline"
                           onClick={() => {
                             void navigator.clipboard.writeText(row.id);
+                            toast.success("Region id copied");
                           }}
                         >
                           Copy id
@@ -335,6 +332,7 @@ export default function OpsRegionsPage(): ReactElement {
                   className="text-sm font-medium text-primary"
                   onClick={() => {
                     void navigator.clipboard.writeText(row.id);
+                    toast.success("Region id copied");
                   }}
                 >
                   Copy id

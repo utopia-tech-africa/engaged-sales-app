@@ -1,5 +1,52 @@
 import { plainToInstance, Type } from "class-transformer";
-import { IsInt, IsString, Max, Min, MinLength, validateSync } from "class-validator";
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Matches,
+  Max,
+  Min,
+  MinLength,
+  validateSync
+} from "class-validator";
+
+const parseEnvBool = (value: unknown, defaultValue: boolean): boolean => {
+  if (value === undefined || value === null || value === "") {
+    return defaultValue;
+  }
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "number") {
+    if (value === 1) {
+      return true;
+    }
+    if (value === 0) {
+      return false;
+    }
+    return defaultValue;
+  }
+  if (typeof value !== "string") {
+    return defaultValue;
+  }
+  const normalized = value.trim().toLowerCase();
+  if (["1", "true", "yes", "on"].includes(normalized)) {
+    return true;
+  }
+  if (["0", "false", "no", "off"].includes(normalized)) {
+    return false;
+  }
+  return defaultValue;
+};
+
+const parseDigestDateMode = (value: unknown): "yesterday" | "today" => {
+  if (value === "today") {
+    return "today";
+  }
+  return "yesterday";
+};
 
 class EnvironmentVariablesDto {
   @IsString()
@@ -60,6 +107,46 @@ class EnvironmentVariablesDto {
   /** Public web origin for sign-in links in emails (no trailing slash). */
   @IsString()
   public APP_PUBLIC_URL = "http://localhost:3000";
+
+  /** IANA timezone for daily attendance boundaries and late checks (e.g. `Africa/Nairobi`). */
+  @IsOptional()
+  @IsString()
+  public ATTENDANCE_TIMEZONE = "UTC";
+
+  /** Local expected clock-in time (`HH:mm`) in `ATTENDANCE_TIMEZONE` for late detection. */
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{2}:\d{2}$/)
+  public ATTENDANCE_EXPECTED_CHECK_IN_HHMM = "09:00";
+
+  /** Enforce outlet/geofence proximity for check-ins when active geofences exist. */
+  @IsBoolean()
+  public ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE = true;
+
+  /** Maximum allowed meters from nearest active geofence center for a valid visit/check-in. */
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  public ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS = 120;
+
+  @IsBoolean()
+  public ATTENDANCE_DIGEST_ENABLED = false;
+
+  /** Six-field cron (sec min hour dom month dow), e.g. `0 30 19 * * *` for 19:30 in ATTENDANCE_DIGEST_TIMEZONE. */
+  @IsString()
+  @MinLength(9)
+  public ATTENDANCE_DIGEST_CRON = "0 30 19 * * *";
+
+  /** IANA zone used to interpret ATTENDANCE_DIGEST_CRON fire times. */
+  @IsString()
+  public ATTENDANCE_DIGEST_TIMEZONE = "UTC";
+
+  @IsIn(["yesterday", "today"])
+  public ATTENDANCE_DIGEST_DATE_MODE: "yesterday" | "today" = "yesterday";
+
+  /** When true, send a digest even if there are no missed/late/missing clock-out rows. */
+  @IsBoolean()
+  public ATTENDANCE_DIGEST_ALWAYS_SEND = false;
 }
 
 export type EnvironmentVariables = {
@@ -77,6 +164,15 @@ export type EnvironmentVariables = {
   RESEND_API_KEY: string;
   RESEND_FROM_EMAIL: string;
   APP_PUBLIC_URL: string;
+  ATTENDANCE_TIMEZONE: string;
+  ATTENDANCE_EXPECTED_CHECK_IN_HHMM: string;
+  ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE: boolean;
+  ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS: number;
+  ATTENDANCE_DIGEST_ENABLED: boolean;
+  ATTENDANCE_DIGEST_CRON: string;
+  ATTENDANCE_DIGEST_TIMEZONE: string;
+  ATTENDANCE_DIGEST_DATE_MODE: "yesterday" | "today";
+  ATTENDANCE_DIGEST_ALWAYS_SEND: boolean;
 };
 
 export const validateEnvironment = (config: Record<string, unknown>): EnvironmentVariables => {
@@ -95,7 +191,41 @@ export const validateEnvironment = (config: Record<string, unknown>): Environmen
     CORS_ORIGINS: config["CORS_ORIGINS"] ?? "http://localhost:3000,http://127.0.0.1:3000",
     RESEND_API_KEY: config["RESEND_API_KEY"] ?? "",
     RESEND_FROM_EMAIL: config["RESEND_FROM_EMAIL"] ?? "",
-    APP_PUBLIC_URL: config["APP_PUBLIC_URL"] ?? "http://localhost:3000"
+    APP_PUBLIC_URL: config["APP_PUBLIC_URL"] ?? "http://localhost:3000",
+    ATTENDANCE_TIMEZONE:
+      (typeof config["ATTENDANCE_TIMEZONE"] === "string" &&
+      config["ATTENDANCE_TIMEZONE"].trim().length > 0
+        ? config["ATTENDANCE_TIMEZONE"].trim()
+        : undefined) ?? "UTC",
+    ATTENDANCE_EXPECTED_CHECK_IN_HHMM:
+      (typeof config["ATTENDANCE_EXPECTED_CHECK_IN_HHMM"] === "string" &&
+      config["ATTENDANCE_EXPECTED_CHECK_IN_HHMM"].trim().length > 0
+        ? config["ATTENDANCE_EXPECTED_CHECK_IN_HHMM"].trim()
+        : undefined) ?? "09:00",
+    ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE: parseEnvBool(
+      config["ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE"],
+      true
+    ),
+    ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS:
+      typeof config["ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS"] === "number"
+        ? config["ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS"]
+        : typeof config["ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS"] === "string" &&
+            config["ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS"].trim().length > 0
+          ? Number(config["ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS"])
+          : 120,
+    ATTENDANCE_DIGEST_ENABLED: parseEnvBool(config["ATTENDANCE_DIGEST_ENABLED"], false),
+    ATTENDANCE_DIGEST_CRON:
+      typeof config["ATTENDANCE_DIGEST_CRON"] === "string" &&
+      config["ATTENDANCE_DIGEST_CRON"].trim().length > 0
+        ? config["ATTENDANCE_DIGEST_CRON"].trim()
+        : "0 30 19 * * *",
+    ATTENDANCE_DIGEST_TIMEZONE:
+      typeof config["ATTENDANCE_DIGEST_TIMEZONE"] === "string" &&
+      config["ATTENDANCE_DIGEST_TIMEZONE"].trim().length > 0
+        ? config["ATTENDANCE_DIGEST_TIMEZONE"].trim()
+        : "UTC",
+    ATTENDANCE_DIGEST_DATE_MODE: parseDigestDateMode(config["ATTENDANCE_DIGEST_DATE_MODE"]),
+    ATTENDANCE_DIGEST_ALWAYS_SEND: parseEnvBool(config["ATTENDANCE_DIGEST_ALWAYS_SEND"], false)
   };
 
   const validatedEnvironment = plainToInstance(EnvironmentVariablesDto, rawEnvironment, {
@@ -124,6 +254,16 @@ export const validateEnvironment = (config: Record<string, unknown>): Environmen
     CORS_ORIGINS: validatedEnvironment.CORS_ORIGINS,
     RESEND_API_KEY: validatedEnvironment.RESEND_API_KEY,
     RESEND_FROM_EMAIL: validatedEnvironment.RESEND_FROM_EMAIL,
-    APP_PUBLIC_URL: validatedEnvironment.APP_PUBLIC_URL
+    APP_PUBLIC_URL: validatedEnvironment.APP_PUBLIC_URL,
+    ATTENDANCE_TIMEZONE: validatedEnvironment.ATTENDANCE_TIMEZONE,
+    ATTENDANCE_EXPECTED_CHECK_IN_HHMM: validatedEnvironment.ATTENDANCE_EXPECTED_CHECK_IN_HHMM,
+    ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE: validatedEnvironment.ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE,
+    ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS:
+      validatedEnvironment.ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS,
+    ATTENDANCE_DIGEST_ENABLED: validatedEnvironment.ATTENDANCE_DIGEST_ENABLED,
+    ATTENDANCE_DIGEST_CRON: validatedEnvironment.ATTENDANCE_DIGEST_CRON,
+    ATTENDANCE_DIGEST_TIMEZONE: validatedEnvironment.ATTENDANCE_DIGEST_TIMEZONE,
+    ATTENDANCE_DIGEST_DATE_MODE: validatedEnvironment.ATTENDANCE_DIGEST_DATE_MODE,
+    ATTENDANCE_DIGEST_ALWAYS_SEND: validatedEnvironment.ATTENDANCE_DIGEST_ALWAYS_SEND
   };
 };

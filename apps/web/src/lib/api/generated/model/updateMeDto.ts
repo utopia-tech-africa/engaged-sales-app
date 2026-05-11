@@ -5,7 +5,7 @@
  * API documentation for Engaged Sales backend
  * OpenAPI spec version: 1.0.0
  */
-import type { UpdateMeDtoGender } from "./updateMeDtoGender";
+import type { UpdateMeDtoGender } from './updateMeDtoGender';
 
 export type UpdateMeDto = {
   fullName?: string;

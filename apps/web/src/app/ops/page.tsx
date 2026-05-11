@@ -4,7 +4,7 @@ import Link from "next/link";
 import { type ReactElement } from "react";
 
 import {
-  useAdminActivationListActivations,
+  useActivationListActivations,
   useAdminGeofenceListGeofences,
   useAdminRegionListRegions,
   useAdminUserListUsers,
@@ -72,7 +72,7 @@ export default function OpsOverviewPage(): ReactElement {
     }
   });
 
-  const activationsQuery = useAdminActivationListActivations({
+  const activationsQuery = useActivationListActivations({
     query: {
       enabled: accessToken !== null && canManageActivations,
       select: (r) => parseActivationsFromOrval(r)
@@ -166,6 +166,12 @@ export default function OpsOverviewPage(): ReactElement {
               className="mt-3 inline-block text-sm font-medium text-primary"
             >
               Manage →
+            </Link>
+            <Link
+              href="/ops/attendance"
+              className="mt-2 inline-block text-sm font-medium text-primary"
+            >
+              Daily attendance →
             </Link>
           </div>
         ) : null}

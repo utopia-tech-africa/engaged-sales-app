@@ -25,6 +25,11 @@ enum AuthProvider {
   google
 }
 
+enum AttendanceKind {
+  clock_in
+  clock_out
+}
+
 model User {
   id         String        @id @default(cuid())
   fullName   String
@@ -43,6 +48,7 @@ model User {
   sessions   AuthSession[]
   locations  LocationPing[]
   activationRosters ActivationRoster[]
+  sales      Sale[]
 
   @@index([regionId])
 }
@@ -79,14 +85,28 @@ model AuthSession {
 model LocationPing {
   id         String   @id @default(cuid())
   userId     String
+  /// Whether this ping is a field clock-in or clock-out (legacy rows default to clock_in).
+  attendanceKind AttendanceKind @default(clock_in)
+  /// Optional matched geofence/outlet id used for outlet-distance validation.
+  geofenceId String?
+  /// Distance in meters from ping point to matched geofence center.
+  distanceToGeofenceMeters Float?
+  /// Duration from previous ping while still on same matched geofence.
+  dwellSecondsAtGeofence Int?
   latitude   Float
   longitude  Float
   /// Human-readable place from reverse geocoding when the ping was saved (nullable for legacy rows).
   placeLabel String?
+  /// Stored selfie blob for attendance verification (JPEG/PNG); omit from list APIs.
+  selfieMimeType String?
+  selfieImage    Bytes?
+  /// Mirrors presence of `selfieImage` without loading the blob in history queries.
+  hasSelfieVerification Boolean @default(false)
   recordedAt DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, recordedAt(sort: Desc)])
+  @@index([geofenceId, recordedAt(sort: Desc)])
 }
 
 model OauthNonce {
@@ -115,6 +135,7 @@ model Activation {
   region      Region?  @relation(fields: [regionId], references: [id], onDelete: SetNull)
   products    ActivationProduct[]
   roster      ActivationRoster[]
+  sales       Sale[]
 
   @@index([regionId])
   @@index([startsAt])
@@ -130,8 +151,41 @@ model ActivationProduct {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   activation   Activation @relation(fields: [activationId], references: [id], onDelete: Cascade)
+  saleItems    SaleItem[]
 
   @@index([activationId])
+}
+
+/// Promoter sale event (header + line items). See BACKEND_PRD §7.4.
+model Sale {
+  id             String   @id @default(cuid())
+  userId         String
+  activationId   String
+  /// When set, duplicate POST with same key returns the existing sale (24h cache optional; unique enforces forever per user).
+  idempotencyKey String?
+  latitude       Float?
+  longitude      Float?
+  createdAt      DateTime @default(now())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activation     Activation   @relation(fields: [activationId], references: [id], onDelete: Cascade)
+  items          SaleItem[]
+
+  @@unique([userId, idempotencyKey])
+  @@index([activationId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model SaleItem {
+  id        String @id @default(cuid())
+  saleId    String
+  productId String
+  quantity  Int
+  /// Optional line price at time of sale (ActivationProduct has no price field yet).
+  unitPrice Float?
+  sale      Sale              @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product   ActivationProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([saleId])
 }
 
 model ActivationRoster {

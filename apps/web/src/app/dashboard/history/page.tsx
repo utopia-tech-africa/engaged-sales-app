@@ -15,12 +15,15 @@ const HISTORY_LIMIT = 50;
 export default function FieldHistoryPage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
 
-  const historyQuery = useMeListLocationHistory(HISTORY_LIMIT, {
-    query: {
-      enabled: accessToken !== null,
-      select: (result) => parseLocationHistoryFromOrval(result)
+  const historyQuery = useMeListLocationHistory(
+    { limit: HISTORY_LIMIT },
+    {
+      query: {
+        enabled: accessToken !== null,
+        select: (result) => parseLocationHistoryFromOrval(result)
+      }
     }
-  });
+  );
 
   return (
     <div className="space-y-6">
@@ -66,7 +69,15 @@ export default function FieldHistoryPage(): ReactElement {
               className="rounded-xl border border-border bg-card/80 px-4 py-3 text-sm shadow-sm dark:bg-card/50"
             >
               <p className="font-medium text-foreground">
+                <span className="mr-2 inline-block rounded-md bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground">
+                  {row.attendanceKind === "clock_out" ? "Out" : "In"}
+                </span>
                 {formatFieldCheckInDateTime(row.recordedAt)}
+                {row.hasSelfieVerification ? (
+                  <span className="ml-2 inline-block rounded-md bg-secondary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-secondary">
+                    Verified
+                  </span>
+                ) : null}
               </p>
               <p className="mt-1 text-xs leading-snug">
                 <LocationPlaceLine
@@ -75,6 +86,17 @@ export default function FieldHistoryPage(): ReactElement {
                   longitude={row.longitude}
                 />
               </p>
+              {row.distanceToGeofenceMeters !== undefined &&
+              row.distanceToGeofenceMeters !== null ? (
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Outlet distance: {row.distanceToGeofenceMeters.toFixed(1)}m
+                  {row.dwellSecondsAtGeofence !== undefined && row.dwellSecondsAtGeofence !== null
+                    ? ` · Dwell: ${String(Math.floor(row.dwellSecondsAtGeofence / 60))}m ${String(
+                        row.dwellSecondsAtGeofence % 60
+                      )}s`
+                    : ""}
+                </p>
+              ) : null}
             </li>
           ))}
         </ul>
