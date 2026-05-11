@@ -9,6 +9,15 @@ const activationAdminInclude = {
   _count: { select: { products: true, roster: true } }
 } satisfies Prisma.ActivationInclude;
 
+const activationFieldListInclude = {
+  region: { select: { id: true, name: true, slug: true } },
+  _count: { select: { products: true } }
+} satisfies Prisma.ActivationInclude;
+
+export type ActivationFieldListRow = Prisma.ActivationGetPayload<{
+  include: typeof activationFieldListInclude;
+}>;
+
 const activationDetailInclude = {
   region: { select: { id: true, name: true, slug: true } },
   products: { orderBy: [{ sortOrder: "asc" as const }, { createdAt: "asc" as const }] },
@@ -35,6 +44,17 @@ export type ActivationDetailEntity = Prisma.ActivationGetPayload<{
   include: typeof activationDetailInclude;
 }>;
 
+const saleFieldAdminInclude = {
+  user: { select: { id: true, fullName: true, phone: true, role: true } },
+  items: {
+    include: {
+      product: { select: { id: true, name: true, sku: true } }
+    }
+  }
+} satisfies Prisma.SaleInclude;
+
+export type FieldSaleAdminRow = Prisma.SaleGetPayload<{ include: typeof saleFieldAdminInclude }>;
+
 @Injectable()
 export class ActivationRepository {
   public constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
@@ -43,6 +63,75 @@ export class ActivationRepository {
     return this.prisma.activation.findMany({
       orderBy: { startsAt: "desc" },
       include: activationAdminInclude
+    });
+  }
+
+  private static currentActivationWhere(now: Date): Prisma.ActivationWhereInput {
+    return {
+      isActive: true,
+      startsAt: { lte: now },
+      OR: [{ endsAt: null }, { endsAt: { gte: now } }]
+    };
+  }
+
+  public findActivationsForRosterUser(
+    userId: string,
+    now: Date
+  ): Promise<ActivationFieldListRow[]> {
+    return this.prisma.activation.findMany({
+      where: {
+        ...ActivationRepository.currentActivationWhere(now),
+        roster: { some: { userId } }
+      },
+      orderBy: { startsAt: "desc" },
+      include: activationFieldListInclude
+    });
+  }
+
+  public findActivationsCurrentForOps(now: Date): Promise<ActivationFieldListRow[]> {
+    return this.prisma.activation.findMany({
+      where: ActivationRepository.currentActivationWhere(now),
+      orderBy: { startsAt: "desc" },
+      include: activationFieldListInclude
+    });
+  }
+
+  public findRosterMembership(
+    activationId: string,
+    userId: string
+  ): Promise<{ userId: string } | null> {
+    return this.prisma.activationRoster.findUnique({
+      where: { activationId_userId: { activationId, userId } },
+      select: { userId: true }
+    });
+  }
+
+  public findActivationProducts(
+    activationId: string,
+    args: { take: number; skip: number }
+  ): Promise<ActivationDetailEntity["products"]> {
+    return this.prisma.activationProduct.findMany({
+      where: { activationId },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      take: args.take,
+      skip: args.skip
+    });
+  }
+
+  public countActivationProducts(activationId: string): Promise<number> {
+    return this.prisma.activationProduct.count({ where: { activationId } });
+  }
+
+  public findProductsForActivation(
+    activationId: string,
+    productIds: readonly string[]
+  ): Promise<{ id: string }[]> {
+    if (productIds.length === 0) {
+      return Promise.resolve([]);
+    }
+    return this.prisma.activationProduct.findMany({
+      where: { activationId, id: { in: [...productIds] } },
+      select: { id: true }
     });
   }
 
@@ -178,6 +267,102 @@ export class ActivationRepository {
   public createManyRosterEntries(activationId: string, userIds: readonly string[]) {
     return this.prisma.activationRoster.createMany({
       data: userIds.map((userId) => ({ activationId, userId }))
+    });
+  }
+
+  /**
+   * Supervisor/admin: sales on this activation from roster members only, with seller and line items.
+   */
+  public listFieldSalesForActivation(args: {
+    activationId: string;
+    rosterUserIds: readonly string[];
+    take: number;
+    userId?: string;
+    createdFrom?: Date;
+    createdTo?: Date;
+  }) {
+    const { activationId, rosterUserIds, take, userId, createdFrom, createdTo } = args;
+    if (rosterUserIds.length === 0) {
+      return Promise.resolve([] as FieldSaleAdminRow[]);
+    }
+    const lim = Math.min(200, Math.max(1, take));
+    const userFilter =
+      userId !== undefined
+        ? rosterUserIds.includes(userId)
+          ? userId
+          : null
+        : { in: [...rosterUserIds] };
+    if (userFilter === null) {
+      return Promise.resolve([] as FieldSaleAdminRow[]);
+    }
+    return this.prisma.sale.findMany({
+      where: {
+        activationId,
+        userId: typeof userFilter === "string" ? userFilter : userFilter,
+        ...(createdFrom !== undefined || createdTo !== undefined
+          ? {
+              createdAt: {
+                ...(createdFrom !== undefined ? { gte: createdFrom } : {}),
+                ...(createdTo !== undefined ? { lte: createdTo } : {})
+              }
+            }
+          : {})
+      },
+      orderBy: { createdAt: "desc" },
+      take: lim,
+      include: saleFieldAdminInclude
+    });
+  }
+
+  /**
+   * Recent location pings for the given users (e.g. activation roster), newest rows first.
+   * When `recordedInRange` is set, only pings inside that window (e.g. activation dates).
+   */
+  public listFieldLocationPingsForUsers(
+    userIds: readonly string[],
+    take: number,
+    recordedInRange?: { gte: Date; lte?: Date },
+    onlyUserId?: string
+  ) {
+    let effectiveIds = [...userIds];
+    if (onlyUserId !== undefined) {
+      effectiveIds = userIds.includes(onlyUserId) ? [onlyUserId] : [];
+    }
+    if (effectiveIds.length === 0) {
+      return Promise.resolve(
+        [] as {
+          id: string;
+          userId: string;
+          latitude: number;
+          longitude: number;
+          placeLabel: string | null;
+          recordedAt: Date;
+        }[]
+      );
+    }
+    const lim = Math.min(2000, Math.max(1, take));
+    return this.prisma.locationPing.findMany({
+      where: {
+        userId: { in: effectiveIds },
+        ...(recordedInRange !== undefined
+          ? {
+              recordedAt: {
+                gte: recordedInRange.gte,
+                ...(recordedInRange.lte !== undefined ? { lte: recordedInRange.lte } : {})
+              }
+            }
+          : {})
+      },
+      orderBy: { recordedAt: "desc" },
+      take: lim,
+      select: {
+        id: true,
+        userId: true,
+        latitude: true,
+        longitude: true,
+        placeLabel: true,
+        recordedAt: true
+      }
     });
   }
 }

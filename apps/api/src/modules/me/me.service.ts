@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.type";
 import type { UpdateLocationDto } from "./dto/update-location.dto";
@@ -23,8 +23,8 @@ const toProfilePatch = (
 @Injectable()
 export class MeService {
   public constructor(
-    private readonly meRepository: MeRepository,
-    private readonly reverseGeocode: ReverseGeocodeService
+    @Inject(MeRepository) private readonly meRepository: MeRepository,
+    @Inject(ReverseGeocodeService) private readonly reverseGeocode: ReverseGeocodeService
   ) {}
 
   public async getCurrentUser(currentUser: AuthenticatedUser) {

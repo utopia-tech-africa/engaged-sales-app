@@ -170,6 +170,11 @@
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
 }
 
+/* Above Base UI overlays (z-index 2000) */
+[data-sonner-toaster] {
+  z-index: 10000;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

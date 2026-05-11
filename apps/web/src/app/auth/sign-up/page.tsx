@@ -9,9 +9,11 @@ import { type ReactElement, useState } from "react";
 
 import { MobileShell } from "@/components/mobile-shell";
 import { useAuthSignUp } from "@/lib/api/generated/client";
+import { ApiError } from "@/lib/api/problem-details";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseAuthResponseFromOrval } from "@/lib/auth/orval-auth-adapter";
 import { calmPrimaryButtonClass, calmTextLinkClass } from "@/lib/calm-ui";
+import { toast } from "@/lib/toast";
 
 export default function SignUpPage(): ReactElement {
   const router = useRouter();
@@ -36,6 +38,13 @@ export default function SignUpPage(): ReactElement {
           refreshToken: parsed.refreshToken
         });
         router.replace("/dashboard");
+      },
+      onError: (err: unknown) => {
+        const msg =
+          err instanceof ApiError
+            ? (err.problem?.detail ?? err.message)
+            : "Sign-up failed. Please review your details and try again.";
+        toast.error(msg);
       }
     }
   });
@@ -105,15 +114,6 @@ export default function SignUpPage(): ReactElement {
             }}
           />
         </FormControl>
-
-        {signUpMutation.isError ? (
-          <p
-            role="alert"
-            className="rounded-lg border border-destructive/35 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-          >
-            Sign-up failed. Please review your details and try again.
-          </p>
-        ) : null}
 
         <button
           type="submit"

@@ -21,12 +21,26 @@ const getTokenFromPersistedAuth = (): string | undefined => {
 
 export const orvalFetcher = async <T>(url: string, init?: RequestInit): Promise<T> => {
   const path = url.replace(/^https?:\/\/[^/]+\/api\/v1/, "");
-  const authorizationHeader = init?.headers ? new Headers(init.headers).get("Authorization") : null;
-  const token = authorizationHeader?.replace(/^Bearer\s+/i, "") ?? getTokenFromPersistedAuth();
+  const headerBag = init?.headers !== undefined ? new Headers(init.headers) : new Headers();
+  const authorizationHeader = headerBag.get("Authorization");
+  const token =
+    authorizationHeader !== null && authorizationHeader.length > 0
+      ? authorizationHeader.replace(/^Bearer\s+/i, "")
+      : getTokenFromPersistedAuth();
+
+  const passthroughHeaders: Record<string, string> = {};
+  headerBag.forEach((value, key) => {
+    const lower = key.toLowerCase();
+    if (lower === "authorization" || lower === "content-type") {
+      return;
+    }
+    passthroughHeaders[key] = value;
+  });
 
   return apiRequest<T>(path, {
     method: (init?.method as "GET" | "POST" | "PATCH" | undefined) ?? "GET",
     body: init?.body,
-    token
+    token,
+    ...(Object.keys(passthroughHeaders).length > 0 ? { headers: passthroughHeaders } : {})
   });
 };

@@ -7,6 +7,6 @@ import { ActivationService } from "./activation.service";
 @Module({
   imports: [RegionCoreModule],
   providers: [ActivationService, ActivationRepository],
-  exports: [ActivationService]
+  exports: [ActivationService, ActivationRepository]
 })
 export class ActivationCoreModule {}

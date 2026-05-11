@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, JetBrains_Mono } from "next/font/google";
 
+import { AppToaster } from "@/components/app-toaster";
 import { BaseUiProvider } from "@/components/base-ui-provider";
 import { QueryProvider } from "@/components/query-provider";
 
@@ -30,7 +31,10 @@ export default function RootLayout({
     <html lang="en" className={`${fontSans.variable} ${fontMono.variable} h-full antialiased`}>
       <body className="min-h-full bg-background text-foreground font-sans">
         <BaseUiProvider>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            {children}
+            <AppToaster />
+          </QueryProvider>
         </BaseUiProvider>
       </body>
     </html>

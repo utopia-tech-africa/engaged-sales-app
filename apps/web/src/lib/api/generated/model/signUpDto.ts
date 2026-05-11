@@ -15,4 +15,4 @@ export type SignUpDto = {
   gender: SignUpDtoGender;
   /** Optional sales region id */
   regionId?: string;
-}
+};

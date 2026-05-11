@@ -29,10 +29,17 @@ const authResponseSchema = z.object({
 const meProfileSchema = z.object({
   id: z.string(),
   fullName: z.string(),
-  phone: z.string(),
+  phone: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? ""),
   role: z.string(),
-  gender: z.enum(["male", "female", "other"]).nullable(),
-  regionId: z.string().nullable()
+  /** Zod v4: `.nullable()` alone rejects a missing key; API may omit null fields. */
+  gender: z.enum(["male", "female", "other"]).nullish(),
+  regionId: z
+    .string()
+    .nullish()
+    .transform((v) => v ?? null)
 });
 
 const sessionsSchema = z.object({
@@ -57,14 +64,15 @@ export type MeProfile = z.infer<typeof meProfileSchema>;
 export type SessionsPayload = z.infer<typeof sessionsSchema>;
 
 /**
- * Orval types assume `{ data, status, headers }`; our `apiRequest` mutator returns the JSON body only.
- * Unwrap so parsers work for both shapes.
+ * Orval client types assume `{ data, status, headers }`; our `apiRequest` mutator returns the JSON body only.
+ * Only unwrap when the value looks like that HTTP envelope (numeric `status`), not API payloads that use a
+ * `data` field for their primary body (e.g. paged `{ data, total, limit, offset }`).
  */
 export const unwrapOrvalResponseBody = (result: unknown): unknown => {
-  if (result !== null && typeof result === "object" && "data" in result) {
-    const { data } = result;
-    if (data !== undefined) {
-      return data;
+  if (result !== null && typeof result === "object" && "data" in result && "status" in result) {
+    const record = result;
+    if (typeof record.status === "number" && record.data !== undefined) {
+      return record.data;
     }
   }
   return result;

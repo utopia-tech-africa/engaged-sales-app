@@ -10,6 +10,7 @@ import { parseLocationPingFromOrval, type LocationPing } from "@/lib/auth/orval-
 import { calmPrimaryButtonClass } from "@/lib/calm-ui";
 import { formatFieldCheckInDateTime } from "@/lib/format-field-check-in-datetime";
 import { requestCurrentPosition } from "@/lib/geolocation/request-current-position";
+import { toast } from "@/lib/toast";
 
 const DEEP_LINK_HINTS: Record<string, string> = {
   notification: "Opened from a notification or reminder link.",
@@ -23,7 +24,6 @@ export function FieldCheckInPageInner(): ReactElement {
   const queryClient = useQueryClient();
   const locationMutation = useMeUpdateMeLocation();
   const [isLocating, setIsLocating] = useState(false);
-  const [geoError, setGeoError] = useState<string | null>(null);
   const [lastPing, setLastPing] = useState<LocationPing | null>(null);
 
   const deepLinkHint = useMemo(() => {
@@ -35,13 +35,12 @@ export function FieldCheckInPageInner(): ReactElement {
   }, [searchParams]);
 
   const handleCheckIn = (): void => {
-    setGeoError(null);
     setIsLocating(true);
     void (async () => {
       const pos = await requestCurrentPosition();
       if (!pos.ok) {
         setIsLocating(false);
-        setGeoError(pos.message);
+        toast.error(pos.message);
         return;
       }
       locationMutation.mutate(
@@ -54,10 +53,14 @@ export function FieldCheckInPageInner(): ReactElement {
         {
           onSuccess: (result) => {
             setLastPing(parseLocationPingFromOrval(result));
+            toast.success("Check-in saved");
             void queryClient.invalidateQueries({
               predicate: (query) =>
                 Array.isArray(query.queryKey) && query.queryKey[0] === "/me/location/history"
             });
+          },
+          onError: () => {
+            toast.error("Could not save check-in. Try again.");
           },
           onSettled: () => {
             setIsLocating(false);
@@ -87,16 +90,6 @@ export function FieldCheckInPageInner(): ReactElement {
       ) : null}
 
       <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
-        {geoError ? (
-          <p className="text-sm text-destructive" role="alert">
-            {geoError}
-          </p>
-        ) : null}
-        {locationMutation.isError ? (
-          <p className="text-sm text-destructive" role="alert">
-            Could not save check-in. Try again.
-          </p>
-        ) : null}
         {lastPing ? (
           <p className="mb-4 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-foreground dark:bg-muted/15">
             <span className="font-medium">Last saved: </span>

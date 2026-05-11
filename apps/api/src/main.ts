@@ -25,7 +25,7 @@ const bootstrap = async (): Promise<void> => {
     origin: corsOrigins,
     credentials: true,
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization", "Idempotency-Key"]
   });
 
   app.useGlobalPipes(

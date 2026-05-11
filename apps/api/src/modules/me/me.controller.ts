@@ -24,6 +24,7 @@ import {
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.type";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { SaleService } from "../sale/sale.service";
 import { UpdateLocationDto } from "./dto/update-location.dto";
 import { UpdateMeDto } from "./dto/update-me.dto";
 import { MeService } from "./me.service";
@@ -33,7 +34,10 @@ import { MeService } from "./me.service";
 @ApiTags("Me")
 @ApiBearerAuth("bearer")
 export class MeController {
-  public constructor(@Inject(MeService) private readonly meService: MeService) {}
+  public constructor(
+    @Inject(MeService) private readonly meService: MeService,
+    @Inject(SaleService) private readonly saleService: SaleService
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -94,6 +98,38 @@ export class MeController {
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT token" })
   public updateMe(@CurrentUser() currentUser: AuthenticatedUser, @Body() body: UpdateMeDto) {
     return this.meService.updateCurrentUser(currentUser, body);
+  }
+
+  @Get("sales")
+  @ApiOperation({
+    operationId: "Me_listMySales",
+    summary: "List my sales",
+    description:
+      "BACKEND_PRD §7.2 — the authenticated promoter's or merchandizer's sales, newest first."
+  })
+  @ApiQuery({
+    name: "activationId",
+    required: false,
+    description: "Filter to one activation (cuid)"
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Max rows (1–100, default 50)",
+    schema: { type: "integer", default: 50, minimum: 1, maximum: 100 }
+  })
+  @ApiOkResponse({ description: "Sales with line items" })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid JWT token" })
+  public listMySales(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Query("activationId") activationId: string | undefined,
+    @Query("limit", new DefaultValuePipe(50), ParseIntPipe) limit: number
+  ) {
+    const trimmed =
+      activationId !== undefined && activationId.trim().length > 0
+        ? activationId.trim()
+        : undefined;
+    return this.saleService.listMySales(currentUser, trimmed, limit);
   }
 
   @Get("location/history")

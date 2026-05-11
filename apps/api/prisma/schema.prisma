@@ -43,6 +43,7 @@ model User {
   sessions   AuthSession[]
   locations  LocationPing[]
   activationRosters ActivationRoster[]
+  sales      Sale[]
 
   @@index([regionId])
 }
@@ -115,6 +116,7 @@ model Activation {
   region      Region?  @relation(fields: [regionId], references: [id], onDelete: SetNull)
   products    ActivationProduct[]
   roster      ActivationRoster[]
+  sales       Sale[]
 
   @@index([regionId])
   @@index([startsAt])
@@ -130,8 +132,41 @@ model ActivationProduct {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   activation   Activation @relation(fields: [activationId], references: [id], onDelete: Cascade)
+  saleItems    SaleItem[]
 
   @@index([activationId])
+}
+
+/// Promoter sale event (header + line items). See BACKEND_PRD §7.4.
+model Sale {
+  id             String   @id @default(cuid())
+  userId         String
+  activationId   String
+  /// When set, duplicate POST with same key returns the existing sale (24h cache optional; unique enforces forever per user).
+  idempotencyKey String?
+  latitude       Float?
+  longitude      Float?
+  createdAt      DateTime @default(now())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activation     Activation   @relation(fields: [activationId], references: [id], onDelete: Cascade)
+  items          SaleItem[]
+
+  @@unique([userId, idempotencyKey])
+  @@index([activationId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model SaleItem {
+  id        String @id @default(cuid())
+  saleId    String
+  productId String
+  quantity  Int
+  /// Optional line price at time of sale (ActivationProduct has no price field yet).
+  unitPrice Float?
+  sale      Sale              @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product   ActivationProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([saleId])
 }
 
 model ActivationRoster {

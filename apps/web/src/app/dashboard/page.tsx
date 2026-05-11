@@ -4,12 +4,20 @@ import Link from "next/link";
 import { type ReactElement } from "react";
 
 import { fieldNavItems } from "@/components/field-shell";
-import { useAuthListSessions, useMeGetMe } from "@/lib/api/generated/client";
+import {
+  getMeListMySalesQueryKey,
+  meListMySales,
+  useAuthListSessions,
+  useMeGetMe
+} from "@/lib/api/generated/client";
 import { CHECK_IN_PATH, fieldCheckInHref } from "@/lib/field/check-in-deep-link";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseMeProfileFromOrval, parseSessionsFromOrval } from "@/lib/auth/orval-auth-adapter";
+import { parseMySalesListFromOrval } from "@/lib/field/field-activations-adapters";
+import { formatFieldCheckInDateTime } from "@/lib/format-field-check-in-datetime";
 import { calmMutedLinkClass } from "@/lib/calm-ui";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 
 export default function DashboardHomePage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -28,6 +36,13 @@ export default function DashboardHomePage(): ReactElement {
     }
   });
 
+  const recentSalesQuery = useQuery({
+    queryKey: getMeListMySalesQueryKey({ limit: 5 }),
+    queryFn: () => meListMySales({ limit: 5 }),
+    enabled: accessToken !== null,
+    select: (result) => parseMySalesListFromOrval(result)
+  });
+
   return (
     <div className="space-y-8">
       <div>
@@ -38,7 +53,7 @@ export default function DashboardHomePage(): ReactElement {
       </div>
 
       <nav aria-label="Shortcuts">
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {fieldNavItems.slice(1).map(({ href, label, Icon }) => (
             <li key={href}>
               <Link
@@ -54,6 +69,42 @@ export default function DashboardHomePage(): ReactElement {
           ))}
         </ul>
       </nav>
+
+      <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-base font-semibold text-foreground">Recent sales</h2>
+          <Link href="/dashboard/activations" className={calmMutedLinkClass}>
+            Activations
+          </Link>
+        </div>
+        {recentSalesQuery.isLoading ? (
+          <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
+        ) : null}
+        {recentSalesQuery.isError ? (
+          <p className="mt-2 text-sm text-muted-foreground">Sales history unavailable.</p>
+        ) : null}
+        {recentSalesQuery.data?.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            No sales yet. Open an activation to record one.
+          </p>
+        ) : null}
+        {recentSalesQuery.data !== undefined && recentSalesQuery.data.length > 0 ? (
+          <ul className="mt-3 space-y-2">
+            {recentSalesQuery.data.map((sale) => (
+              <li
+                key={sale.id}
+                className="rounded-lg border border-border bg-muted/30 p-3 text-xs dark:bg-muted/15"
+              >
+                <p className="font-medium text-foreground">{sale.activation.name}</p>
+                <p className="text-muted-foreground">
+                  {formatFieldCheckInDateTime(sale.createdAt)} · {sale.items.length} line
+                  {sale.items.length === 1 ? "" : "s"}
+                </p>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </section>
 
       <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
         <h2 className="text-base font-semibold text-foreground">Profile</h2>

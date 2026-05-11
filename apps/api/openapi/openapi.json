@@ -856,6 +856,146 @@
         "tags": ["Admin activations (supervisor / admin)"]
       }
     },
+    "/admin/activations/{id}/field-activity/sales": {
+      "get": {
+        "description": "Sales on this activation from roster members only, with seller and line items. Optional userId, from, and to (ISO 8601) narrow results; time range is intersected with the activation window. Supervisor or admin only.",
+        "operationId": "Activation_listFieldActivitySales",
+        "parameters": [
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Upper bound on sale createdAt (ISO 8601), intersected with activation endsAt when set",
+            "schema": {}
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Lower bound on sale createdAt (ISO 8601), intersected with activation startsAt",
+            "schema": {}
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "Restrict to this roster user (must be on the activation roster)",
+            "schema": {}
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 100,
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sales newest first"
+          },
+          "400": {
+            "description": "Invalid date or userId not on roster"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List sales on activation (field activity)",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
+    "/admin/activations/{id}/field-activity/locations": {
+      "get": {
+        "description": "Location pings for users on this activation roster. Time range defaults to the activation window; optional from/to narrow it. Optional userId must be on the roster. Supervisor or admin only.",
+        "operationId": "Activation_listFieldActivityLocations",
+        "parameters": [
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601 upper bound on recordedAt",
+            "schema": {}
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601 lower bound on recordedAt",
+            "schema": {}
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "Single roster user",
+            "schema": {}
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 500,
+              "minimum": 1,
+              "maximum": 2000
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Location pings, newest first (global ordering)"
+          },
+          "400": {
+            "description": "Invalid date or userId not on roster"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List roster location pings (field activity)",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
     "/admin/activations/{id}": {
       "get": {
         "operationId": "Activation_getActivation",
@@ -1149,6 +1289,118 @@
         "tags": ["Admin activations (supervisor / admin)"]
       }
     },
+    "/activations": {
+      "get": {
+        "description": "Promoters and merchandizers see activations they are rostered on that are currently active. Supervisors and admins see all activations in their active date window.",
+        "operationId": "Activations_listForField",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Activation rows with region and product count"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List activations (field)",
+        "tags": ["Activations (field)"]
+      }
+    },
+    "/activations/{id}/products": {
+      "get": {
+        "operationId": "Activations_listProductsForField",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paged activation products"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Caller is not assigned to this activation"
+          },
+          "404": {
+            "description": "Activation not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List products for an activation (field)",
+        "tags": ["Activations (field)"]
+      }
+    },
+    "/activations/{id}": {
+      "get": {
+        "description": "Full detail including products for supervisor/admin; promoters and merchandizers receive the same shape without the roster list.",
+        "operationId": "Activations_getByIdForField",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activation detail"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Caller is not assigned to this activation"
+          },
+          "404": {
+            "description": "Activation not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get activation (field)",
+        "tags": ["Activations (field)"]
+      }
+    },
     "/admin/users": {
       "get": {
         "description": "Supervisors see promoters and merchandizers only; admins see all users. Sends invite email (Resend) on create when `RESEND_API_KEY` is set.",
@@ -1419,6 +1671,48 @@
         "tags": ["Me"]
       }
     },
+    "/me/sales": {
+      "get": {
+        "description": "BACKEND_PRD §7.2 — the authenticated promoter's or merchandizer's sales, newest first.",
+        "operationId": "Me_listMySales",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Max rows (1–100, default 50)",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "activationId",
+            "required": false,
+            "in": "query",
+            "description": "Filter to one activation (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sales with line items"
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List my sales",
+        "tags": ["Me"]
+      }
+    },
     "/me/location/history": {
       "get": {
         "description": "Returns recent location pings for the authenticated user, newest first.",
@@ -1521,6 +1815,41 @@
         ],
         "summary": "Record user location",
         "tags": ["Me"]
+      }
+    },
+    "/sales": {
+      "post": {
+        "description": "BACKEND_PRD §7.4 — creates a sale with line items. Optional `Idempotency-Key` header dedupes retries per user.",
+        "operationId": "Sales_create",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Optional UUID or opaque string; duplicate requests return the original sale.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Sale with line items and activation summary"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Not assigned to activation or not a field role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Record a sale",
+        "tags": ["Sales (field)"]
       }
     }
   },

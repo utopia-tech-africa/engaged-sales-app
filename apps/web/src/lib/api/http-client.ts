@@ -6,6 +6,8 @@ type RequestOptions = {
   method?: "GET" | "POST" | "PATCH";
   body?: unknown;
   token?: string;
+  /** Merged into fetch headers (e.g. Idempotency-Key). */
+  headers?: Record<string, string>;
 };
 
 export const apiRequest = async <T>(path: string, options?: RequestOptions): Promise<T> => {
@@ -16,12 +18,15 @@ export const apiRequest = async <T>(path: string, options?: RequestOptions): Pro
         ? JSON.stringify(options.body)
         : undefined;
 
+  const baseHeaders: Record<string, string> = {
+    ...(requestBody !== undefined ? { "Content-Type": "application/json" } : {}),
+    ...(options?.token !== undefined ? { Authorization: `Bearer ${options.token}` } : {}),
+    ...(options?.headers ?? {})
+  };
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: options?.method ?? "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options?.token !== undefined ? { Authorization: `Bearer ${options.token}` } : {})
-    },
+    headers: baseHeaders,
     ...(requestBody !== undefined ? { body: requestBody } : {})
   });
 
