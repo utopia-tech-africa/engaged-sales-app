@@ -20,11 +20,26 @@ export const DashboardLayoutClient = ({ children }: PropsWithChildren): ReactEle
   const signOutMutation = useAuthSignOut();
 
   useEffect(() => {
-    if (authHydrated && accessToken === null) {
+    if (!authHydrated) {
+      return;
+    }
+    if (accessToken !== null) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const latestState = useAuthStore.getState();
+      if (latestState.accessToken !== null) {
+        return;
+      }
       const qs = searchParams.toString();
       const returnTo = qs.length > 0 ? `${pathname}?${qs}` : pathname;
       router.replace(`/auth/sign-in?redirect=${encodeURIComponent(returnTo)}`);
-    }
+    }, 200);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [authHydrated, accessToken, pathname, router, searchParams]);
 
   useEffect(() => {
