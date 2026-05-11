@@ -4,13 +4,19 @@ import { useQuery } from "@tanstack/react-query";
 import { type ReactElement, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 
+import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { listOutletVisitReports, listOutlets } from "@/lib/outlet/outlet-api";
 import { toast } from "@/lib/toast";
 
 const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark:bg-card/50";
-const inputClass =
-  "mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export default function OpsOutletVisitsReportPage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -158,59 +164,53 @@ export default function OpsOutletVisitsReportPage(): ReactElement {
         <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <label className="text-xs font-medium text-muted-foreground">
             Outlet
-            <select
-              className={inputClass}
-              value={outletId}
-              onChange={(event) => {
-                setOutletId(event.target.value);
+            <Select
+              value={outletId.length > 0 ? outletId : "all"}
+              onValueChange={(value) => {
+                setOutletId(value === "all" ? "" : value);
               }}
             >
-              <option value="">All outlets</option>
-              {outletsQuery.data?.map((outlet) => (
-                <option key={outlet.id} value={outlet.id}>
-                  {outlet.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="All outlets" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All outlets</SelectItem>
+                {outletsQuery.data?.map((outlet) => (
+                  <SelectItem key={outlet.id} value={outlet.id}>
+                    {outlet.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </label>
           <label className="text-xs font-medium text-muted-foreground">
             Field user
-            <select
-              className={inputClass}
-              value={userId}
-              onChange={(event) => {
-                setUserId(event.target.value);
+            <Select
+              value={userId.length > 0 ? userId : "all"}
+              onValueChange={(value) => {
+                setUserId(value === "all" ? "" : value);
               }}
             >
-              <option value="">All users</option>
-              {uniqueUsers.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.fullName} ({user.phone})
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="All users" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All users</SelectItem>
+                {uniqueUsers.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    {user.fullName} ({user.phone})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </label>
           <label className="text-xs font-medium text-muted-foreground">
             From
-            <input
-              className={inputClass}
-              type="date"
-              value={from}
-              onChange={(event) => {
-                setFrom(event.target.value);
-              }}
-            />
+            <DatePicker value={from} onChange={setFrom} placeholder="From date" />
           </label>
           <label className="text-xs font-medium text-muted-foreground">
             To
-            <input
-              className={inputClass}
-              type="date"
-              value={to}
-              onChange={(event) => {
-                setTo(event.target.value);
-              }}
-            />
+            <DatePicker value={to} onChange={setTo} placeholder="To date" />
           </label>
         </div>
       </section>

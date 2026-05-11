@@ -1,6 +1,6 @@
 "use client";
 
-import { HelpCircle, History, Home, MapPin, Store } from "lucide-react";
+import { Boxes, History, Home, MapPin, Store } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type PropsWithChildren, type ReactElement } from "react";
@@ -21,8 +21,8 @@ export const fieldNavItems = [
   },
   { href: "/dashboard/check-in", label: "Check-in", segment: "check-in" as const, Icon: MapPin },
   { href: "/dashboard/outlet-visits", label: "Outlets", segment: "outlets" as const, Icon: Store },
-  { href: "/dashboard/history", label: "History", segment: "history" as const, Icon: History },
-  { href: "/dashboard/support", label: "Support", segment: "support" as const, Icon: HelpCircle }
+  { href: "/dashboard/stock", label: "Stock", segment: "stock" as const, Icon: Boxes },
+  { href: "/dashboard/history", label: "History", segment: "history" as const, Icon: History }
 ] as const;
 
 function isNavActive(pathname: string, href: string): boolean {
@@ -115,7 +115,7 @@ export const FieldShell = ({
               type="button"
               className={cn(
                 calmSecondaryButtonClass,
-                "max-w-[9rem] shrink-0 px-3 py-2 text-xs sm:text-sm"
+                "max-w-36 shrink-0 px-3 py-2 text-xs sm:text-sm"
               )}
               disabled={isSigningOut}
               onClick={onSignOut}
@@ -124,7 +124,7 @@ export const FieldShell = ({
             </button>
           </header>
 
-          <main className="mx-auto min-h-0 w-full max-w-2xl flex-1 overflow-y-auto overscroll-y-contain px-4 py-5 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] sm:px-6 sm:py-6 lg:max-w-4xl lg:px-8 lg:pb-8">
+          <main className="mx-auto min-h-0 w-full max-w-2xl flex-1 overflow-y-auto overscroll-y-contain px-4 py-5 pb-[calc(4.5rem+env(safe-area-inset-bottom,0))] sm:px-6 sm:py-6 lg:max-w-4xl lg:px-8 lg:pb-8">
             {children}
           </main>
 
@@ -133,7 +133,7 @@ export const FieldShell = ({
             style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
             aria-label="Field app tabs"
           >
-            <ul className="mx-auto grid max-w-lg grid-cols-5 gap-0 px-0.5 py-1.5 sm:px-1">
+            <ul className="mx-auto grid max-w-lg grid-cols-6 gap-0 px-0.5 py-1.5 sm:px-1">
               {fieldNavItems.map(({ href, label, Icon }) => {
                 const active = isNavActive(pathname, href);
                 return (
