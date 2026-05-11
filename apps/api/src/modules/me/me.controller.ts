@@ -25,6 +25,8 @@ import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.type";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { SaleService } from "../sale/sale.service";
+import { OutletService } from "../outlet/outlet.service";
+import { CreateOutletVisitDto } from "./dto/create-outlet-visit.dto";
 import { UpdateLocationDto } from "./dto/update-location.dto";
 import { UpdateMeDto } from "./dto/update-me.dto";
 import { MeService } from "./me.service";
@@ -36,7 +38,8 @@ import { MeService } from "./me.service";
 export class MeController {
   public constructor(
     @Inject(MeService) private readonly meService: MeService,
-    @Inject(SaleService) private readonly saleService: SaleService
+    @Inject(SaleService) private readonly saleService: SaleService,
+    @Inject(OutletService) private readonly outletService: OutletService
   ) {}
 
   @Get()
@@ -215,5 +218,60 @@ export class MeController {
     @Body() body: UpdateLocationDto
   ) {
     return this.meService.updateLocation(currentUser, body);
+  }
+
+  @Post("outlet-visits")
+  @ApiOperation({
+    operationId: "Me_createOutletVisit",
+    summary: "Check in and execute outlet visit",
+    description:
+      "Creates an outlet visit check-in and records outlet photo, stock availability, sales made, consumer engagement and visibility execution."
+  })
+  @ApiBody({ type: CreateOutletVisitDto })
+  @ApiOkResponse({
+    description: "Outlet visit recorded",
+    schema: {
+      example: {
+        id: "cmad4p0bo0000iib0i0l9e8wk",
+        outletId: "cmad4p0bo0000iib0i0l9e8wk",
+        userId: "cmad4p0bo0000iib0i0l9e8wk",
+        latitude: -1.286389,
+        longitude: 36.817223,
+        hasOutletPhoto: true,
+        stockAvailabilityNotes: "All SKUs available except 500ml variant",
+        salesMadeNotes: "Sold 2 cartons and 6 singles",
+        consumerEngagementNotes: "Engaged 9 consumers with product demo",
+        visibilityExecutionNotes: "Shelf branding and wobblers placed",
+        checkedInAt: "2026-05-08T18:20:00.000Z"
+      }
+    }
+  })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid JWT token" })
+  public createOutletVisit(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Body() body: CreateOutletVisitDto
+  ) {
+    return this.meService.createOutletVisit(currentUser, body);
+  }
+
+  @Get("outlet-visits")
+  @ApiOperation({
+    operationId: "Me_listOutletVisits",
+    summary: "List own outlet visits",
+    description: "Returns recent outlet visits for the authenticated field user."
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Maximum rows to return (1-100, default 50)",
+    schema: { type: "integer", default: 50, minimum: 1, maximum: 100 }
+  })
+  @ApiOkResponse({ description: "Outlet visit rows" })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid JWT token" })
+  public listOutletVisits(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Query("limit", new DefaultValuePipe(50), ParseIntPipe) limit: number
+  ) {
+    return this.outletService.listVisitsForField(currentUser, limit);
   }
 }

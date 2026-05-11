@@ -5,10 +5,13 @@ import type { AuthenticatedUser } from "../../common/types/authenticated-user.ty
 import type { AttendanceKind } from "../../generated/prisma/client";
 import type { EnvironmentVariables } from "../../config/environment";
 import { GeofenceService } from "../geofence/geofence.service";
+import { OutletRepository } from "../outlet/outlet.repository";
 import { TrackingStreamService } from "../tracking/tracking-stream.service";
+import type { CreateOutletVisitDto } from "./dto/create-outlet-visit.dto";
 import type { UpdateLocationDto } from "./dto/update-location.dto";
 import type { UpdateMeDto } from "./dto/update-me.dto";
 import { type LocationPingHistoryRow, MeRepository } from "./me.repository";
+import { parseOutletPhotoBase64 } from "./outlet-photo.util";
 import { ReverseGeocodeService } from "./reverse-geocode.service";
 import { parseSelfieBase64 } from "./selfie-image.util";
 
@@ -32,10 +35,17 @@ export class MeService {
     @Inject(MeRepository) private readonly meRepository: MeRepository,
     @Inject(ReverseGeocodeService) private readonly reverseGeocode: ReverseGeocodeService,
     @Inject(GeofenceService) private readonly geofenceService: GeofenceService,
+    @Inject(OutletRepository) private readonly outletRepository: OutletRepository,
     @Inject(TrackingStreamService) private readonly trackingStream: TrackingStreamService,
     @Inject(ConfigService)
     private readonly configService: ConfigService<EnvironmentVariables, true>
   ) {}
+
+  private ensureFieldVisitRole(role: AuthenticatedUser["role"]): void {
+    if (role !== "promoter" && role !== "merchandizer") {
+      throw new BadRequestException("Only promoters and merchandizers can submit outlet visits");
+    }
+  }
 
   public async getCurrentUser(currentUser: AuthenticatedUser) {
     const profile = await this.meRepository.getProfile(currentUser.id);
@@ -137,5 +147,40 @@ export class MeService {
       take
     );
     return rows;
+  }
+
+  public async createOutletVisit(currentUser: AuthenticatedUser, payload: CreateOutletVisitDto) {
+    this.ensureFieldVisitRole(currentUser.role);
+    const outlet = await this.outletRepository.findById(payload.outletId);
+    if (!outlet?.isActive) {
+      throw new NotFoundException("Active outlet not found");
+    }
+
+    const parsedPhoto =
+      payload.outletPhotoBase64 !== undefined
+        ? parseOutletPhotoBase64(payload.outletPhotoBase64)
+        : null;
+    const outletPhotoBytes =
+      parsedPhoto !== null
+        ? (() => {
+            const bytes = new Uint8Array(parsedPhoto.buffer.length);
+            bytes.set(parsedPhoto.buffer);
+            return bytes;
+          })()
+        : null;
+
+    return this.outletRepository.createVisit({
+      outletId: outlet.id,
+      userId: currentUser.id,
+      latitude: payload.latitude,
+      longitude: payload.longitude,
+      outletPhotoMimeType: parsedPhoto?.mimeType ?? null,
+      outletPhotoImage: outletPhotoBytes,
+      hasOutletPhoto: parsedPhoto !== null,
+      stockAvailabilityNotes: payload.stockAvailabilityNotes?.trim() ?? null,
+      salesMadeNotes: payload.salesMadeNotes?.trim() ?? null,
+      consumerEngagementNotes: payload.consumerEngagementNotes?.trim() ?? null,
+      visibilityExecutionNotes: payload.visibilityExecutionNotes?.trim() ?? null
+    });
   }
 }

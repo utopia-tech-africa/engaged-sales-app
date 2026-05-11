@@ -49,6 +49,7 @@ model User {
   locations  LocationPing[]
   activationRosters ActivationRoster[]
   sales      Sale[]
+  outletVisits OutletVisit[]
 
   @@index([regionId])
 }
@@ -210,4 +211,44 @@ model Geofence {
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+/// Trade outlet managed by operations and visited by field staff.
+model Outlet {
+  id               String   @id @default(cuid())
+  name             String
+  category         String
+  distributorName  String
+  locationArea     String
+  contactName      String?
+  contactPhone     String?
+  contactEmail     String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  visits           OutletVisit[]
+}
+
+/// Visit/check-in execution at an outlet (photo + trade metrics).
+model OutletVisit {
+  id                        String   @id @default(cuid())
+  outletId                  String
+  userId                    String
+  latitude                  Float
+  longitude                 Float
+  outletPhotoMimeType       String?
+  outletPhotoImage          Bytes?
+  hasOutletPhoto            Boolean  @default(false)
+  stockAvailabilityNotes    String?
+  salesMadeNotes            String?
+  consumerEngagementNotes   String?
+  visibilityExecutionNotes  String?
+  checkedInAt               DateTime @default(now())
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  outlet                    Outlet   @relation(fields: [outletId], references: [id], onDelete: Cascade)
+  user                      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([outletId, checkedInAt(sort: Desc)])
+  @@index([userId, checkedInAt(sort: Desc)])
 }
