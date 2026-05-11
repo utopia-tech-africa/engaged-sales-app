@@ -13,6 +13,7 @@ type NavItem = { href: string; label: string };
 const navItemsForRole = (role: AuthUser["role"]): NavItem[] => {
   const items: NavItem[] = [
     { href: "/ops", label: "Overview" },
+    { href: "/ops/reporting", label: "Reporting" },
     { href: "/ops/stock", label: "Stock" },
     { href: "/ops/targets", label: "Targets" },
     { href: "/ops/users", label: "Users" },

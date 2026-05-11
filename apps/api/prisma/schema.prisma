@@ -30,6 +30,11 @@ enum AttendanceKind {
   clock_out
 }
 
+enum ReportFrequency {
+  daily
+  weekly
+}
+
 model User {
   id         String        @id @default(cuid())
   fullName   String
@@ -51,6 +56,7 @@ model User {
   sales      Sale[]
   outletVisits OutletVisit[]
   stockPickups StockPickup[]
+  reportConfigs ReportConfig[]
 
   @@index([regionId])
 }
@@ -286,4 +292,35 @@ model StockPickupItem {
 
   @@index([pickupId])
   @@index([productId])
+}
+
+model ReportConfig {
+  id               String   @id @default(cuid())
+  key              String   @unique
+  timezone         String   @default("UTC")
+  dailyEnabled     Boolean  @default(false)
+  dailyCron        String   @default("0 0 19 * * *")
+  weeklyEnabled    Boolean  @default(false)
+  weeklyCron       String   @default("0 0 19 * * 1")
+  dailyLastSentAt  DateTime?
+  weeklyLastSentAt DateTime?
+  createdByUserId  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  createdByUser    User?    @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  recipients       ReportRecipient[]
+}
+
+model ReportRecipient {
+  id          String   @id @default(cuid())
+  reportConfigId String
+  email       String
+  frequency   ReportFrequency @default(daily)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reportConfig ReportConfig @relation(fields: [reportConfigId], references: [id], onDelete: Cascade)
+
+  @@index([reportConfigId])
+  @@unique([reportConfigId, email, frequency])
 }

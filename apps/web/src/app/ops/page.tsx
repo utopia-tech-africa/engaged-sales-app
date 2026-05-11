@@ -187,6 +187,12 @@ export default function OpsOverviewPage(): ReactElement {
             >
               Daily targets →
             </Link>
+            <Link
+              href="/ops/reporting"
+              className="mt-2 inline-block text-sm font-medium text-primary"
+            >
+              Reporting dashboard →
+            </Link>
           </div>
         ) : null}
         <div className={cardClass}>

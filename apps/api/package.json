@@ -24,6 +24,7 @@
     "@nestjs/websockets": "^11.1.19",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@types/pdfkit": "^0.17.6",
     "argon2": "^0.44.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
@@ -32,6 +33,7 @@
     "luxon": "^3.7.2",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
+    "pdfkit": "^0.18.0",
     "pg": "^8.20.0",
     "prisma": "^7.8.0",
     "reflect-metadata": "^0.2.2",
@@ -39,7 +41,8 @@
     "rxjs": "^7.8.2",
     "socket.io": "^4.8.3",
     "swagger-ui-express": "^5.0.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/luxon": "^3.7.1",
