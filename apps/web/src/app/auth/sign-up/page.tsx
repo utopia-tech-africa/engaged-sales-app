@@ -7,8 +7,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactElement, useState } from "react";
 
+import { useMutation } from "@tanstack/react-query";
+
 import { MobileShell } from "@/components/mobile-shell";
-import { useAuthSignUp } from "@/lib/api/generated/client";
+import { authSignUp } from "@/lib/api/generated/client";
+import type { SignUpDto } from "@/lib/api/generated/model/signUpDto";
 import { ApiError } from "@/lib/api/problem-details";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseAuthResponseFromOrval } from "@/lib/auth/orval-auth-adapter";
@@ -28,24 +31,23 @@ export default function SignUpPage(): ReactElement {
     { id: "other", label: "Other" }
   ];
 
-  const signUpMutation = useAuthSignUp({
-    mutation: {
-      onSuccess: (result) => {
-        const parsed = parseAuthResponseFromOrval(result);
-        setSession({
-          user: parsed.user,
-          accessToken: parsed.accessToken,
-          refreshToken: parsed.refreshToken
-        });
-        router.replace("/dashboard");
-      },
-      onError: (err: unknown) => {
-        const msg =
-          err instanceof ApiError
-            ? (err.problem?.detail ?? err.message)
-            : "Sign-up failed. Please review your details and try again.";
-        toast.error(msg);
-      }
+  const signUpMutation = useMutation({
+    mutationFn: (data: SignUpDto) => authSignUp(data, { signal: AbortSignal.timeout(60_000) }),
+    onSuccess: (result) => {
+      const parsed = parseAuthResponseFromOrval(result);
+      setSession({
+        user: parsed.user,
+        accessToken: parsed.accessToken,
+        refreshToken: parsed.refreshToken
+      });
+      router.replace("/dashboard");
+    },
+    onError: (err: unknown) => {
+      const msg =
+        err instanceof ApiError
+          ? (err.problem?.detail ?? err.message)
+          : "Sign-up failed. Please review your details and try again.";
+      toast.error(msg);
     }
   });
 
@@ -56,12 +58,10 @@ export default function SignUpPage(): ReactElement {
         onSubmit={(event) => {
           event.preventDefault();
           signUpMutation.mutate({
-            data: {
-              fullName,
-              phone,
-              gender,
-              ...(regionId.length > 0 ? { regionId } : {})
-            }
+            fullName,
+            phone,
+            gender,
+            ...(regionId.length > 0 ? { regionId } : {})
           });
         }}
       >

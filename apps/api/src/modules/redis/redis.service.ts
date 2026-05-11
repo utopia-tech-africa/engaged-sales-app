@@ -16,7 +16,18 @@ export class RedisService implements OnModuleDestroy {
     @Inject(ConfigService) configService: ConfigService<EnvironmentVariables, true>
   ) {
     this.client = new Redis(configService.get("REDIS_URL", { infer: true }), {
-      lazyConnect: true
+      lazyConnect: true,
+      // Avoid hanging auth and other routes for minutes when Redis is down or misconfigured.
+      connectTimeout: 5_000,
+      commandTimeout: 5_000,
+      maxRetriesPerRequest: 2,
+      enableOfflineQueue: false,
+      retryStrategy: (times: number) => {
+        if (times > 6) {
+          return null;
+        }
+        return Math.min(times * 150, 2_000);
+      }
     });
     this.client.on("error", () => {
       if (!this.hasLoggedConnectionError) {

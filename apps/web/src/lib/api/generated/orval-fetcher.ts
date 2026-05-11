@@ -41,6 +41,7 @@ export const orvalFetcher = async <T>(url: string, init?: RequestInit): Promise<
     method: (init?.method as "GET" | "POST" | "PATCH" | undefined) ?? "GET",
     body: init?.body,
     token,
+    ...(init?.signal !== undefined && init.signal !== null ? { signal: init.signal } : {}),
     ...(Object.keys(passthroughHeaders).length > 0 ? { headers: passthroughHeaders } : {})
   });
 };
