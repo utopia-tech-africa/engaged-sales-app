@@ -8,101 +8,167 @@ import { calmMutedLinkClass } from "@/lib/calm-ui";
 
 const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark:bg-card/50";
 
+type OrgCardProps = {
+  title: string;
+  description: string;
+  href?: string;
+  linkLabel?: string;
+  footer?: ReactElement;
+};
+
+const OrgCard = ({ title, description, href, linkLabel, footer }: OrgCardProps): ReactElement => (
+  <div className={cardClass}>
+    <h2 className="font-semibold text-foreground">{title}</h2>
+    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
+    {href !== undefined && linkLabel !== undefined ? (
+      <p className="mt-3">
+        <Link href={href} className={calmMutedLinkClass}>
+          {linkLabel}
+        </Link>
+      </p>
+    ) : null}
+    {footer !== undefined ? <div className="mt-3">{footer}</div> : null}
+  </div>
+);
+
 export default function OpsOrganizationPage(): ReactElement {
-  const isAdmin = useAuthStore((state) => state.user?.role === "admin");
   const role = useAuthStore((state) => state.user?.role);
   const canManageActivations = role === "admin" || role === "supervisor";
+  const canSuperviseField = role === "admin" || role === "supervisor";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Organization</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          {isAdmin
-            ? "Configure regions, users, and assignments. Subwholesales remain on the roadmap."
-            : canManageActivations
-              ? "Configure regions, users, and assignments. Subwholesales remain on the roadmap."
-              : "Configure regions, users, and assignments. Subwholesales and supervisor-only tools follow in future releases."}
+          Quick links to configure territories, people, campaigns, and field operations. Use the
+          sidebar for the same destinations anytime.
         </p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className={cardClass}>
-          <h2 className="font-semibold text-foreground">Regions</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Create and manage sales territories. Users reference a region by id in their profile.
-          </p>
-          <p className="mt-3">
-            <Link href="/ops/regions" className={calmMutedLinkClass}>
-              Open regions →
-            </Link>
-          </p>
+
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Structure & people
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <OrgCard
+            title="Regions"
+            description="Create and manage sales territories. Users and activations can reference a region."
+            href="/ops/regions"
+            linkLabel="Open regions →"
+          />
+          <OrgCard
+            title="Users & roles"
+            description="Invite promoters and merchandizers, assign supervisors, activate or deactivate accounts, and manage sessions."
+            href="/ops/users"
+            linkLabel="Open users →"
+          />
+          <OrgCard
+            title="Activations"
+            description="Campaigns with product lines and promoter rosters for field execution."
+            href={canManageActivations ? "/ops/activations" : undefined}
+            linkLabel={canManageActivations ? "Open activations →" : undefined}
+            footer={
+              canManageActivations ? undefined : (
+                <span className="inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                  Supervisor or admin
+                </span>
+              )
+            }
+          />
         </div>
-        <div className={cardClass}>
-          <h2 className="font-semibold text-foreground">Subwholesales</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Wholesale nodes under regions.
-            {isAdmin ? (
-              <>
-                {" "}
-                Planned: <code className="text-xs">/admin/subwholesales</code>.
-              </>
-            ) : (
-              " Planned for a future release."
-            )}
-          </p>
-          <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-            Coming soon
-          </span>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Field operations
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <OrgCard
+            title="Work areas"
+            description="Circular geofences for check-in validation and outlet distance rules."
+            href="/ops/geofences"
+            linkLabel="Open work areas →"
+          />
+          <OrgCard
+            title="Outlets"
+            description="Outlet master data and visit reporting for trade coverage."
+            href="/ops/outlets"
+            linkLabel="Open outlets →"
+          />
+          <OrgCard
+            title="Outlet visit reports"
+            description="Filter and export outlet visits across the team."
+            href="/ops/outlets/visits"
+            linkLabel="Open visit reports →"
+          />
+          {canSuperviseField ? (
+            <>
+              <OrgCard
+                title="Attendance"
+                description="Daily roll-up for field staff clock-in and clock-out compliance."
+                href="/ops/attendance"
+                linkLabel="Open attendance →"
+              />
+              <OrgCard
+                title="Live tracking"
+                description="Real-time map and table of latest field positions."
+                href="/ops/tracking"
+                linkLabel="Open live tracking →"
+              />
+            </>
+          ) : null}
         </div>
-        <div className={cardClass}>
-          <h2 className="font-semibold text-foreground">Users & roles</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Invite promoters, assign supervisors, reset sessions.
-            {isAdmin ? (
-              <>
-                {" "}
-                Planned: <code className="text-xs">/admin/users</code>.
-              </>
-            ) : (
-              " Manage invites and roles from Users in the sidebar."
-            )}
-          </p>
-          {isAdmin ? (
-            <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-              Coming soon
-            </span>
-          ) : (
-            <p className="mt-3">
-              <Link href="/ops/users" className={calmMutedLinkClass}>
-                Open users →
-              </Link>
-            </p>
-          )}
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Reporting & performance
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <OrgCard
+            title="Reporting dashboard"
+            description="Sales by region and SKU, outlet and route coverage, attendance, productivity, and staff status."
+            href="/ops/reporting"
+            linkLabel="Open reporting →"
+          />
+          <OrgCard
+            title="Report email settings"
+            description="Daily and weekly automated report schedules and recipient list."
+            href="/ops/reporting/settings"
+            linkLabel="Configure email reports →"
+          />
+          <OrgCard
+            title="Stock overview"
+            description="Cross-user inventory and sales rollup with distributor analytics."
+            href="/ops/stock"
+            linkLabel="Open stock overview →"
+          />
+          <OrgCard
+            title="Daily targets"
+            description="Team achievement, leaderboard, and underperformer alerts against daily case targets."
+            href="/ops/targets"
+            linkLabel="Open targets →"
+          />
         </div>
-        <div className={cardClass}>
-          <h2 className="font-semibold text-foreground">Activations</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Create campaigns, product lists, and promoter rosters.
-            {isAdmin ? (
-              <>
-                {" "}
-                Admin API: <code className="text-xs">/admin/activations</code>.
-              </>
-            ) : null}
-          </p>
-          {canManageActivations ? (
-            <p className="mt-3">
-              <Link href="/ops/activations" className={calmMutedLinkClass}>
-                Open activations →
-              </Link>
-            </p>
-          ) : (
-            <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-              Supervisor or admin
-            </span>
-          )}
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Roadmap
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <OrgCard
+            title="Subwholesales"
+            description="Wholesale nodes under regions for territory hierarchy. Not available in this release."
+            footer={
+              <span className="inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                Coming soon
+              </span>
+            }
+          />
         </div>
-      </div>
+      </section>
     </div>
   );
 }
