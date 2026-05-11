@@ -69,8 +69,28 @@ model Region {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  users        User[]
-  activations  Activation[]
+  users         User[]
+  activations   Activation[]
+  subwholesales Subwholesale[]
+}
+
+/// Wholesale sub-node under a region (e.g. distributor hub or secondary territory).
+model Subwholesale {
+  id           String   @id @default(cuid())
+  regionId     String
+  slug         String
+  name         String
+  contactName  String?
+  contactPhone String?
+  contactEmail String?
+  notes        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  region       Region   @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@unique([regionId, slug])
+  @@index([regionId])
 }
 
 model AuthSession {

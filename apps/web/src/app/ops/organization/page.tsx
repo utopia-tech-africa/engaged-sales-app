@@ -58,6 +58,12 @@ export default function OpsOrganizationPage(): ReactElement {
             linkLabel="Open regions →"
           />
           <OrgCard
+            title="Subwholesales"
+            description="Wholesale nodes under a region (slugs unique per region). Use for territory hierarchy under regions."
+            href="/ops/subwholesales"
+            linkLabel="Open subwholesales →"
+          />
+          <OrgCard
             title="Users & roles"
             description="Invite promoters and merchandizers, assign supervisors, activate or deactivate accounts, and manage sessions."
             href="/ops/users"
@@ -149,23 +155,6 @@ export default function OpsOrganizationPage(): ReactElement {
             description="Team achievement, leaderboard, and underperformer alerts against daily case targets."
             href="/ops/targets"
             linkLabel="Open targets →"
-          />
-        </div>
-      </section>
-
-      <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Roadmap
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <OrgCard
-            title="Subwholesales"
-            description="Wholesale nodes under regions for territory hierarchy. Not available in this release."
-            footer={
-              <span className="inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-                Coming soon
-              </span>
-            }
           />
         </div>
       </section>
