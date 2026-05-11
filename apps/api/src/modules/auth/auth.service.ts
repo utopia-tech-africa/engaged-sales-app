@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
   UnauthorizedException
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -78,6 +79,8 @@ const OAUTH_CALLBACK_MAX_REQUESTS = 30;
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   public constructor(
     @Inject(AuthRepository)
     private readonly authRepository: AuthRepository,
@@ -647,70 +650,120 @@ export class AuthService {
   }
 
   private async enforceAuthIpLimit(ipAddress: string): Promise<void> {
-    const key = `auth:limit:ip:${ipAddress}`;
-    const count = await this.redisService.incrementWithWindow(
-      key,
-      Math.floor(AUTH_IP_WINDOW_MS / 1000)
-    );
-    if (count > AUTH_IP_MAX_REQUESTS) {
-      throw new ForbiddenException("Too many auth attempts from this IP. Try again in a minute.");
+    try {
+      const key = `auth:limit:ip:${ipAddress}`;
+      const count = await this.redisService.incrementWithWindow(
+        key,
+        Math.floor(AUTH_IP_WINDOW_MS / 1000)
+      );
+      if (count > AUTH_IP_MAX_REQUESTS) {
+        throw new ForbiddenException("Too many auth attempts from this IP. Try again in a minute.");
+      }
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Auth IP rate limit skipped (Redis): ${message}`);
     }
   }
 
   private async enforcePhoneLockout(phone: string): Promise<void> {
-    const key = `auth:lockout:phone:${phone}`;
-    const value = await this.redisService.get(key);
-    const failures = value ? Number(value) : 0;
+    try {
+      const key = `auth:lockout:phone:${phone}`;
+      const value = await this.redisService.get(key);
+      const failures = value ? Number(value) : 0;
 
-    if (failures >= PHONE_FAILURE_MAX_ATTEMPTS) {
-      throw new ForbiddenException("Too many failed attempts for this phone. Try again later.");
+      if (failures >= PHONE_FAILURE_MAX_ATTEMPTS) {
+        throw new ForbiddenException("Too many failed attempts for this phone. Try again later.");
+      }
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Phone lockout check skipped (Redis): ${message}`);
     }
   }
 
   private async recordPhoneFailure(phone: string): Promise<void> {
-    const key = `auth:lockout:phone:${phone}`;
-    await this.redisService.incrementWithWindow(key, Math.floor(PHONE_FAILURE_WINDOW_MS / 1000));
+    try {
+      const key = `auth:lockout:phone:${phone}`;
+      await this.redisService.incrementWithWindow(key, Math.floor(PHONE_FAILURE_WINDOW_MS / 1000));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`recordPhoneFailure skipped (Redis): ${message}`);
+    }
   }
 
   private async resetPhoneFailures(phone: string): Promise<void> {
-    const key = `auth:lockout:phone:${phone}`;
-    await this.redisService.delete(key);
+    try {
+      const key = `auth:lockout:phone:${phone}`;
+      await this.redisService.delete(key);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`resetPhoneFailures skipped (Redis): ${message}`);
+    }
   }
 
   private async enforceRefreshThrottle(sessionId: string): Promise<void> {
-    const key = `auth:limit:refresh:${sessionId}`;
-    const count = await this.redisService.incrementWithWindow(
-      key,
-      Math.floor(REFRESH_WINDOW_MS / 1000)
-    );
-    if (count > REFRESH_MAX_REQUESTS) {
-      throw new ForbiddenException("Too many refresh attempts. Try again in a minute.");
+    try {
+      const key = `auth:limit:refresh:${sessionId}`;
+      const count = await this.redisService.incrementWithWindow(
+        key,
+        Math.floor(REFRESH_WINDOW_MS / 1000)
+      );
+      if (count > REFRESH_MAX_REQUESTS) {
+        throw new ForbiddenException("Too many refresh attempts. Try again in a minute.");
+      }
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Refresh throttle skipped (Redis): ${message}`);
     }
   }
 
   private async enforceOauthStartLimit(ipAddress: string): Promise<void> {
-    const key = `auth:limit:oauth:start:ip:${ipAddress}`;
-    const count = await this.redisService.incrementWithWindow(
-      key,
-      Math.floor(OAUTH_START_WINDOW_MS / 1000)
-    );
-    if (count > OAUTH_START_MAX_REQUESTS) {
-      throw new ForbiddenException(
-        "Too many OAuth start requests from this IP. Try again in a minute."
+    try {
+      const key = `auth:limit:oauth:start:ip:${ipAddress}`;
+      const count = await this.redisService.incrementWithWindow(
+        key,
+        Math.floor(OAUTH_START_WINDOW_MS / 1000)
       );
+      if (count > OAUTH_START_MAX_REQUESTS) {
+        throw new ForbiddenException(
+          "Too many OAuth start requests from this IP. Try again in a minute."
+        );
+      }
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`OAuth start limit skipped (Redis): ${message}`);
     }
   }
 
   private async enforceOauthCallbackLimit(ipAddress: string): Promise<void> {
-    const key = `auth:limit:oauth:callback:ip:${ipAddress}`;
-    const count = await this.redisService.incrementWithWindow(
-      key,
-      Math.floor(OAUTH_CALLBACK_WINDOW_MS / 1000)
-    );
-    if (count > OAUTH_CALLBACK_MAX_REQUESTS) {
-      throw new ForbiddenException(
-        "Too many OAuth callback requests from this IP. Try again in a minute."
+    try {
+      const key = `auth:limit:oauth:callback:ip:${ipAddress}`;
+      const count = await this.redisService.incrementWithWindow(
+        key,
+        Math.floor(OAUTH_CALLBACK_WINDOW_MS / 1000)
       );
+      if (count > OAUTH_CALLBACK_MAX_REQUESTS) {
+        throw new ForbiddenException(
+          "Too many OAuth callback requests from this IP. Try again in a minute."
+        );
+      }
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`OAuth callback limit skipped (Redis): ${message}`);
     }
   }
 }

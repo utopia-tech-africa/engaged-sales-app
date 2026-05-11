@@ -12,6 +12,8 @@ type RequestOptions = {
   token?: string;
   /** Merged into fetch headers (e.g. Idempotency-Key). */
   headers?: Record<string, string>;
+  /** Passed to `fetch` (e.g. `AbortSignal.timeout(ms)` for long-running endpoints). */
+  signal?: AbortSignal;
   /** Internal: prevent infinite loop when retrying after token rotation. */
   _authRetry?: boolean;
 };
@@ -50,12 +52,19 @@ export const apiRequest = async <T>(path: string, options?: RequestOptions): Pro
     response = await fetch(`${getApiBaseUrl()}${path}`, {
       method: options?.method ?? "GET",
       headers: baseHeaders,
-      ...(requestBody !== undefined ? { body: requestBody } : {})
+      ...(requestBody !== undefined ? { body: requestBody } : {}),
+      ...(options?.signal !== undefined ? { signal: options.signal } : {})
     });
   } catch (error: unknown) {
     if (error instanceof TypeError && error.message === "Failed to fetch") {
       throw new ApiError(
         "Could not reach the server. Check your network, VPN, and that the API is running.",
+        0
+      );
+    }
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new ApiError(
+        "Request timed out. The server may be busy or unreachable — try again in a moment.",
         0
       );
     }
