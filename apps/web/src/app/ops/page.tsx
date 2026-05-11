@@ -26,8 +26,6 @@ import {
 import { calmMutedLinkClass } from "@/lib/calm-ui";
 
 const shellCard = "rounded-xl border border-border bg-card/80 shadow-sm dark:bg-card/50";
-const listRowClass =
-  "flex items-center justify-between gap-4 border-b border-border px-4 py-3.5 text-sm transition-colors last:border-b-0 hover:bg-muted/30";
 
 type StatCellProps = {
   label: string;
@@ -57,19 +55,14 @@ const StatCell = ({ label, value, detail, loading, error }: StatCellProps): Reac
   </div>
 );
 
-type QuickRowProps = { href: string; title: string; hint: string };
+const dash = "—";
 
-const QuickRow = ({ href, title, hint }: QuickRowProps): ReactElement => (
-  <li>
-    <Link href={href} className={listRowClass}>
-      <span>
-        <span className="font-medium text-foreground">{title}</span>
-        <span className="mt-0.5 block text-xs text-muted-foreground">{hint}</span>
-      </span>
-      <span className="shrink-0 text-xs font-medium text-primary">Open</span>
-    </Link>
-  </li>
-);
+const attentionTone = (text: string): string => {
+  if (text === dash || text.startsWith("None") || text.startsWith("All ")) {
+    return "text-muted-foreground";
+  }
+  return "text-amber-700 dark:text-amber-400";
+};
 
 export default function OpsOverviewPage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -135,20 +128,263 @@ export default function OpsOverviewPage(): ReactElement {
   const geofences = geofencesQuery.data;
   const activeFences = geofences?.filter((g) => g.isActive).length;
   const totalFences = geofences?.length;
+  const inactiveFences =
+    totalFences !== undefined && activeFences !== undefined
+      ? Math.max(0, totalFences - activeFences)
+      : undefined;
 
   const users = usersQuery.data;
   const activeUsers = users?.filter((u) => u.isActive).length;
   const fieldAccounts =
     users?.filter((u) => u.role === "promoter" || u.role === "client").length ?? undefined;
+  const deactivatedUsers =
+    users !== undefined && activeUsers !== undefined
+      ? Math.max(0, users.length - activeUsers)
+      : undefined;
 
   const regions = regionsQuery.data;
   const activeRegions = regions?.filter((r) => r.isActive).length;
+  const inactiveRegions =
+    regions !== undefined && activeRegions !== undefined
+      ? Math.max(0, regions.length - activeRegions)
+      : undefined;
 
   const activations = activationsQuery.data;
   const activeActivations = activations?.filter((a) => a.isActive).length;
+  const inactiveActivations =
+    activations !== undefined && activeActivations !== undefined
+      ? Math.max(0, activations.length - activeActivations)
+      : undefined;
 
   const statGridClass =
     "grid grid-cols-2 gap-x-6 gap-y-6 border-t border-border pt-6 sm:grid-cols-3 xl:grid-cols-4";
+
+  const platformSnapshot = (): string => {
+    if (healthQuery.isLoading) {
+      return "…";
+    }
+    if (healthQuery.isError) {
+      return "Not reachable";
+    }
+    if (healthQuery.data) {
+      return "Core API responding";
+    }
+    return dash;
+  };
+
+  const platformAttention = (): string => {
+    if (healthQuery.isError) {
+      return "Check deployment & env";
+    }
+    return "None";
+  };
+
+  const activationSnapshot = (): string => {
+    if (!canManageActivations) {
+      return "Managed by supervisors";
+    }
+    if (activationsQuery.isLoading) {
+      return "…";
+    }
+    if (activationsQuery.isError) {
+      return "Could not load";
+    }
+    if (activations === undefined) {
+      return dash;
+    }
+    const live = activeActivations ?? 0;
+    const campaignCount = activations.length;
+    const campaignPlural = campaignCount === 1 ? "" : "s";
+    return [
+      String(campaignCount),
+      " campaign",
+      campaignPlural,
+      " · ",
+      String(live),
+      " active"
+    ].join("");
+  };
+
+  const activationAttention = (): string => {
+    if (!canManageActivations) {
+      return dash;
+    }
+    if (activationsQuery.isLoading) {
+      return "…";
+    }
+    if (inactiveActivations === undefined) {
+      return dash;
+    }
+    if (inactiveActivations === 0) {
+      return "All listed campaigns are active";
+    }
+    return [String(inactiveActivations), " not active — review dates or toggles"].join("");
+  };
+
+  const geofenceSnapshot = (): string => {
+    if (geofencesQuery.isLoading) {
+      return "…";
+    }
+    if (geofencesQuery.isError) {
+      return "Could not load";
+    }
+    if (activeFences === undefined || totalFences === undefined) {
+      return dash;
+    }
+    return [String(activeFences), " live · ", String(totalFences), " total geofences"].join("");
+  };
+
+  const geofenceAttention = (): string => {
+    if (inactiveFences === undefined || geofencesQuery.isLoading) {
+      return geofencesQuery.isLoading ? "…" : dash;
+    }
+    if (inactiveFences === 0) {
+      return "All fences enabled";
+    }
+    return [String(inactiveFences), " paused — promoters may not validate in those areas"].join("");
+  };
+
+  const regionSnapshot = (): string => {
+    if (regionsQuery.isLoading) {
+      return "…";
+    }
+    if (regionsQuery.isError) {
+      return "Could not load";
+    }
+    if (regions === undefined || activeRegions === undefined) {
+      return dash;
+    }
+    const regionCount = regions.length;
+    const regionPlural = regionCount === 1 ? "" : "s";
+    return [
+      String(regionCount),
+      " region",
+      regionPlural,
+      " · ",
+      String(activeRegions),
+      " active"
+    ].join("");
+  };
+
+  const regionAttention = (): string => {
+    if (inactiveRegions === undefined || regionsQuery.isLoading) {
+      return regionsQuery.isLoading ? "…" : dash;
+    }
+    if (inactiveRegions === 0) {
+      return "None";
+    }
+    const territoryLabelPlural = inactiveRegions === 1 ? "" : "s";
+    return [String(inactiveRegions), " inactive territory label", territoryLabelPlural].join("");
+  };
+
+  const teamSnapshot = (): string => {
+    if (usersQuery.isLoading) {
+      return "…";
+    }
+    if (usersQuery.isError) {
+      return "Could not load";
+    }
+    if (users === undefined || activeUsers === undefined) {
+      return dash;
+    }
+    const field = fieldAccounts ?? 0;
+    const accountCount = users.length;
+    return [
+      String(accountCount),
+      " accounts · ",
+      String(activeUsers),
+      " active · ",
+      String(field),
+      " field (promoter/client)"
+    ].join("");
+  };
+
+  const teamAttention = (): string => {
+    if (deactivatedUsers === undefined || usersQuery.isLoading) {
+      return usersQuery.isLoading ? "…" : dash;
+    }
+    if (deactivatedUsers === 0) {
+      return "None";
+    }
+    return [String(deactivatedUsers), " deactivated — cannot sign in"].join("");
+  };
+
+  const outletSnapshot = (): string => {
+    if (outletsQuery.isLoading) {
+      return "…";
+    }
+    if (outletsQuery.isError) {
+      return "Could not load";
+    }
+    if (outletsQuery.data === undefined) {
+      return dash;
+    }
+    const outletCount = outletsQuery.data.length;
+    const outletPlural = outletCount === 1 ? "" : "s";
+    return [String(outletCount), " outlet", outletPlural, " in master"].join("");
+  };
+
+  const outletAttention = (): string => dash;
+
+  const sessionSnapshot = (): string => {
+    if (sessionsQuery.isLoading) {
+      return "…";
+    }
+    if (sessionsQuery.data === undefined) {
+      return dash;
+    }
+    const sessionCount = sessionsQuery.data.sessions.length;
+    const sessionPlural = sessionCount === 1 ? "" : "s";
+    return [String(sessionCount), " recorded session", sessionPlural, " for your login"].join("");
+  };
+
+  const sessionAttention = (): string => dash;
+
+  const opsRows: { domain: string; snapshot: () => string; attention: () => string }[] = [
+    ...(isAdmin
+      ? [
+          {
+            domain: "Platform & API",
+            snapshot: platformSnapshot,
+            attention: platformAttention
+          }
+        ]
+      : []),
+    ...(canManageActivations
+      ? [
+          {
+            domain: "Campaigns & rosters",
+            snapshot: activationSnapshot,
+            attention: activationAttention
+          }
+        ]
+      : []),
+    {
+      domain: "Geofencing & check-in",
+      snapshot: geofenceSnapshot,
+      attention: geofenceAttention
+    },
+    {
+      domain: "Territories",
+      snapshot: regionSnapshot,
+      attention: regionAttention
+    },
+    {
+      domain: "People & access",
+      snapshot: teamSnapshot,
+      attention: teamAttention
+    },
+    {
+      domain: "Outlet universe",
+      snapshot: outletSnapshot,
+      attention: outletAttention
+    },
+    {
+      domain: "Your sessions",
+      snapshot: sessionSnapshot,
+      attention: sessionAttention
+    }
+  ];
 
   return (
     <div className="space-y-10">
@@ -156,7 +392,7 @@ export default function OpsOverviewPage(): ReactElement {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Overview</h1>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-            Key counts for your territory setup. Use the sidebar or quick links below to go deeper.
+            Key counts above; operational snapshot below. Everything else lives in the sidebar.
           </p>
         </div>
         <div className="shrink-0 text-left sm:text-right">
@@ -197,8 +433,8 @@ export default function OpsOverviewPage(): ReactElement {
               label="Work areas"
               value={
                 activeFences !== undefined && totalFences !== undefined
-                  ? `${String(activeFences)} / ${String(totalFences)}`
-                  : "—"
+                  ? [String(activeFences), " / ", String(totalFences)].join("")
+                  : dash
               }
               detail="Active / total geofences"
               loading={geofencesQuery.isLoading}
@@ -207,10 +443,10 @@ export default function OpsOverviewPage(): ReactElement {
             {canManageActivations ? (
               <StatCell
                 label="Activations"
-                value={activations !== undefined ? activations.length : "—"}
+                value={activations !== undefined ? activations.length : dash}
                 detail={
                   activeActivations !== undefined && activations !== undefined
-                    ? `${String(activeActivations)} active`
+                    ? [String(activeActivations), " active"].join("")
                     : undefined
                 }
                 loading={activationsQuery.isLoading}
@@ -219,10 +455,10 @@ export default function OpsOverviewPage(): ReactElement {
             ) : null}
             <StatCell
               label="Regions"
-              value={regions !== undefined ? regions.length : "—"}
+              value={regions !== undefined ? regions.length : dash}
               detail={
                 activeRegions !== undefined && regions !== undefined
-                  ? `${String(activeRegions)} active`
+                  ? [String(activeRegions), " active"].join("")
                   : undefined
               }
               loading={regionsQuery.isLoading}
@@ -230,10 +466,10 @@ export default function OpsOverviewPage(): ReactElement {
             />
             <StatCell
               label="Users"
-              value={users !== undefined ? users.length : "—"}
+              value={users !== undefined ? users.length : dash}
               detail={
                 activeUsers !== undefined && users !== undefined
-                  ? `${String(activeUsers)} active accounts`
+                  ? [String(activeUsers), " active accounts"].join("")
                   : undefined
               }
               loading={usersQuery.isLoading}
@@ -241,14 +477,14 @@ export default function OpsOverviewPage(): ReactElement {
             />
             <StatCell
               label="Outlets"
-              value={outletsQuery.data !== undefined ? outletsQuery.data.length : "—"}
+              value={outletsQuery.data !== undefined ? outletsQuery.data.length : dash}
               detail="Master list"
               loading={outletsQuery.isLoading}
               error={outletsQuery.isError}
             />
             <StatCell
               label="Your sessions"
-              value={sessionsQuery.data !== undefined ? sessionsQuery.data.sessions.length : "—"}
+              value={sessionsQuery.data !== undefined ? sessionsQuery.data.sessions.length : dash}
               detail="Recorded logins"
               loading={sessionsQuery.isLoading}
               error={sessionsQuery.isError}
@@ -259,113 +495,39 @@ export default function OpsOverviewPage(): ReactElement {
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Quick access
+          Operations snapshot
         </h2>
-        <div className={`${shellCard} overflow-hidden p-0`}>
-          <ul>
-            {canManageActivations ? (
-              <QuickRow
-                href="/ops/activations"
-                title="Activations"
-                hint="Campaigns, products, and field rosters"
-              />
-            ) : null}
-            <QuickRow
-              href="/ops/reporting"
-              title="Reporting"
-              hint="Sales, coverage, attendance, and exports"
-            />
-            {canManageActivations ? (
-              <>
-                <QuickRow
-                  href="/ops/attendance"
-                  title="Attendance"
-                  hint="Daily field clock-in roll-up"
-                />
-                <QuickRow
-                  href="/ops/targets"
-                  title="Daily targets"
-                  hint="Team achievement vs case goals"
-                />
-                <QuickRow
-                  href="/ops/tracking"
-                  title="Live tracking"
-                  hint="Latest positions on the map"
-                />
-              </>
-            ) : null}
-            <QuickRow href="/ops/users" title="Users" hint="Invites, roles, and regions" />
-            <QuickRow href="/ops/regions" title="Regions" hint="Territory definitions" />
-            <QuickRow
-              href="/ops/subwholesales"
-              title="Subwholesales"
-              hint="Nodes under each region"
-            />
-            <QuickRow
-              href="/ops/geofences"
-              title="Work areas"
-              hint="Geofences for check-in validation"
-            />
-            <QuickRow
-              href="/ops/outlets"
-              title="Outlets"
-              hint="Trade outlets and visit reporting"
-            />
-            <QuickRow
-              href="/ops/stock"
-              title="Stock overview"
-              hint="Inventory and distributor rollup"
-            />
-            <QuickRow
-              href="/ops/organization"
-              title="Organization hub"
-              hint="Grouped links to all setup areas"
-            />
-          </ul>
-        </div>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          At a glance
-        </h2>
-        <div className={`${shellCard} px-5 py-4`}>
-          <dl className="grid gap-4 text-sm sm:grid-cols-2">
-            <div className="flex flex-col gap-0.5">
-              <dt className="text-muted-foreground">Field accounts (promoters & clients)</dt>
-              <dd className="font-medium text-foreground">
-                {fieldAccounts !== undefined
-                  ? String(fieldAccounts)
-                  : usersQuery.isLoading
-                    ? "…"
-                    : "—"}
-              </dd>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <dt className="text-muted-foreground">Ops role</dt>
-              <dd className="font-medium capitalize text-foreground">{role ?? "—"}</dd>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <dt className="text-muted-foreground">Work areas inactive</dt>
-              <dd className="font-medium text-foreground">
-                {totalFences !== undefined && activeFences !== undefined
-                  ? String(Math.max(0, totalFences - activeFences))
-                  : geofencesQuery.isLoading
-                    ? "…"
-                    : "—"}
-              </dd>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <dt className="text-muted-foreground">Users deactivated</dt>
-              <dd className="font-medium text-foreground">
-                {users !== undefined && activeUsers !== undefined
-                  ? String(Math.max(0, users.length - activeUsers))
-                  : usersQuery.isLoading
-                    ? "…"
-                    : "—"}
-              </dd>
-            </div>
-          </dl>
+        <p className="text-xs text-muted-foreground">
+          Where counts meet risk: inactive resources and access gaps. Navigate from the left
+          sidebar.
+        </p>
+        <div className={`${shellCard} overflow-x-auto`}>
+          <table className="w-full min-w-[520px] text-left text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/30">
+                <th className="px-4 py-3 font-medium text-foreground">Area</th>
+                <th className="px-4 py-3 font-medium text-foreground">Snapshot</th>
+                <th className="px-4 py-3 font-medium text-foreground">Attention</th>
+              </tr>
+            </thead>
+            <tbody>
+              {opsRows.map((row) => {
+                const snap = row.snapshot();
+                const att = row.attention();
+                return (
+                  <tr key={row.domain} className="border-b border-border last:border-0">
+                    <td className="whitespace-nowrap px-4 py-3 font-medium text-foreground">
+                      {row.domain}
+                    </td>
+                    <td className="max-w-[14rem] px-4 py-3 text-muted-foreground sm:max-w-none">
+                      {snap}
+                    </td>
+                    <td className={`px-4 py-3 text-xs sm:text-sm ${attentionTone(att)}`}>{att}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </section>
     </div>
