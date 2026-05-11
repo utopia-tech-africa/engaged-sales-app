@@ -26,13 +26,11 @@ function SignInForm(): ReactElement {
   const setSession = useAuthStore((state) => state.setSession);
   const [phone, setPhone] = useState("");
   const [uniqueCode, setUniqueCode] = useState("");
-  const [role, setRole] = useState<"promoter" | "merchandizer" | "supervisor" | "admin">(
-    "promoter"
-  );
+  const [role, setRole] = useState<"promoter" | "client" | "supervisor" | "admin">("promoter");
   const [isLocating, setIsLocating] = useState(false);
   const roleOptions: { id: string; label: string }[] = [
     { id: "promoter", label: "Promoter" },
-    { id: "merchandizer", label: "Merchandizer" },
+    { id: "client", label: "Client (read-only)" },
     { id: "supervisor", label: "Supervisor" },
     { id: "admin", label: "Admin" }
   ];
@@ -55,13 +53,13 @@ function SignInForm(): ReactElement {
   return (
     <MobileShell
       title="Sign in"
-      subtitle="Enter your phone, unique code, and role. Supervisors and admins can sign in from anywhere. For promoters and merchandizers, location may be required when your organization has an active work area."
+      subtitle="Enter your phone, unique code, and role. Supervisors, admins, and clients can sign in from anywhere. Promoters may need location when your organization has an active work area."
     >
       <form
         className="flex flex-col gap-3"
         onSubmit={(event) => {
           event.preventDefault();
-          if (isOpsRole(role)) {
+          if (isOpsRole(role) || role === "client") {
             signInMutation.mutate(
               { data: { phone, uniqueCode, role } },
               {
@@ -141,7 +139,7 @@ function SignInForm(): ReactElement {
             onChange={(params) => {
               const option = params.value.at(0);
               if (option) {
-                setRole(option.id as "promoter" | "merchandizer" | "supervisor" | "admin");
+                setRole(option.id as "promoter" | "client" | "supervisor" | "admin");
               }
             }}
           />

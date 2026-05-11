@@ -13,7 +13,7 @@ export class TrackingRepository {
         userId: string;
         fullName: string;
         phone: string;
-        role: "promoter" | "merchandizer";
+        role: "promoter";
         regionId: string | null;
         regionName: string | null;
         locationPingId: string;
@@ -50,7 +50,7 @@ export class TrackingRepository {
       LEFT JOIN "Region" r ON r.id = u."regionId"
       WHERE
         u."isActive" = true
-        AND u.role IN ('promoter', 'merchandizer')
+        AND u.role = 'promoter'
       ORDER BY lp."userId", lp."recordedAt" DESC
     `;
 

@@ -10,7 +10,7 @@ export type SignInDtoRole = (typeof SignInDtoRole)[keyof typeof SignInDtoRole];
 
 export const SignInDtoRole = {
   promoter: "promoter",
-  merchandizer: "merchandizer",
+  client: "client",
   supervisor: "supervisor",
   admin: "admin"
 } as const;

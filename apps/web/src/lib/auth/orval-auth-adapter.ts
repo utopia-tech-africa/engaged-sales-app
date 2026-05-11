@@ -8,7 +8,7 @@ const authUserSchema = z.object({
   email: z.string().nullable(),
   phone: z.string(),
   uniqueCode: z.string(),
-  role: z.enum(["promoter", "merchandizer", "supervisor", "admin"]),
+  role: z.enum(["promoter", "client", "supervisor", "admin"]),
   isActive: z.boolean().optional().default(true),
   gender: z.enum(["male", "female", "other"]).nullable(),
   regionId: z.string().nullable(),

@@ -12,7 +12,8 @@ import { PrismaService } from "../prisma/prisma.service";
 import { UpdateReportSettingsDto } from "./dto/update-report-settings.dto";
 
 const OPS_ROLES = new Set<UserRole>(["admin", "supervisor"]);
-const FIELD_ROLES: UserRole[] = ["promoter", "merchandizer"];
+/** Roles counted as field execution staff in ops reporting (excludes read-only clients). */
+const FIELD_ROLES: UserRole[] = ["promoter"];
 const DEFAULT_REPORT_KEY = "ops_reporting";
 const DAILY_TARGET_CASES = 10;
 

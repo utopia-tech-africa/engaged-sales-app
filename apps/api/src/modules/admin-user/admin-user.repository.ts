@@ -115,7 +115,7 @@ export class AdminUserRepository {
 
   public static makeUniqueCodeForRole(role: UserRole): string {
     const prefix =
-      role === "promoter" ? "P" : role === "merchandizer" ? "M" : role === "supervisor" ? "S" : "A";
+      role === "promoter" ? "P" : role === "client" ? "C" : role === "supervisor" ? "S" : "A";
     return `${prefix}-${randomUUID().slice(0, 8)}`;
   }
 }

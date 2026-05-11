@@ -74,7 +74,7 @@ export type StockTargetMonitoring = {
     userId: string;
     fullName: string;
     phone: string;
-    role: "promoter" | "merchandizer" | "supervisor" | "admin";
+    role: "promoter" | "client" | "supervisor" | "admin";
     dailyCasesSold: number;
     dailyTargetCases: number;
     dailyAchievementPercent: number;
@@ -86,7 +86,7 @@ export type StockTargetMonitoring = {
   underperformerAlerts: {
     userId: string;
     fullName: string;
-    role: "promoter" | "merchandizer" | "supervisor" | "admin";
+    role: "promoter" | "client" | "supervisor" | "admin";
     shortfallCases: number;
     dailyAchievementPercent: number;
     severity: "low" | "medium" | "high";

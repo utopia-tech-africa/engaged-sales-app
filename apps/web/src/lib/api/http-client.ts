@@ -84,3 +84,64 @@ export const apiRequest = async <T>(path: string, options?: RequestOptions): Pro
 
   return (await response.json()) as T;
 };
+
+type BlobRequestOptions = {
+  token?: string;
+  _authRetry?: boolean;
+};
+
+const shouldAttemptSessionRefreshBlob = (
+  status: number,
+  path: string,
+  options: BlobRequestOptions | undefined
+): boolean => {
+  if (status !== 401 || options?._authRetry === true) {
+    return false;
+  }
+  if (path === "/auth/refresh" || path.startsWith("/auth/refresh?")) {
+    return false;
+  }
+  const token = options?.token;
+  return typeof token === "string" && token.length > 0;
+};
+
+/** Authenticated GET returning a binary body (e.g. Excel export). Applies the same 401 refresh retry as `apiRequest`. */
+export const apiRequestBlob = async (path: string, options?: BlobRequestOptions): Promise<Blob> => {
+  const baseHeaders: Record<string, string> = {
+    ...(options?.token !== undefined ? { Authorization: `Bearer ${options.token}` } : {})
+  };
+
+  let response: Response;
+  try {
+    response = await fetch(`${getApiBaseUrl()}${path}`, {
+      method: "GET",
+      headers: baseHeaders
+    });
+  } catch (error: unknown) {
+    if (error instanceof TypeError && error.message === "Failed to fetch") {
+      throw new ApiError(
+        "Could not reach the server. Check your network, VPN, and that the API is running.",
+        0
+      );
+    }
+    throw error;
+  }
+
+  if (!response.ok) {
+    if (shouldAttemptSessionRefreshBlob(response.status, path, options)) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        const nextToken = useAuthStore.getState().accessToken;
+        return apiRequestBlob(path, {
+          ...options,
+          token: nextToken ?? undefined,
+          _authRetry: true
+        });
+      }
+    }
+    const problem = (await response.json().catch(() => undefined)) as ProblemDetails | undefined;
+    throw new ApiError(problem?.detail ?? "Request failed", response.status, problem);
+  }
+
+  return response.blob();
+};

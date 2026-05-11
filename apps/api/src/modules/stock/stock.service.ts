@@ -12,7 +12,7 @@ import { CreateStockPickupDto } from "./dto/create-stock-pickup.dto";
 import { CreateStockSaleDto } from "./dto/create-stock-sale.dto";
 import { StockRepository } from "./stock.repository";
 
-const FIELD_ROLES = new Set<UserRole>(["promoter", "merchandizer"]);
+const FIELD_STOCK_ROLES = new Set<UserRole>(["promoter"]);
 const OPS_ROLES = new Set<UserRole>(["admin", "supervisor"]);
 const DAILY_TARGET_CASES = 10;
 
@@ -47,8 +47,8 @@ export class StockService {
   ) {}
 
   private assertFieldRole(currentUser: AuthenticatedUser): void {
-    if (!FIELD_ROLES.has(currentUser.role)) {
-      throw new ForbiddenException("Only promoters and merchandizers can use stock tracking");
+    if (!FIELD_STOCK_ROLES.has(currentUser.role)) {
+      throw new ForbiddenException("Only promoters can use stock tracking");
     }
   }
 
@@ -490,7 +490,7 @@ export class StockService {
     const daysInMonth = monthEnd.getUTCDate();
 
     const fieldRoster = activation.roster
-      .filter((entry) => FIELD_ROLES.has(entry.user.role))
+      .filter((entry) => FIELD_STOCK_ROLES.has(entry.user.role))
       .map((entry) => ({
         userId: entry.user.id,
         fullName: entry.user.fullName,

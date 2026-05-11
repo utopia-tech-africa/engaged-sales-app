@@ -1,5 +1,5 @@
 export type Gender = "male" | "female" | "other";
-export type Role = "promoter" | "merchandizer" | "supervisor" | "admin";
+export type Role = "promoter" | "client" | "supervisor" | "admin";
 
 export type AuthUser = {
   id: string;

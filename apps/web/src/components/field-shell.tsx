@@ -1,6 +1,6 @@
 "use client";
 
-import { Boxes, History, Home, MapPin, Store } from "lucide-react";
+import { Boxes, History, Home, MapPin, Store, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type PropsWithChildren, type ReactElement } from "react";
@@ -10,20 +10,44 @@ import type { AuthUser } from "@/lib/auth/auth-types";
 import { calmMutedLinkClass, calmSecondaryButtonClass } from "@/lib/calm-ui";
 import { cn } from "@/lib/utils";
 
-/** Primary navigation for field roles (promoter / merchandizer): home, check-in, history, support. */
-export const fieldNavItems = [
-  { href: "/dashboard", label: "Home", segment: "home" as const, Icon: Home },
+export type FieldNavItem = {
+  href: string;
+  label: string;
+  segment: "home" | "activations" | "check-in" | "outlets" | "stock" | "history";
+  Icon: LucideIcon;
+};
+
+/** Full field execution nav (promoters). */
+export const fieldNavItemsFull: readonly FieldNavItem[] = [
+  { href: "/dashboard", label: "Home", segment: "home", Icon: Home },
   {
     href: "/dashboard/activations",
     label: "Activations",
-    segment: "activations" as const,
+    segment: "activations",
     Icon: Store
   },
-  { href: "/dashboard/check-in", label: "Check-in", segment: "check-in" as const, Icon: MapPin },
-  { href: "/dashboard/outlet-visits", label: "Outlets", segment: "outlets" as const, Icon: Store },
-  { href: "/dashboard/stock", label: "Stock", segment: "stock" as const, Icon: Boxes },
-  { href: "/dashboard/history", label: "History", segment: "history" as const, Icon: History }
+  { href: "/dashboard/check-in", label: "Check-in", segment: "check-in", Icon: MapPin },
+  { href: "/dashboard/outlet-visits", label: "Outlets", segment: "outlets", Icon: Store },
+  { href: "/dashboard/stock", label: "Stock", segment: "stock", Icon: Boxes },
+  { href: "/dashboard/history", label: "History", segment: "history", Icon: History }
 ] as const;
+
+/** Read-only client portal: home + assigned activations. */
+export const fieldNavItemsClient: readonly FieldNavItem[] = [
+  { href: "/dashboard", label: "Home", segment: "home", Icon: Home },
+  {
+    href: "/dashboard/activations",
+    label: "Activations",
+    segment: "activations",
+    Icon: Store
+  }
+] as const;
+
+export const getFieldNavItemsForUser = (user: AuthUser): readonly FieldNavItem[] =>
+  user.role === "client" ? fieldNavItemsClient : fieldNavItemsFull;
+
+/** @deprecated Prefer `fieldNavItemsFull` or `getFieldNavItemsForUser`. */
+export const fieldNavItems = fieldNavItemsFull;
 
 function isNavActive(pathname: string, href: string): boolean {
   if (href === "/dashboard") {
@@ -45,6 +69,10 @@ export const FieldShell = ({
   isSigningOut
 }: FieldShellProps): ReactElement => {
   const pathname = usePathname();
+  const navItems = getFieldNavItemsForUser(user);
+  const appLabel = user.role === "client" ? "Client" : "Field";
+  const mobileGridClass =
+    navItems.length <= 2 ? "grid-cols-2 max-w-sm mx-auto" : "grid-cols-6 max-w-lg mx-auto";
 
   const linkClass = (href: string): string =>
     [
@@ -64,7 +92,7 @@ export const FieldShell = ({
               Engaged Sales
             </Link>
             <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-              Field
+              {appLabel}
             </span>
           </div>
           <div className="flex min-h-0 flex-1 flex-col">
@@ -73,7 +101,7 @@ export const FieldShell = ({
               aria-label="Field app primary navigation"
             >
               <ul className="flex flex-col gap-1">
-                {fieldNavItems.map(({ href, label, Icon }) => (
+                {navItems.map(({ href, label, Icon }) => (
                   <li key={href}>
                     <Link href={href} className={linkClass(href)}>
                       <Icon className="size-4 shrink-0 opacity-80" aria-hidden />
@@ -107,7 +135,7 @@ export const FieldShell = ({
           <header className="z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background/95 px-4 backdrop-blur-sm lg:hidden">
             <div className="min-w-0">
               <Link href="/dashboard" className="truncate text-sm font-semibold text-foreground">
-                Field
+                {appLabel}
               </Link>
               <p className="truncate text-xs text-muted-foreground">{user.fullName}</p>
             </div>
@@ -133,8 +161,8 @@ export const FieldShell = ({
             style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
             aria-label="Field app tabs"
           >
-            <ul className="mx-auto grid max-w-lg grid-cols-6 gap-0 px-0.5 py-1.5 sm:px-1">
-              {fieldNavItems.map(({ href, label, Icon }) => {
+            <ul className={cn("grid gap-0 px-0.5 py-1.5 sm:px-1", mobileGridClass)}>
+              {navItems.map(({ href, label, Icon }) => {
                 const active = isNavActive(pathname, href);
                 return (
                   <li key={href} className="min-w-0">

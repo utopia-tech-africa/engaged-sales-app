@@ -65,7 +65,7 @@ export default function OpsOrganizationPage(): ReactElement {
           />
           <OrgCard
             title="Users & roles"
-            description="Invite promoters and merchandizers, assign supervisors, activate or deactivate accounts, and manage sessions."
+            description="Invite promoters and read-only clients, assign supervisors, activate or deactivate accounts, and manage sessions."
             href="/ops/users"
             linkLabel="Open users →"
           />

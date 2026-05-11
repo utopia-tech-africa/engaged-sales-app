@@ -34,7 +34,7 @@ export class AdminUserController {
     operationId: "AdminUser_listUsers",
     summary: "List users (supervisor / admin)",
     description:
-      "Supervisors see promoters and merchandizers only; admins see all users. Sends invite email (Resend) on create when `RESEND_API_KEY` is set."
+      "Supervisors see promoters and clients only; admins see all users. Sends invite email (Resend) on create when `RESEND_API_KEY` is set."
   })
   @ApiOkResponse({ description: "List of users" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
@@ -60,7 +60,7 @@ export class AdminUserController {
         phone: { type: "string", example: "+254712345678" },
         role: {
           type: "string",
-          enum: ["promoter", "merchandizer", "supervisor", "admin"]
+          enum: ["promoter", "client", "supervisor", "admin"]
         },
         regionId: { type: "string", description: "Optional region cuid" },
         gender: { type: "string", enum: ["male", "female", "other"] }
@@ -86,7 +86,7 @@ export class AdminUserController {
     operationId: "AdminUser_updateUser",
     summary: "Update user",
     description:
-      "Partial update. Supervisors may edit promoters and merchandizers only. Only admins may assign supervisor or admin roles."
+      "Partial update. Supervisors may edit promoters and clients only. Only admins may assign supervisor or admin roles."
   })
   @ApiBody({
     schema: {
@@ -95,7 +95,7 @@ export class AdminUserController {
         fullName: { type: "string" },
         role: {
           type: "string",
-          enum: ["promoter", "merchandizer", "supervisor", "admin"]
+          enum: ["promoter", "client", "supervisor", "admin"]
         },
         regionId: { type: "string" },
         isActive: { type: "boolean" },

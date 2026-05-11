@@ -56,7 +56,7 @@ const adminUserRowSchema = z.object({
   email: z.string().nullable(),
   phone: z.string(),
   uniqueCode: z.string(),
-  role: z.enum(["promoter", "merchandizer", "supervisor", "admin"]),
+  role: z.enum(["promoter", "client", "supervisor", "admin"]),
   isActive: z.boolean(),
   gender: z.enum(["male", "female", "other"]).nullable(),
   regionId: z.string().nullable(),
@@ -138,7 +138,7 @@ const activationRosterEntrySchema = z.object({
     id: z.string(),
     fullName: z.string(),
     phone: z.string(),
-    role: z.enum(["promoter", "merchandizer", "supervisor", "admin"]),
+    role: z.enum(["promoter", "client", "supervisor", "admin"]),
     isActive: z.boolean()
   })
 });

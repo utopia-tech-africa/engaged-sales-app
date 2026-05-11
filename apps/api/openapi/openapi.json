@@ -803,6 +803,308 @@
         "tags": ["Admin regions (supervisor / admin)"]
       }
     },
+    "/admin/subwholesales": {
+      "get": {
+        "description": "Returns subwholesale nodes under regions, optionally filtered by region id.",
+        "operationId": "AdminSubwholesale_listSubwholesales",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by parent region id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of subwholesales with region summary"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List subwholesales",
+        "tags": ["Admin subwholesales (supervisor / admin)"]
+      },
+      "post": {
+        "description": "Creates a subwholesale under a region. Slug is unique per region.",
+        "operationId": "AdminSubwholesale_createSubwholesale",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubwholesaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Subwholesale created"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Region not found"
+          },
+          "409": {
+            "description": "Slug already in use in this region"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create subwholesale",
+        "tags": ["Admin subwholesales (supervisor / admin)"]
+      }
+    },
+    "/admin/subwholesales/{id}": {
+      "patch": {
+        "description": "Partial update including optional move to another region.",
+        "operationId": "AdminSubwholesale_updateSubwholesale",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Subwholesale id (cuid)",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubwholesaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subwholesale updated"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Subwholesale or region not found"
+          },
+          "409": {
+            "description": "Slug already in use in target region"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update subwholesale",
+        "tags": ["Admin subwholesales (supervisor / admin)"]
+      }
+    },
+    "/admin/outlets": {
+      "get": {
+        "description": "Returns all outlets with distributor, area and contact details.",
+        "operationId": "AdminOutlet_listOutlets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Outlet database rows"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List outlet database",
+        "tags": ["Admin outlets (supervisor / admin)"]
+      },
+      "post": {
+        "description": "Adds a new outlet with category, distributor link and contact details.",
+        "operationId": "AdminOutlet_createOutlet",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOutletDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Outlet created"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create outlet",
+        "tags": ["Admin outlets (supervisor / admin)"]
+      }
+    },
+    "/admin/outlets/visits": {
+      "get": {
+        "description": "Returns outlet visits with optional filters for outlet, user and datetime range.",
+        "operationId": "AdminOutlet_listOutletVisits",
+        "parameters": [
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO datetime inclusive upper bound",
+            "schema": {}
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO datetime inclusive lower bound",
+            "schema": {}
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "Filter one field user id",
+            "schema": {}
+          },
+          {
+            "name": "outletId",
+            "required": false,
+            "in": "query",
+            "description": "Filter one outlet id",
+            "schema": {}
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "description": "Rows to skip for pagination (default 0)",
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Max rows (1-200, default 100)",
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Outlet visit report rows"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List outlet visit reports",
+        "tags": ["Admin outlets (supervisor / admin)"]
+      }
+    },
+    "/admin/outlets/{id}": {
+      "patch": {
+        "description": "Partial update for outlet attributes.",
+        "operationId": "AdminOutlet_updateOutlet",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Outlet id",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOutletDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Outlet updated"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Outlet id not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update outlet",
+        "tags": ["Admin outlets (supervisor / admin)"]
+      }
+    },
     "/admin/activations": {
       "get": {
         "description": "Campaigns / activations with region and counts.",
@@ -1385,7 +1687,7 @@
     },
     "/activations": {
       "get": {
-        "description": "Promoters and merchandizers see activations they are rostered on that are currently active. Supervisors and admins see all activations in their active date window.",
+        "description": "Promoters and rostered clients see activations they are assigned to that are currently active. Supervisors and admins see all activations in their active date window.",
         "operationId": "Activations_listForField",
         "parameters": [],
         "responses": {
@@ -1402,6 +1704,99 @@
           }
         ],
         "summary": "List activations (field)",
+        "tags": ["Activations (field)"]
+      }
+    },
+    "/activations/{id}/team-sales": {
+      "get": {
+        "description": "Read-only. Rostered clients see sales line items recorded by field staff on this activation.",
+        "operationId": "Activations_listTeamSalesForClient",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 50,
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sales rows with seller and line items"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Not a client or not rostered on this activation"
+          },
+          "404": {
+            "description": "Activation not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List team sales on activation (client)",
+        "tags": ["Activations (field)"]
+      }
+    },
+    "/activations/{id}/export.xlsx": {
+      "get": {
+        "description": "Read-only export: activation summary, products, and sales line items for roster field staff. Optional `from` / `to` ISO date-times are intersected with the activation window.",
+        "operationId": "Activations_exportClientActivationWorkbook",
+        "parameters": [
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601 date-time (optional filter)",
+            "schema": {}
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601 date-time (optional filter)",
+            "schema": {}
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Not a client or not rostered on this activation"
+          },
+          "404": {
+            "description": "Activation not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Download activation Excel report (client)",
         "tags": ["Activations (field)"]
       }
     },
@@ -1461,7 +1856,7 @@
     },
     "/activations/{id}": {
       "get": {
-        "description": "Full detail including products for supervisor/admin; promoters and merchandizers receive the same shape without the roster list.",
+        "description": "Full detail including products for supervisor/admin; promoters and clients receive the same shape without the roster list.",
         "operationId": "Activations_getByIdForField",
         "parameters": [
           {
@@ -1539,7 +1934,7 @@
     },
     "/admin/users": {
       "get": {
-        "description": "Supervisors see promoters and merchandizers only; admins see all users. Sends invite email (Resend) on create when `RESEND_API_KEY` is set.",
+        "description": "Supervisors see promoters and clients only; admins see all users. Sends invite email (Resend) on create when `RESEND_API_KEY` is set.",
         "operationId": "AdminUser_listUsers",
         "parameters": [],
         "responses": {
@@ -1586,7 +1981,7 @@
                   },
                   "role": {
                     "type": "string",
-                    "enum": ["promoter", "merchandizer", "supervisor", "admin"]
+                    "enum": ["promoter", "client", "supervisor", "admin"]
                   },
                   "regionId": {
                     "type": "string",
@@ -1626,7 +2021,7 @@
     },
     "/admin/users/{id}": {
       "patch": {
-        "description": "Partial update. Supervisors may edit promoters and merchandizers only. Only admins may assign supervisor or admin roles.",
+        "description": "Partial update. Supervisors may edit promoters and clients only. Only admins may assign supervisor or admin roles.",
         "operationId": "AdminUser_updateUser",
         "parameters": [
           {
@@ -1649,7 +2044,7 @@
                   },
                   "role": {
                     "type": "string",
-                    "enum": ["promoter", "merchandizer", "supervisor", "admin"]
+                    "enum": ["promoter", "client", "supervisor", "admin"]
                   },
                   "regionId": {
                     "type": "string"
@@ -1809,7 +2204,7 @@
     },
     "/me/sales": {
       "get": {
-        "description": "BACKEND_PRD §7.2 — the authenticated promoter's or merchandizer's sales, newest first.",
+        "description": "BACKEND_PRD §7.2 — the authenticated promoter's sales, newest first (promoters only).",
         "operationId": "Me_listMySales",
         "parameters": [
           {
@@ -1965,6 +2360,90 @@
         "tags": ["Me"]
       }
     },
+    "/me/outlet-visits": {
+      "post": {
+        "description": "Creates an outlet visit check-in and records outlet photo, stock availability, sales made, consumer engagement and visibility execution.",
+        "operationId": "Me_createOutletVisit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOutletVisitDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Outlet visit recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": "cmad4p0bo0000iib0i0l9e8wk",
+                    "outletId": "cmad4p0bo0000iib0i0l9e8wk",
+                    "userId": "cmad4p0bo0000iib0i0l9e8wk",
+                    "latitude": -1.286389,
+                    "longitude": 36.817223,
+                    "hasOutletPhoto": true,
+                    "stockAvailabilityNotes": "All SKUs available except 500ml variant",
+                    "salesMadeNotes": "Sold 2 cartons and 6 singles",
+                    "consumerEngagementNotes": "Engaged 9 consumers with product demo",
+                    "visibilityExecutionNotes": "Shelf branding and wobblers placed",
+                    "checkedInAt": "2026-05-08T18:20:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Check in and execute outlet visit",
+        "tags": ["Me"]
+      },
+      "get": {
+        "description": "Returns recent outlet visits for the authenticated field user.",
+        "operationId": "Me_listOutletVisits",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum rows to return (1-100, default 50)",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Outlet visit rows"
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List own outlet visits",
+        "tags": ["Me"]
+      }
+    },
     "/sales": {
       "post": {
         "description": "BACKEND_PRD §7.4 — creates a sale with line items. Optional `Idempotency-Key` header dedupes retries per user.",
@@ -2008,6 +2487,294 @@
         ],
         "summary": "Record a sale",
         "tags": ["Sales (field)"]
+      }
+    },
+    "/stock/pickups": {
+      "post": {
+        "description": "Captures distributor name, SKU picked, quantity, cost price and pickup datetime for field inventory receipts.",
+        "operationId": "Stock_recordPickup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStockPickupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stock pickup recorded"
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Record stock pick-up",
+        "tags": ["Stock & sales tracking (field)"]
+      }
+    },
+    "/stock/sales": {
+      "post": {
+        "description": "Captures sold SKU, quantity, selling price and returns remaining stock balance per sold SKU.",
+        "operationId": "Stock_recordSale",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStockSaleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stock sale recorded with remaining balances"
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Record stock sale with pricing",
+        "tags": ["Stock & sales tracking (field)"]
+      }
+    },
+    "/stock/daily-summary": {
+      "get": {
+        "description": "Returns opening stock, stock received, stock sold, closing balance, daily sales value and case achievement per SKU.",
+        "operationId": "Stock_getDailySummary",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "YYYY-MM-DD",
+            "schema": {}
+          },
+          {
+            "name": "activationId",
+            "required": true,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daily stock and sales summary"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get daily inventory and sales summary",
+        "tags": ["Stock & sales tracking (field)"]
+      }
+    },
+    "/stock/admin-overview": {
+      "get": {
+        "description": "Cross-user stock rollup by SKU with per-distributor pickup analytics and daily sales value.",
+        "operationId": "Stock_getAdminOverview",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "YYYY-MM-DD",
+            "schema": {}
+          },
+          {
+            "name": "activationId",
+            "required": true,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ops stock overview payload"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get ops stock overview",
+        "tags": ["Stock & sales tracking (field)"]
+      }
+    },
+    "/stock/target-monitoring": {
+      "get": {
+        "description": "Returns daily achievement %, team achievement %, leaderboard, underperformer alerts and supervisor summary for trade developers.",
+        "operationId": "Stock_getTargetMonitoring",
+        "parameters": [
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "YYYY-MM-DD",
+            "schema": {}
+          },
+          {
+            "name": "activationId",
+            "required": true,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daily target monitoring payload"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get daily target monitoring for team performance",
+        "tags": ["Stock & sales tracking (field)"]
+      }
+    },
+    "/reports/dashboard": {
+      "get": {
+        "operationId": "Reports_getDashboard",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "activationId",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "YYYY-MM-DD",
+            "schema": {}
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "YYYY-MM-DD",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get unified reporting dashboard",
+        "tags": ["Reporting"]
+      }
+    },
+    "/reports/dashboard/export.xlsx": {
+      "get": {
+        "operationId": "Reports_exportDashboardExcel",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Export reporting dashboard as Excel",
+        "tags": ["Reporting"]
+      }
+    },
+    "/reports/dashboard/export.pdf": {
+      "get": {
+        "operationId": "Reports_exportDashboardPdf",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Export reporting dashboard as PDF",
+        "tags": ["Reporting"]
+      }
+    },
+    "/reports/settings": {
+      "get": {
+        "operationId": "Reports_getSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Report settings with recipients"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get automated report settings and recipients",
+        "tags": ["Reporting"]
+      },
+      "put": {
+        "operationId": "Reports_updateSettings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReportSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update automated reporting schedules and recipient list",
+        "tags": ["Reporting"]
       }
     }
   },
@@ -2074,16 +2841,16 @@
           "role": {
             "type": "string",
             "example": "promoter",
-            "enum": ["promoter", "merchandizer", "supervisor", "admin"]
+            "enum": ["promoter", "client", "supervisor", "admin"]
           },
           "latitude": {
             "type": "number",
-            "description": "Device latitude (decimal degrees). For promoters and merchandizers: required when at least one geofence is active (send with longitude). Supervisors and admins may omit coordinates.",
+            "description": "Device latitude (decimal degrees). For promoters: required when at least one geofence is active (send with longitude). Clients, supervisors, and admins may omit coordinates.",
             "example": -1.286389
           },
           "longitude": {
             "type": "number",
-            "description": "Device longitude (decimal degrees). For promoters and merchandizers: required with latitude when geofencing is enforced. Supervisors and admins may omit.",
+            "description": "Device longitude (decimal degrees). For promoters: required with latitude when geofencing is enforced. Clients, supervisors, and admins may omit.",
             "example": 36.817223
           }
         },
@@ -2124,7 +2891,7 @@
           },
           "latitude": {
             "type": "number",
-            "description": "Device latitude. For promoters/merchandizers when geofencing is active, send with longitude. Supervisors/admins may omit.",
+            "description": "Device latitude. For promoters when geofencing is active, send with longitude. Clients and supervisors/admins may omit.",
             "example": -1.286389
           },
           "longitude": {
@@ -2194,6 +2961,144 @@
         },
         "required": ["refreshToken"]
       },
+      "CreateSubwholesaleDto": {
+        "type": "object",
+        "properties": {
+          "regionId": {
+            "type": "string",
+            "description": "Parent region id (cuid)"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Optional slug unique within the region; derived from name if omitted"
+          },
+          "contactName": {
+            "type": "string"
+          },
+          "contactPhone": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": ["regionId", "name"]
+      },
+      "UpdateSubwholesaleDto": {
+        "type": "object",
+        "properties": {
+          "regionId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "contactName": {
+            "type": "string"
+          },
+          "contactPhone": {
+            "type": "string"
+          },
+          "contactEmail": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateOutletDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Quickmart - Ngong Road"
+          },
+          "category": {
+            "type": "string",
+            "example": "Supermarket"
+          },
+          "distributorName": {
+            "type": "string",
+            "example": "ABC Distributors Ltd"
+          },
+          "locationArea": {
+            "type": "string",
+            "example": "Nairobi West"
+          },
+          "contactName": {
+            "type": "string",
+            "example": "Jane Doe"
+          },
+          "contactPhone": {
+            "type": "string",
+            "example": "+254712345678"
+          },
+          "contactEmail": {
+            "type": "string",
+            "example": "manager@quickmart.example"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true,
+            "default": true
+          }
+        },
+        "required": ["name", "category", "distributorName", "locationArea"]
+      },
+      "UpdateOutletDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Quickmart - Ngong Road"
+          },
+          "category": {
+            "type": "string",
+            "example": "Supermarket"
+          },
+          "distributorName": {
+            "type": "string",
+            "example": "ABC Distributors Ltd"
+          },
+          "locationArea": {
+            "type": "string",
+            "example": "Nairobi West"
+          },
+          "contactName": {
+            "type": "string",
+            "example": "Jane Doe"
+          },
+          "contactPhone": {
+            "type": "string",
+            "example": "+254712345678"
+          },
+          "contactEmail": {
+            "type": "string",
+            "example": "manager@quickmart.example"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true,
+            "default": true
+          }
+        }
+      },
       "UpdateActivationDto": {
         "type": "object",
         "properties": {}
@@ -2206,7 +3111,7 @@
         "type": "object",
         "properties": {
           "userIds": {
-            "description": "User ids (cuid) to add. Each must be an active promoter or merchandizer, and not already on this roster.",
+            "description": "User ids (cuid) to add. Each must be an active promoter or client, and not already on this roster.",
             "type": "array",
             "items": {
               "type": "string"
@@ -2264,9 +3169,86 @@
         },
         "required": ["latitude", "longitude", "selfieImageBase64"]
       },
+      "CreateOutletVisitDto": {
+        "type": "object",
+        "properties": {
+          "outletId": {
+            "type": "string",
+            "example": "cmad4p0bo0000iib0i0l9e8wk"
+          },
+          "latitude": {
+            "type": "number",
+            "example": -1.286389
+          },
+          "longitude": {
+            "type": "number",
+            "example": 36.817223
+          },
+          "outletPhotoBase64": {
+            "type": "string",
+            "example": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+            "description": "Optional outlet photo in base64 (raw or data URL; JPEG/PNG only)."
+          },
+          "stockAvailabilityNotes": {
+            "type": "string",
+            "example": "All SKUs available except 500ml variant."
+          },
+          "salesMadeNotes": {
+            "type": "string",
+            "example": "Sold 2 cartons and 6 single units during the visit."
+          },
+          "consumerEngagementNotes": {
+            "type": "string",
+            "example": "Engaged 9 consumers with product demo and samples."
+          },
+          "visibilityExecutionNotes": {
+            "type": "string",
+            "example": "Shelf branding and wobblers correctly placed."
+          }
+        },
+        "required": ["outletId", "latitude", "longitude"]
+      },
       "CreateSaleDto": {
         "type": "object",
         "properties": {}
+      },
+      "CreateStockPickupDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateStockSaleDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateReportSettingsDto": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "default": "UTC"
+          },
+          "dailyEnabled": {
+            "type": "boolean"
+          },
+          "dailyCron": {
+            "type": "string",
+            "default": "0 0 19 * * *"
+          },
+          "weeklyEnabled": {
+            "type": "boolean"
+          },
+          "weeklyCron": {
+            "type": "string",
+            "default": "0 0 19 * * 1"
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["dailyEnabled", "dailyCron", "weeklyEnabled", "weeklyCron", "recipients"]
       }
     }
   }

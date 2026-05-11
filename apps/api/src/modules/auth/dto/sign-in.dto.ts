@@ -25,14 +25,14 @@ export class SignInDto {
   @ApiProperty({
     type: String,
     example: "promoter",
-    enum: ["promoter", "merchandizer", "supervisor", "admin"]
+    enum: ["promoter", "client", "supervisor", "admin"]
   })
-  @IsIn(["promoter", "merchandizer", "supervisor", "admin"])
-  public role!: "promoter" | "merchandizer" | "supervisor" | "admin";
+  @IsIn(["promoter", "client", "supervisor", "admin"])
+  public role!: "promoter" | "client" | "supervisor" | "admin";
 
   @ApiPropertyOptional({
     description:
-      "Device latitude (decimal degrees). For promoters and merchandizers: required when at least one geofence is active (send with longitude). Supervisors and admins may omit coordinates.",
+      "Device latitude (decimal degrees). For promoters: required when at least one geofence is active (send with longitude). Clients, supervisors, and admins may omit coordinates.",
     type: "number",
     example: -1.286389
   })
@@ -44,7 +44,7 @@ export class SignInDto {
 
   @ApiPropertyOptional({
     description:
-      "Device longitude (decimal degrees). For promoters and merchandizers: required with latitude when geofencing is enforced. Supervisors and admins may omit.",
+      "Device longitude (decimal degrees). For promoters: required with latitude when geofencing is enforced. Clients, supervisors, and admins may omit.",
     type: "number",
     example: 36.817223
   })

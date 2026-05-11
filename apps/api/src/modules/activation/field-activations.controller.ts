@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Query,
+  Res,
   UseGuards
 } from "@nestjs/common";
 import {
@@ -26,7 +27,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { ActivationService } from "./activation.service";
 
 /**
- * BACKEND_PRD §7.3 — activations visible to the caller (roster for promoters/merchandizers;
+ * BACKEND_PRD §7.3 — activations visible to the caller (roster for promoters and read-only clients;
  * all in-window activations for supervisor/admin).
  */
 @Controller("activations")
@@ -43,12 +44,70 @@ export class FieldActivationsController {
     operationId: "Activations_listForField",
     summary: "List activations (field)",
     description:
-      "Promoters and merchandizers see activations they are rostered on that are currently active. Supervisors and admins see all activations in their active date window."
+      "Promoters and rostered clients see activations they are assigned to that are currently active. Supervisors and admins see all activations in their active date window."
   })
   @ApiOkResponse({ description: "Activation rows with region and product count" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
   public listForField(@CurrentUser() currentUser: AuthenticatedUser) {
     return this.activationService.listForField(currentUser);
+  }
+
+  @Get(":id/team-sales")
+  @ApiParam({ name: "id", description: "Activation id (cuid)" })
+  @ApiOperation({
+    operationId: "Activations_listTeamSalesForClient",
+    summary: "List team sales on activation (client)",
+    description:
+      "Read-only. Rostered clients see sales line items recorded by field staff on this activation."
+  })
+  @ApiQuery({ name: "limit", required: false, schema: { default: 50, minimum: 1, maximum: 200 } })
+  @ApiOkResponse({ description: "Sales rows with seller and line items" })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
+  @ApiForbiddenResponse({ description: "Not a client or not rostered on this activation" })
+  @ApiNotFoundResponse({ description: "Activation not found" })
+  public listTeamSalesForClient(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param("id") id: string,
+    @Query("limit", new DefaultValuePipe(50), ParseIntPipe) limit: number
+  ) {
+    return this.activationService.listTeamSalesForClient(currentUser, id, limit);
+  }
+
+  @Get(":id/export.xlsx")
+  @ApiParam({ name: "id", description: "Activation id (cuid)" })
+  @ApiOperation({
+    operationId: "Activations_exportClientActivationWorkbook",
+    summary: "Download activation Excel report (client)",
+    description:
+      "Read-only export: activation summary, products, and sales line items for roster field staff. Optional `from` / `to` ISO date-times are intersected with the activation window."
+  })
+  @ApiQuery({ name: "from", required: false, description: "ISO 8601 date-time (optional filter)" })
+  @ApiQuery({ name: "to", required: false, description: "ISO 8601 date-time (optional filter)" })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
+  @ApiForbiddenResponse({ description: "Not a client or not rostered on this activation" })
+  @ApiNotFoundResponse({ description: "Activation not found" })
+  public async exportClientActivationWorkbook(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param("id") id: string,
+    @Query("from") from: string | undefined,
+    @Query("to") to: string | undefined,
+    @Res({ passthrough: true }) response: { setHeader: (name: string, value: string) => void }
+  ) {
+    const buffer = await this.activationService.exportClientActivationWorkbook(
+      currentUser,
+      id,
+      from,
+      to
+    );
+    response.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    response.setHeader(
+      "Content-Disposition",
+      `attachment; filename="activation-${id}-report.xlsx"`
+    );
+    return buffer;
   }
 
   @Get(":id/products")
@@ -78,7 +137,7 @@ export class FieldActivationsController {
     operationId: "Activations_getByIdForField",
     summary: "Get activation (field)",
     description:
-      "Full detail including products for supervisor/admin; promoters and merchandizers receive the same shape without the roster list."
+      "Full detail including products for supervisor/admin; promoters and clients receive the same shape without the roster list."
   })
   @ApiOkResponse({ description: "Activation detail" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })

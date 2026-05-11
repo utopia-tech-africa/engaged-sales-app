@@ -1,4 +1,4 @@
-export type UserRole = "promoter" | "merchandizer" | "supervisor" | "admin";
+export type UserRole = "promoter" | "client" | "supervisor" | "admin";
 
 export type AuthenticatedUser = {
   id: string;

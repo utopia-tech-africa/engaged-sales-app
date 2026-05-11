@@ -9,7 +9,7 @@ datasource db {
 
 enum UserRole {
   promoter
-  merchandizer
+  client
   supervisor
   admin
 }

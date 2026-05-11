@@ -59,9 +59,7 @@ export class AdminUserService {
   public async listForAdmin(currentUser: AuthenticatedUser): Promise<AdminUserListRow[]> {
     this.requireSupervisorOrAdmin(currentUser);
     const filter =
-      currentUser.role === "supervisor"
-        ? (["promoter", "merchandizer"] as PrismaUserRole[])
-        : undefined;
+      currentUser.role === "supervisor" ? (["promoter", "client"] as PrismaUserRole[]) : undefined;
     return this.repository.listUsers(filter);
   }
 

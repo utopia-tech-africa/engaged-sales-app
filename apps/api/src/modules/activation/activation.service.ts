@@ -6,6 +6,7 @@ import {
   Injectable,
   NotFoundException
 } from "@nestjs/common";
+import * as XLSX from "xlsx";
 
 import type { AuthenticatedUser, UserRole } from "../../common/types/authenticated-user.type";
 import type { Prisma } from "../../generated/prisma/client";
@@ -19,7 +20,8 @@ import type { CreateActivationProductDto } from "./dto/create-activation-product
 import type { UpdateActivationDto } from "./dto/update-activation.dto";
 
 const OPS_ROLES = new Set<UserRole>(["admin", "supervisor"]);
-const ROSTER_FIELD_ROLES = new Set<UserRole>(["promoter", "merchandizer"]);
+/** Users that may appear on an activation roster (field sellers + read-only client viewers). */
+const ROSTER_FIELD_ROLES = new Set<UserRole>(["promoter", "client"]);
 
 @Injectable()
 export class ActivationService {
@@ -285,7 +287,7 @@ export class ActivationService {
     }
     if (!ROSTER_FIELD_ROLES.has(user.role)) {
       throw new BadRequestException(
-        "Only promoters and merchandizers can be added to an activation roster"
+        "Only promoters and clients can be added to an activation roster"
       );
     }
 
@@ -338,7 +340,7 @@ export class ActivationService {
       }
       if (!ROSTER_FIELD_ROLES.has(user.role as UserRole)) {
         throw new BadRequestException(
-          "Only promoters and merchandizers can be added to an activation roster"
+          "Only promoters and clients can be added to an activation roster"
         );
       }
     }
@@ -384,7 +386,7 @@ export class ActivationService {
     }
   }
 
-  /** BACKEND_PRD §7.3 — field list (roster-scoped for promoters/merchandizers; all current for ops). */
+  /** BACKEND_PRD §7.3 — field list (roster-scoped for promoters and clients; all current for ops). */
   public listForField(currentUser: AuthenticatedUser) {
     const now = new Date();
     if (OPS_ROLES.has(currentUser.role)) {
@@ -579,5 +581,129 @@ export class ActivationService {
         role: ping.user.role
       }
     };
+  }
+
+  private requireClientForReadonlyActivationData(currentUser: AuthenticatedUser): void {
+    if (currentUser.role !== "client") {
+      throw new ForbiddenException("Only client accounts can use this resource");
+    }
+  }
+
+  /**
+   * Read-only: rostered clients see sales recorded by roster field staff for this activation.
+   */
+  public async listTeamSalesForClient(
+    currentUser: AuthenticatedUser,
+    activationId: string,
+    limit: number
+  ) {
+    this.requireClientForReadonlyActivationData(currentUser);
+    await this.assertFieldCanAccessActivation(currentUser, activationId);
+    const row = await this.repository.findById(activationId);
+    if (row === null) {
+      throw new NotFoundException("Activation not found");
+    }
+    const rosterIds = row.roster.map((r) => r.userId);
+    const take = Math.min(200, Math.max(1, limit));
+    return this.repository.listFieldSalesForActivation({
+      activationId,
+      rosterUserIds: rosterIds,
+      take,
+      maxRows: 200
+    });
+  }
+
+  /**
+   * Read-only workbook: activation summary, product list, and line-level sales for roster field staff.
+   * Optional `from` / `to` (ISO date-time) are intersected with the activation window.
+   */
+  public async exportClientActivationWorkbook(
+    currentUser: AuthenticatedUser,
+    activationId: string,
+    fromRaw?: string,
+    toRaw?: string
+  ): Promise<Buffer> {
+    this.requireClientForReadonlyActivationData(currentUser);
+    await this.assertFieldCanAccessActivation(currentUser, activationId);
+    const row = await this.repository.findById(activationId);
+    if (row === null) {
+      throw new NotFoundException("Activation not found");
+    }
+    const rosterIds = row.roster.map((r) => r.userId);
+    const filterFrom = this.parseOptionalIsoDate(fromRaw, "from");
+    const filterTo = this.parseOptionalIsoDate(toRaw, "to");
+
+    let createdFrom: Date | undefined;
+    let createdTo: Date | undefined;
+    if (filterFrom !== undefined || filterTo !== undefined) {
+      const range = this.mergeActivationTimeRange({
+        activationStartsAt: row.startsAt,
+        activationEndsAt: row.endsAt,
+        ...(filterFrom !== undefined ? { filterFrom } : {}),
+        ...(filterTo !== undefined ? { filterTo } : {})
+      });
+      if (range === null) {
+        throw new BadRequestException(
+          "The requested from/to range does not overlap this activation window"
+        );
+      }
+      createdFrom = range.gte;
+      createdTo = range.lte;
+    }
+
+    const sales = await this.repository.listFieldSalesForActivation({
+      activationId,
+      rosterUserIds: rosterIds,
+      take: 5000,
+      maxRows: 5000,
+      ...(createdFrom !== undefined ? { createdFrom } : {}),
+      ...(createdTo !== undefined ? { createdTo } : {})
+    });
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.json_to_sheet([
+        {
+          name: row.name,
+          region: row.region?.name ?? "",
+          startsAt: row.startsAt.toISOString(),
+          endsAt: row.endsAt?.toISOString() ?? ""
+        }
+      ]),
+      "Activation"
+    );
+    const productRows = row.products.map((p) => ({
+      name: p.name,
+      sku: p.sku ?? "",
+      sortOrder: p.sortOrder
+    }));
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.json_to_sheet(productRows.length > 0 ? productRows : [{ name: "No products" }]),
+      "Products"
+    );
+    const lineRows: { recordedAt: string; seller: string; product: string; quantity: number }[] =
+      [];
+    for (const sale of sales) {
+      for (const item of sale.items) {
+        lineRows.push({
+          recordedAt: sale.createdAt.toISOString(),
+          seller: sale.user.fullName,
+          product: item.product.name,
+          quantity: item.quantity
+        });
+      }
+    }
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.json_to_sheet(
+        lineRows.length > 0
+          ? lineRows
+          : [{ recordedAt: "", seller: "", product: "No sales", quantity: 0 }]
+      ),
+      "SalesLines"
+    );
+    return XLSX.write(workbook, { type: "buffer", bookType: "xlsx" }) as Buffer;
   }
 }

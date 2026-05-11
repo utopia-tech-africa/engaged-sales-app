@@ -23,8 +23,53 @@ import {
   parseHealthFromOrval,
   parseRegionsFromOrval
 } from "@/lib/ops/ops-adapters";
+import { calmMutedLinkClass } from "@/lib/calm-ui";
 
-const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark:bg-card/50";
+const shellCard = "rounded-xl border border-border bg-card/80 shadow-sm dark:bg-card/50";
+const listRowClass =
+  "flex items-center justify-between gap-4 border-b border-border px-4 py-3.5 text-sm transition-colors last:border-b-0 hover:bg-muted/30";
+
+type StatCellProps = {
+  label: string;
+  value: string | number;
+  detail?: string;
+  loading?: boolean;
+  error?: boolean;
+};
+
+const StatCell = ({ label, value, detail, loading, error }: StatCellProps): ReactElement => (
+  <div className="min-w-0 px-1 py-2 sm:px-2">
+    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+      {label}
+    </p>
+    {loading ? (
+      <p className="mt-1.5 text-sm text-muted-foreground">…</p>
+    ) : error ? (
+      <p className="mt-1.5 text-sm text-destructive">Error</p>
+    ) : (
+      <p className="mt-1.5 truncate text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+        {value}
+      </p>
+    )}
+    {detail !== undefined && detail.length > 0 && !loading && !error ? (
+      <p className="mt-0.5 text-xs text-muted-foreground">{detail}</p>
+    ) : null}
+  </div>
+);
+
+type QuickRowProps = { href: string; title: string; hint: string };
+
+const QuickRow = ({ href, title, hint }: QuickRowProps): ReactElement => (
+  <li>
+    <Link href={href} className={listRowClass}>
+      <span>
+        <span className="font-medium text-foreground">{title}</span>
+        <span className="mt-0.5 block text-xs text-muted-foreground">{hint}</span>
+      </span>
+      <span className="shrink-0 text-xs font-medium text-primary">Open</span>
+    </Link>
+  </li>
+);
 
 export default function OpsOverviewPage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -87,251 +132,242 @@ export default function OpsOverviewPage(): ReactElement {
     enabled: accessToken !== null
   });
 
-  const sessionCount = sessionsQuery.data?.sessions.length ?? "—";
-  const activeFences = geofencesQuery.data?.filter((g) => g.isActive).length ?? "—";
-  const totalFences = geofencesQuery.data?.length ?? "—";
+  const geofences = geofencesQuery.data;
+  const activeFences = geofences?.filter((g) => g.isActive).length;
+  const totalFences = geofences?.length;
+
+  const users = usersQuery.data;
+  const activeUsers = users?.filter((u) => u.isActive).length;
+  const fieldAccounts =
+    users?.filter((u) => u.role === "promoter" || u.role === "client").length ?? undefined;
+
+  const regions = regionsQuery.data;
+  const activeRegions = regions?.filter((r) => r.isActive).length;
+
+  const activations = activationsQuery.data;
+  const activeActivations = activations?.filter((a) => a.isActive).length;
+
+  const statGridClass =
+    "grid grid-cols-2 gap-x-6 gap-y-6 border-t border-border pt-6 sm:grid-cols-3 xl:grid-cols-4";
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Overview</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {isAdmin
-            ? "Desktop-first operations console. Configure work areas and monitor core signals; more modules from the product roadmap will plug in here."
-            : "Desktop-first operations console. Configure work areas, regions, and your team; more capabilities will appear here over time."}
-        </p>
-      </div>
-
-      <div
-        className={[
-          "grid gap-4 sm:grid-cols-2",
-          isAdmin && canManageActivations
-            ? "xl:grid-cols-7"
-            : isAdmin || canManageActivations
-              ? "xl:grid-cols-6"
-              : "xl:grid-cols-5"
-        ].join(" ")}
-      >
-        {isAdmin ? (
-          <div className={cardClass}>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              API health
-            </p>
-            {healthQuery.isLoading ? (
-              <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-            ) : null}
-            {healthQuery.isError ? (
-              <p className="mt-2 text-sm text-destructive">Unreachable</p>
-            ) : null}
-            {healthQuery.data ? (
-              <p className="mt-2 text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
-                OK
-              </p>
-            ) : null}
-          </div>
-        ) : null}
-        <div className={cardClass}>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Active work areas
+    <div className="space-y-10">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Overview</h1>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+            Key counts for your territory setup. Use the sidebar or quick links below to go deeper.
           </p>
-          {geofencesQuery.isLoading ? (
-            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-          ) : null}
-          {geofencesQuery.isError ? (
-            <p className="mt-2 text-sm text-destructive">Could not load</p>
-          ) : null}
-          {geofencesQuery.data !== undefined ? (
-            <p className="mt-2 text-2xl font-semibold text-foreground">
-              {activeFences}
-              <span className="text-base font-normal text-muted-foreground"> / {totalFences}</span>
-            </p>
-          ) : null}
-          <Link
-            href="/ops/geofences"
-            className="mt-3 inline-block text-sm font-medium text-primary"
-          >
-            Manage →
-          </Link>
         </div>
-        {canManageActivations ? (
-          <div className={cardClass}>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Activations
-            </p>
-            {activationsQuery.isLoading ? (
-              <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-            ) : null}
-            {activationsQuery.isError ? (
-              <p className="mt-2 text-sm text-destructive">Could not load</p>
-            ) : null}
-            {activationsQuery.data !== undefined ? (
-              <p className="mt-2 text-2xl font-semibold text-foreground">
-                {activationsQuery.data.length}
-              </p>
-            ) : null}
-            <Link
-              href="/ops/activations"
-              className="mt-3 inline-block text-sm font-medium text-primary"
-            >
-              Manage →
-            </Link>
-            <Link
-              href="/ops/attendance"
-              className="mt-2 inline-block text-sm font-medium text-primary"
-            >
-              Daily attendance →
-            </Link>
-            <Link
-              href="/ops/targets"
-              className="mt-2 inline-block text-sm font-medium text-primary"
-            >
-              Daily targets →
-            </Link>
-            <Link
-              href="/ops/reporting"
-              className="mt-2 inline-block text-sm font-medium text-primary"
-            >
-              Reporting dashboard →
-            </Link>
-          </div>
-        ) : null}
-        <div className={cardClass}>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Regions
-          </p>
-          {regionsQuery.isLoading ? (
-            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-          ) : null}
-          {regionsQuery.isError ? (
-            <p className="mt-2 text-sm text-destructive">Could not load</p>
-          ) : null}
-          {regionsQuery.data !== undefined ? (
-            <p className="mt-2 text-2xl font-semibold text-foreground">
-              {regionsQuery.data.length}
-            </p>
-          ) : null}
-          <Link href="/ops/regions" className="mt-3 inline-block text-sm font-medium text-primary">
-            Manage →
-          </Link>
-        </div>
-        <div className={cardClass}>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Users</p>
-          {usersQuery.isLoading ? (
-            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-          ) : null}
-          {usersQuery.isError ? (
-            <p className="mt-2 text-sm text-destructive">Could not load</p>
-          ) : null}
-          {usersQuery.data !== undefined ? (
-            <p className="mt-2 text-2xl font-semibold text-foreground">{usersQuery.data.length}</p>
-          ) : null}
-          <Link href="/ops/users" className="mt-3 inline-block text-sm font-medium text-primary">
-            Manage →
-          </Link>
-        </div>
-        <div className={cardClass}>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Outlets
-          </p>
-          {outletsQuery.isLoading ? (
-            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-          ) : null}
-          {outletsQuery.isError ? (
-            <p className="mt-2 text-sm text-destructive">Could not load</p>
-          ) : null}
-          {outletsQuery.data !== undefined ? (
-            <p className="mt-2 text-2xl font-semibold text-foreground">
-              {outletsQuery.data.length}
-            </p>
-          ) : null}
-          <Link href="/ops/outlets" className="mt-3 inline-block text-sm font-medium text-primary">
-            Manage →
-          </Link>
-        </div>
-        <div className={cardClass}>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Your sessions
-          </p>
-          {sessionsQuery.isLoading ? (
-            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-          ) : null}
-          {sessionsQuery.data !== undefined ? (
-            <p className="mt-2 text-2xl font-semibold text-foreground">{sessionCount}</p>
-          ) : null}
-          <Link href="/ops/account" className="mt-3 inline-block text-sm font-medium text-primary">
-            Account →
-          </Link>
-        </div>
-        <div className={cardClass}>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Signed in as
-          </p>
+        <div className="shrink-0 text-left sm:text-right">
           {meQuery.data ? (
             <>
-              <p className="mt-2 truncate text-sm font-semibold text-foreground">
-                {meQuery.data.fullName}
-              </p>
+              <p className="text-sm font-medium text-foreground">{meQuery.data.fullName}</p>
               <p className="text-xs capitalize text-muted-foreground">{meQuery.data.role}</p>
+              <Link
+                href="/ops/account"
+                className={`${calmMutedLinkClass} mt-1 inline-block text-xs`}
+              >
+                Account & sessions →
+              </Link>
             </>
-          ) : (
-            <p className="mt-2 text-sm text-muted-foreground">—</p>
-          )}
+          ) : meQuery.isLoading ? (
+            <p className="text-xs text-muted-foreground">Loading profile…</p>
+          ) : null}
         </div>
       </div>
 
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">Platform modules</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {isAdmin
-            ? "Roadmap capabilities beyond activations (sales capture, surveys, live map) will plug in here as APIs ship."
-            : canManageActivations
-              ? "Beyond activations: sales capture, surveys, and live map views will appear here over time."
-              : "Coming capabilities: sales capture, surveys, and live map views."}
-        </p>
-        <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <div className={cardClass}>
-            <h3 className="font-medium text-foreground">Activations & rosters</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {canManageActivations
-                ? "Campaigns with product lines and a field roster of promoters and merchandizers."
-                : "Supervisors and admins create campaigns, product lists, and promoter rosters."}
-            </p>
+      <section className={shellCard}>
+        <div className="border-b border-border px-5 py-4">
+          <h2 className="text-sm font-semibold text-foreground">Key stats</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">Live from your workspace data</p>
+        </div>
+        <div className="px-5 pb-6 pt-2">
+          <div className={statGridClass}>
+            {isAdmin ? (
+              <StatCell
+                label="API health"
+                value="OK"
+                detail="Core service reachable"
+                loading={healthQuery.isLoading}
+                error={healthQuery.isError}
+              />
+            ) : null}
+            <StatCell
+              label="Work areas"
+              value={
+                activeFences !== undefined && totalFences !== undefined
+                  ? `${String(activeFences)} / ${String(totalFences)}`
+                  : "—"
+              }
+              detail="Active / total geofences"
+              loading={geofencesQuery.isLoading}
+              error={geofencesQuery.isError}
+            />
             {canManageActivations ? (
-              <Link
-                href="/ops/activations"
-                className="mt-3 inline-block text-sm font-medium text-primary"
-              >
-                Open →
-              </Link>
-            ) : (
-              <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-                Supervisor / admin
-              </span>
-            )}
-          </div>
-          <div className={cardClass}>
-            <h3 className="font-medium text-foreground">Field team</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              Directory, roles, and regions — use Users in the sidebar to invite and manage
-              accounts.
-            </p>
-            <Link href="/ops/users" className="mt-3 inline-block text-sm font-medium text-primary">
-              Users →
-            </Link>
-          </div>
-          <div className={cardClass}>
-            <h3 className="font-medium text-foreground">Submissions & analytics</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {isAdmin
-                ? "Sales, surveys, flagged submissions, KPI overview — `/admin/overview` style feeds."
-                : "Sales, surveys, flagged submissions, and KPI overview."}
-            </p>
-            <span className="mt-3 inline-block rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-              Coming soon
-            </span>
+              <StatCell
+                label="Activations"
+                value={activations !== undefined ? activations.length : "—"}
+                detail={
+                  activeActivations !== undefined && activations !== undefined
+                    ? `${String(activeActivations)} active`
+                    : undefined
+                }
+                loading={activationsQuery.isLoading}
+                error={activationsQuery.isError}
+              />
+            ) : null}
+            <StatCell
+              label="Regions"
+              value={regions !== undefined ? regions.length : "—"}
+              detail={
+                activeRegions !== undefined && regions !== undefined
+                  ? `${String(activeRegions)} active`
+                  : undefined
+              }
+              loading={regionsQuery.isLoading}
+              error={regionsQuery.isError}
+            />
+            <StatCell
+              label="Users"
+              value={users !== undefined ? users.length : "—"}
+              detail={
+                activeUsers !== undefined && users !== undefined
+                  ? `${String(activeUsers)} active accounts`
+                  : undefined
+              }
+              loading={usersQuery.isLoading}
+              error={usersQuery.isError}
+            />
+            <StatCell
+              label="Outlets"
+              value={outletsQuery.data !== undefined ? outletsQuery.data.length : "—"}
+              detail="Master list"
+              loading={outletsQuery.isLoading}
+              error={outletsQuery.isError}
+            />
+            <StatCell
+              label="Your sessions"
+              value={sessionsQuery.data !== undefined ? sessionsQuery.data.sessions.length : "—"}
+              detail="Recorded logins"
+              loading={sessionsQuery.isLoading}
+              error={sessionsQuery.isError}
+            />
           </div>
         </div>
-      </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Quick access
+        </h2>
+        <div className={`${shellCard} overflow-hidden p-0`}>
+          <ul>
+            {canManageActivations ? (
+              <QuickRow
+                href="/ops/activations"
+                title="Activations"
+                hint="Campaigns, products, and field rosters"
+              />
+            ) : null}
+            <QuickRow
+              href="/ops/reporting"
+              title="Reporting"
+              hint="Sales, coverage, attendance, and exports"
+            />
+            {canManageActivations ? (
+              <>
+                <QuickRow
+                  href="/ops/attendance"
+                  title="Attendance"
+                  hint="Daily field clock-in roll-up"
+                />
+                <QuickRow
+                  href="/ops/targets"
+                  title="Daily targets"
+                  hint="Team achievement vs case goals"
+                />
+                <QuickRow
+                  href="/ops/tracking"
+                  title="Live tracking"
+                  hint="Latest positions on the map"
+                />
+              </>
+            ) : null}
+            <QuickRow href="/ops/users" title="Users" hint="Invites, roles, and regions" />
+            <QuickRow href="/ops/regions" title="Regions" hint="Territory definitions" />
+            <QuickRow
+              href="/ops/subwholesales"
+              title="Subwholesales"
+              hint="Nodes under each region"
+            />
+            <QuickRow
+              href="/ops/geofences"
+              title="Work areas"
+              hint="Geofences for check-in validation"
+            />
+            <QuickRow
+              href="/ops/outlets"
+              title="Outlets"
+              hint="Trade outlets and visit reporting"
+            />
+            <QuickRow
+              href="/ops/stock"
+              title="Stock overview"
+              hint="Inventory and distributor rollup"
+            />
+            <QuickRow
+              href="/ops/organization"
+              title="Organization hub"
+              hint="Grouped links to all setup areas"
+            />
+          </ul>
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          At a glance
+        </h2>
+        <div className={`${shellCard} px-5 py-4`}>
+          <dl className="grid gap-4 text-sm sm:grid-cols-2">
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted-foreground">Field accounts (promoters & clients)</dt>
+              <dd className="font-medium text-foreground">
+                {fieldAccounts !== undefined
+                  ? String(fieldAccounts)
+                  : usersQuery.isLoading
+                    ? "…"
+                    : "—"}
+              </dd>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted-foreground">Ops role</dt>
+              <dd className="font-medium capitalize text-foreground">{role ?? "—"}</dd>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted-foreground">Work areas inactive</dt>
+              <dd className="font-medium text-foreground">
+                {totalFences !== undefined && activeFences !== undefined
+                  ? String(Math.max(0, totalFences - activeFences))
+                  : geofencesQuery.isLoading
+                    ? "…"
+                    : "—"}
+              </dd>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted-foreground">Users deactivated</dt>
+              <dd className="font-medium text-foreground">
+                {users !== undefined && activeUsers !== undefined
+                  ? String(Math.max(0, users.length - activeUsers))
+                  : usersQuery.isLoading
+                    ? "…"
+                    : "—"}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
     </div>
   );
 }

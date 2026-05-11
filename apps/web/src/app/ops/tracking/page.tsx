@@ -18,7 +18,7 @@ type LiveTrackingRow = {
   userId: string;
   fullName: string;
   phone: string;
-  role: "promoter" | "merchandizer";
+  role: "promoter";
   regionId: string | null;
   regionName: string | null;
   locationPingId: string;
@@ -172,8 +172,7 @@ export default function OpsTrackingPage() {
           Live field tracking
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Real-time websocket stream of latest GPS positions for all active promoters and
-          merchandizers.
+          Real-time websocket stream of latest GPS positions for all active promoters and promoters.
         </p>
       </div>
 

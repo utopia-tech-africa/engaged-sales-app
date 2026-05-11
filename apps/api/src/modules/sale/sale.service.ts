@@ -11,7 +11,7 @@ import { ActivationRepository } from "../activation/activation.repository";
 import type { CreateSaleDto } from "./dto/create-sale.dto";
 import { SaleRepository } from "./sale.repository";
 
-const FIELD_SALE_ROLES = new Set<UserRole>(["promoter", "merchandizer"]);
+const FIELD_SALE_ROLES = new Set<UserRole>(["promoter"]);
 
 const isUniqueViolation = (error: unknown): boolean =>
   typeof error === "object" &&
@@ -28,7 +28,7 @@ export class SaleService {
 
   private requireFieldStaffForSales(currentUser: AuthenticatedUser): void {
     if (!FIELD_SALE_ROLES.has(currentUser.role)) {
-      throw new ForbiddenException("Only promoters and merchandizers can use sales endpoints");
+      throw new ForbiddenException("Only promoters can use sales endpoints");
     }
   }
 
