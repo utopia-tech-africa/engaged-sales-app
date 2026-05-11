@@ -22,17 +22,23 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
-  AdminActivationAddActivationProductBody,
-  AdminActivationAddToRosterBatchBody,
-  AdminActivationAddToRosterBody,
-  AdminActivationCreateActivationBody,
-  AdminActivationUpdateActivationBody,
+  ActivationCreateActivationBody,
+  ActivationListFieldActivityLocationsParams,
+  ActivationListFieldActivitySalesParams,
+  ActivationsListProductsForFieldParams,
+  AddActivationRosterBatchDto,
+  AddActivationRosterDto,
+  AdminAttendanceGetDailySummaryParams,
   AdminGeofenceCreateGeofenceBody,
   AdminGeofenceUpdateGeofenceBody,
   AdminRegionCreateRegionBody,
   AdminRegionUpdateRegionBody,
   AdminUserCreateUserBody,
   AdminUserUpdateUserBody,
+  CreateActivationProductDto,
+  CreateSaleDto,
+  MeListLocationHistoryParams,
+  MeListMySalesParams,
   OauthCallbackDto,
   OauthStartDto,
   ProfileCompletionDto,
@@ -41,6 +47,7 @@ import type {
   SignInDto,
   SignOutDto,
   SignUpDto,
+  UpdateActivationDto,
   UpdateLocationDto,
   UpdateMeDto
 } from "./model";
@@ -1677,7 +1684,7 @@ export type adminGeofenceUpdateGeofenceResponse =
   | adminGeofenceUpdateGeofenceResponseError;
 
 export const getAdminGeofenceUpdateGeofenceUrl = (id: unknown) => {
-  return `/admin/geofences/${String(id)}`;
+  return `/admin/geofences/${id}`;
 };
 
 /**
@@ -2079,7 +2086,7 @@ export type adminRegionUpdateRegionResponse =
   | adminRegionUpdateRegionResponseError;
 
 export const getAdminRegionUpdateRegionUrl = (id: unknown) => {
-  return `/admin/regions/${String(id)}`;
+  return `/admin/regions/${id}`;
 };
 
 /**
@@ -2164,37 +2171,36 @@ export const useAdminRegionUpdateRegion = <TError = void, TContext = unknown>(
   return useMutation(getAdminRegionUpdateRegionMutationOptions(options), queryClient);
 };
 
-export type adminActivationListActivationsResponse200 = {
+export type activationListActivationsResponse200 = {
   data: void;
   status: 200;
 };
 
-export type adminActivationListActivationsResponse401 = {
+export type activationListActivationsResponse401 = {
   data: void;
   status: 401;
 };
 
-export type adminActivationListActivationsResponse403 = {
+export type activationListActivationsResponse403 = {
   data: void;
   status: 403;
 };
 
-export type adminActivationListActivationsResponseSuccess =
-  adminActivationListActivationsResponse200 & {
-    headers: Headers;
-  };
-export type adminActivationListActivationsResponseError = (
-  | adminActivationListActivationsResponse401
-  | adminActivationListActivationsResponse403
+export type activationListActivationsResponseSuccess = activationListActivationsResponse200 & {
+  headers: Headers;
+};
+export type activationListActivationsResponseError = (
+  | activationListActivationsResponse401
+  | activationListActivationsResponse403
 ) & {
   headers: Headers;
 };
 
-export type adminActivationListActivationsResponse =
-  | adminActivationListActivationsResponseSuccess
-  | adminActivationListActivationsResponseError;
+export type activationListActivationsResponse =
+  | activationListActivationsResponseSuccess
+  | activationListActivationsResponseError;
 
-export const getAdminActivationListActivationsUrl = () => {
+export const getActivationListActivationsUrl = () => {
   return `/admin/activations`;
 };
 
@@ -2202,64 +2208,61 @@ export const getAdminActivationListActivationsUrl = () => {
  * Campaigns / activations with region and counts.
  * @summary List activations
  */
-export const adminActivationListActivations = async (
+export const activationListActivations = async (
   options?: RequestInit
-): Promise<adminActivationListActivationsResponse> => {
-  return orvalFetcher<adminActivationListActivationsResponse>(
-    getAdminActivationListActivationsUrl(),
-    {
-      ...options,
-      method: "GET"
-    }
-  );
+): Promise<activationListActivationsResponse> => {
+  return orvalFetcher<activationListActivationsResponse>(getActivationListActivationsUrl(), {
+    ...options,
+    method: "GET"
+  });
 };
 
-export const getAdminActivationListActivationsQueryKey = () => {
+export const getActivationListActivationsQueryKey = () => {
   return [`/admin/activations`] as const;
 };
 
-export const getAdminActivationListActivationsQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminActivationListActivations>>,
+export const getActivationListActivationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof activationListActivations>>,
   TError = void
 >(options?: {
   query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof adminActivationListActivations>>, TError, TData>
+    UseQueryOptions<Awaited<ReturnType<typeof activationListActivations>>, TError, TData>
   >;
   request?: SecondParameter<typeof orvalFetcher>;
 }) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getAdminActivationListActivationsQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getActivationListActivationsQueryKey();
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminActivationListActivations>>> = ({
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof activationListActivations>>> = ({
     signal
-  }) => adminActivationListActivations({ signal, ...requestOptions });
+  }) => activationListActivations({ signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminActivationListActivations>>,
+    Awaited<ReturnType<typeof activationListActivations>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type AdminActivationListActivationsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminActivationListActivations>>
+export type ActivationListActivationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof activationListActivations>>
 >;
-export type AdminActivationListActivationsQueryError = void;
+export type ActivationListActivationsQueryError = void;
 
-export function useAdminActivationListActivations<
-  TData = Awaited<ReturnType<typeof adminActivationListActivations>>,
+export function useActivationListActivations<
+  TData = Awaited<ReturnType<typeof activationListActivations>>,
   TError = void
 >(
   options: {
     query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof adminActivationListActivations>>, TError, TData>
+      UseQueryOptions<Awaited<ReturnType<typeof activationListActivations>>, TError, TData>
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminActivationListActivations>>,
+          Awaited<ReturnType<typeof activationListActivations>>,
           TError,
-          Awaited<ReturnType<typeof adminActivationListActivations>>
+          Awaited<ReturnType<typeof activationListActivations>>
         >,
         "initialData"
       >;
@@ -2267,19 +2270,19 @@ export function useAdminActivationListActivations<
   },
   queryClient?: QueryClient
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminActivationListActivations<
-  TData = Awaited<ReturnType<typeof adminActivationListActivations>>,
+export function useActivationListActivations<
+  TData = Awaited<ReturnType<typeof activationListActivations>>,
   TError = void
 >(
   options?: {
     query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof adminActivationListActivations>>, TError, TData>
+      UseQueryOptions<Awaited<ReturnType<typeof activationListActivations>>, TError, TData>
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminActivationListActivations>>,
+          Awaited<ReturnType<typeof activationListActivations>>,
           TError,
-          Awaited<ReturnType<typeof adminActivationListActivations>>
+          Awaited<ReturnType<typeof activationListActivations>>
         >,
         "initialData"
       >;
@@ -2287,13 +2290,13 @@ export function useAdminActivationListActivations<
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminActivationListActivations<
-  TData = Awaited<ReturnType<typeof adminActivationListActivations>>,
+export function useActivationListActivations<
+  TData = Awaited<ReturnType<typeof activationListActivations>>,
   TError = void
 >(
   options?: {
     query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof adminActivationListActivations>>, TError, TData>
+      UseQueryOptions<Awaited<ReturnType<typeof activationListActivations>>, TError, TData>
     >;
     request?: SecondParameter<typeof orvalFetcher>;
   },
@@ -2303,19 +2306,19 @@ export function useAdminActivationListActivations<
  * @summary List activations
  */
 
-export function useAdminActivationListActivations<
-  TData = Awaited<ReturnType<typeof adminActivationListActivations>>,
+export function useActivationListActivations<
+  TData = Awaited<ReturnType<typeof activationListActivations>>,
   TError = void
 >(
   options?: {
     query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof adminActivationListActivations>>, TError, TData>
+      UseQueryOptions<Awaited<ReturnType<typeof activationListActivations>>, TError, TData>
     >;
     request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminActivationListActivationsQueryOptions(options);
+  const queryOptions = getActivationListActivationsQueryOptions(options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
@@ -2324,83 +2327,84 @@ export function useAdminActivationListActivations<
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
-export type adminActivationCreateActivationResponse201 = {
+export type activationCreateActivationResponse201 = {
   data: void;
   status: 201;
 };
 
-export type adminActivationCreateActivationResponse401 = {
+export type activationCreateActivationResponse401 = {
   data: void;
   status: 401;
 };
 
-export type adminActivationCreateActivationResponse403 = {
+export type activationCreateActivationResponse403 = {
   data: void;
   status: 403;
 };
 
-export type adminActivationCreateActivationResponse409 = {
+export type activationCreateActivationResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type activationCreateActivationResponse409 = {
   data: void;
   status: 409;
 };
 
-export type adminActivationCreateActivationResponseSuccess =
-  adminActivationCreateActivationResponse201 & {
-    headers: Headers;
-  };
-export type adminActivationCreateActivationResponseError = (
-  | adminActivationCreateActivationResponse401
-  | adminActivationCreateActivationResponse403
-  | adminActivationCreateActivationResponse409
+export type activationCreateActivationResponseSuccess = activationCreateActivationResponse201 & {
+  headers: Headers;
+};
+export type activationCreateActivationResponseError = (
+  | activationCreateActivationResponse401
+  | activationCreateActivationResponse403
+  | activationCreateActivationResponse404
+  | activationCreateActivationResponse409
 ) & {
   headers: Headers;
 };
 
-export type adminActivationCreateActivationResponse =
-  | adminActivationCreateActivationResponseSuccess
-  | adminActivationCreateActivationResponseError;
+export type activationCreateActivationResponse =
+  | activationCreateActivationResponseSuccess
+  | activationCreateActivationResponseError;
 
-export const getAdminActivationCreateActivationUrl = () => {
+export const getActivationCreateActivationUrl = () => {
   return `/admin/activations`;
 };
 
 /**
- * Creates an activation; slug is derived from name if omitted.
  * @summary Create activation
  */
-export const adminActivationCreateActivation = async (
-  adminActivationCreateActivationBody: AdminActivationCreateActivationBody,
+export const activationCreateActivation = async (
+  activationCreateActivationBody: ActivationCreateActivationBody,
   options?: RequestInit
-): Promise<adminActivationCreateActivationResponse> => {
-  return orvalFetcher<adminActivationCreateActivationResponse>(
-    getAdminActivationCreateActivationUrl(),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(adminActivationCreateActivationBody)
-    }
-  );
+): Promise<activationCreateActivationResponse> => {
+  return orvalFetcher<activationCreateActivationResponse>(getActivationCreateActivationUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(activationCreateActivationBody)
+  });
 };
 
-export const getAdminActivationCreateActivationMutationOptions = <
+export const getActivationCreateActivationMutationOptions = <
   TError = void,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminActivationCreateActivation>>,
+    Awaited<ReturnType<typeof activationCreateActivation>>,
     TError,
-    { data: AdminActivationCreateActivationBody },
+    { data: ActivationCreateActivationBody },
     TContext
   >;
   request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof adminActivationCreateActivation>>,
+  Awaited<ReturnType<typeof activationCreateActivation>>,
   TError,
-  { data: AdminActivationCreateActivationBody },
+  { data: ActivationCreateActivationBody },
   TContext
 > => {
-  const mutationKey = ["adminActivationCreateActivation"];
+  const mutationKey = ["activationCreateActivation"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
@@ -2408,95 +2412,118 @@ export const getAdminActivationCreateActivationMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof adminActivationCreateActivation>>,
-    { data: AdminActivationCreateActivationBody }
+    Awaited<ReturnType<typeof activationCreateActivation>>,
+    { data: ActivationCreateActivationBody }
   > = (props) => {
     const { data } = props ?? {};
 
-    return adminActivationCreateActivation(data, requestOptions);
+    return activationCreateActivation(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type AdminActivationCreateActivationMutationResult = NonNullable<
-  Awaited<ReturnType<typeof adminActivationCreateActivation>>
+export type ActivationCreateActivationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof activationCreateActivation>>
 >;
-export type AdminActivationCreateActivationMutationBody = AdminActivationCreateActivationBody;
-export type AdminActivationCreateActivationMutationError = void;
+export type ActivationCreateActivationMutationBody = ActivationCreateActivationBody;
+export type ActivationCreateActivationMutationError = void;
 
 /**
  * @summary Create activation
  */
-export const useAdminActivationCreateActivation = <TError = void, TContext = unknown>(
+export const useActivationCreateActivation = <TError = void, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminActivationCreateActivation>>,
+      Awaited<ReturnType<typeof activationCreateActivation>>,
       TError,
-      { data: AdminActivationCreateActivationBody },
+      { data: ActivationCreateActivationBody },
       TContext
     >;
     request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
-  Awaited<ReturnType<typeof adminActivationCreateActivation>>,
+  Awaited<ReturnType<typeof activationCreateActivation>>,
   TError,
-  { data: AdminActivationCreateActivationBody },
+  { data: ActivationCreateActivationBody },
   TContext
 > => {
-  return useMutation(getAdminActivationCreateActivationMutationOptions(options), queryClient);
+  return useMutation(getActivationCreateActivationMutationOptions(options), queryClient);
 };
 
-export type adminActivationGetActivationResponse200 = {
+export type activationListFieldActivitySalesResponse200 = {
   data: void;
   status: 200;
 };
 
-export type adminActivationGetActivationResponse401 = {
+export type activationListFieldActivitySalesResponse400 = {
+  data: void;
+  status: 400;
+};
+
+export type activationListFieldActivitySalesResponse401 = {
   data: void;
   status: 401;
 };
 
-export type adminActivationGetActivationResponse403 = {
+export type activationListFieldActivitySalesResponse403 = {
   data: void;
   status: 403;
 };
 
-export type adminActivationGetActivationResponse404 = {
+export type activationListFieldActivitySalesResponse404 = {
   data: void;
   status: 404;
 };
 
-export type adminActivationGetActivationResponseSuccess =
-  adminActivationGetActivationResponse200 & {
+export type activationListFieldActivitySalesResponseSuccess =
+  activationListFieldActivitySalesResponse200 & {
     headers: Headers;
   };
-export type adminActivationGetActivationResponseError = (
-  | adminActivationGetActivationResponse401
-  | adminActivationGetActivationResponse403
-  | adminActivationGetActivationResponse404
+export type activationListFieldActivitySalesResponseError = (
+  | activationListFieldActivitySalesResponse400
+  | activationListFieldActivitySalesResponse401
+  | activationListFieldActivitySalesResponse403
+  | activationListFieldActivitySalesResponse404
 ) & {
   headers: Headers;
 };
 
-export type adminActivationGetActivationResponse =
-  | adminActivationGetActivationResponseSuccess
-  | adminActivationGetActivationResponseError;
+export type activationListFieldActivitySalesResponse =
+  | activationListFieldActivitySalesResponseSuccess
+  | activationListFieldActivitySalesResponseError;
 
-export const getAdminActivationGetActivationUrl = (id: unknown) => {
-  return `/admin/activations/${String(id)}`;
+export const getActivationListFieldActivitySalesUrl = (
+  id: unknown,
+  params?: ActivationListFieldActivitySalesParams
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/admin/activations/${id}/field-activity/sales?${stringifiedParams}`
+    : `/admin/activations/${id}/field-activity/sales`;
 };
 
 /**
- * @summary Get activation with products and roster
+ * Sales on this activation from roster members only, with seller and line items. Optional userId, from, and to (ISO 8601) narrow results; time range is intersected with the activation window. Supervisor or admin only.
+ * @summary List sales on activation (field activity)
  */
-export const adminActivationGetActivation = async (
+export const activationListFieldActivitySales = async (
   id: unknown,
+  params?: ActivationListFieldActivitySalesParams,
   options?: RequestInit
-): Promise<adminActivationGetActivationResponse> => {
-  return orvalFetcher<adminActivationGetActivationResponse>(
-    getAdminActivationGetActivationUrl(id),
+): Promise<activationListFieldActivitySalesResponse> => {
+  return orvalFetcher<activationListFieldActivitySalesResponse>(
+    getActivationListFieldActivitySalesUrl(id, params),
     {
       ...options,
       method: "GET"
@@ -2504,56 +2531,62 @@ export const adminActivationGetActivation = async (
   );
 };
 
-export const getAdminActivationGetActivationQueryKey = (id: unknown) => {
-  return [`/admin/activations/${String(id)}`] as const;
+export const getActivationListFieldActivitySalesQueryKey = (
+  id: unknown,
+  params?: ActivationListFieldActivitySalesParams
+) => {
+  return [`/admin/activations/${id}/field-activity/sales`, ...(params ? [params] : [])] as const;
 };
 
-export const getAdminActivationGetActivationQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminActivationGetActivation>>,
+export const getActivationListFieldActivitySalesQueryOptions = <
+  TData = Awaited<ReturnType<typeof activationListFieldActivitySales>>,
   TError = void
 >(
   id: unknown,
+  params?: ActivationListFieldActivitySalesParams,
   options?: {
     query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof adminActivationGetActivation>>, TError, TData>
+      UseQueryOptions<Awaited<ReturnType<typeof activationListFieldActivitySales>>, TError, TData>
     >;
     request?: SecondParameter<typeof orvalFetcher>;
   }
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getAdminActivationGetActivationQueryKey(id);
+  const queryKey =
+    queryOptions?.queryKey ?? getActivationListFieldActivitySalesQueryKey(id, params);
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminActivationGetActivation>>> = ({
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof activationListFieldActivitySales>>> = ({
     signal
-  }) => adminActivationGetActivation(id, { signal, ...requestOptions });
+  }) => activationListFieldActivitySales(id, params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminActivationGetActivation>>,
+    Awaited<ReturnType<typeof activationListFieldActivitySales>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type AdminActivationGetActivationQueryResult = NonNullable<
-  Awaited<ReturnType<typeof adminActivationGetActivation>>
+export type ActivationListFieldActivitySalesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof activationListFieldActivitySales>>
 >;
-export type AdminActivationGetActivationQueryError = void;
+export type ActivationListFieldActivitySalesQueryError = void;
 
-export function useAdminActivationGetActivation<
-  TData = Awaited<ReturnType<typeof adminActivationGetActivation>>,
+export function useActivationListFieldActivitySales<
+  TData = Awaited<ReturnType<typeof activationListFieldActivitySales>>,
   TError = void
 >(
   id: unknown,
+  params: undefined | ActivationListFieldActivitySalesParams,
   options: {
     query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof adminActivationGetActivation>>, TError, TData>
+      UseQueryOptions<Awaited<ReturnType<typeof activationListFieldActivitySales>>, TError, TData>
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminActivationGetActivation>>,
+          Awaited<ReturnType<typeof activationListFieldActivitySales>>,
           TError,
-          Awaited<ReturnType<typeof adminActivationGetActivation>>
+          Awaited<ReturnType<typeof activationListFieldActivitySales>>
         >,
         "initialData"
       >;
@@ -2561,20 +2594,21 @@ export function useAdminActivationGetActivation<
   },
   queryClient?: QueryClient
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminActivationGetActivation<
-  TData = Awaited<ReturnType<typeof adminActivationGetActivation>>,
+export function useActivationListFieldActivitySales<
+  TData = Awaited<ReturnType<typeof activationListFieldActivitySales>>,
   TError = void
 >(
   id: unknown,
+  params?: ActivationListFieldActivitySalesParams,
   options?: {
     query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof adminActivationGetActivation>>, TError, TData>
+      UseQueryOptions<Awaited<ReturnType<typeof activationListFieldActivitySales>>, TError, TData>
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof adminActivationGetActivation>>,
+          Awaited<ReturnType<typeof activationListFieldActivitySales>>,
           TError,
-          Awaited<ReturnType<typeof adminActivationGetActivation>>
+          Awaited<ReturnType<typeof activationListFieldActivitySales>>
         >,
         "initialData"
       >;
@@ -2582,37 +2616,39 @@ export function useAdminActivationGetActivation<
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useAdminActivationGetActivation<
-  TData = Awaited<ReturnType<typeof adminActivationGetActivation>>,
+export function useActivationListFieldActivitySales<
+  TData = Awaited<ReturnType<typeof activationListFieldActivitySales>>,
   TError = void
 >(
   id: unknown,
+  params?: ActivationListFieldActivitySalesParams,
   options?: {
     query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof adminActivationGetActivation>>, TError, TData>
+      UseQueryOptions<Awaited<ReturnType<typeof activationListFieldActivitySales>>, TError, TData>
     >;
     request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
- * @summary Get activation with products and roster
+ * @summary List sales on activation (field activity)
  */
 
-export function useAdminActivationGetActivation<
-  TData = Awaited<ReturnType<typeof adminActivationGetActivation>>,
+export function useActivationListFieldActivitySales<
+  TData = Awaited<ReturnType<typeof activationListFieldActivitySales>>,
   TError = void
 >(
   id: unknown,
+  params?: ActivationListFieldActivitySalesParams,
   options?: {
     query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof adminActivationGetActivation>>, TError, TData>
+      UseQueryOptions<Awaited<ReturnType<typeof activationListFieldActivitySales>>, TError, TData>
     >;
     request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminActivationGetActivationQueryOptions(id, options);
+  const queryOptions = getActivationListFieldActivitySalesQueryOptions(id, params, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
@@ -2621,90 +2657,664 @@ export function useAdminActivationGetActivation<
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
-export type adminActivationUpdateActivationResponse200 = {
+export type activationListFieldActivityLocationsResponse200 = {
   data: void;
   status: 200;
 };
 
-export type adminActivationUpdateActivationResponse401 = {
+export type activationListFieldActivityLocationsResponse400 = {
+  data: void;
+  status: 400;
+};
+
+export type activationListFieldActivityLocationsResponse401 = {
   data: void;
   status: 401;
 };
 
-export type adminActivationUpdateActivationResponse403 = {
+export type activationListFieldActivityLocationsResponse403 = {
   data: void;
   status: 403;
 };
 
-export type adminActivationUpdateActivationResponse404 = {
+export type activationListFieldActivityLocationsResponse404 = {
   data: void;
   status: 404;
 };
 
-export type adminActivationUpdateActivationResponse409 = {
+export type activationListFieldActivityLocationsResponseSuccess =
+  activationListFieldActivityLocationsResponse200 & {
+    headers: Headers;
+  };
+export type activationListFieldActivityLocationsResponseError = (
+  | activationListFieldActivityLocationsResponse400
+  | activationListFieldActivityLocationsResponse401
+  | activationListFieldActivityLocationsResponse403
+  | activationListFieldActivityLocationsResponse404
+) & {
+  headers: Headers;
+};
+
+export type activationListFieldActivityLocationsResponse =
+  | activationListFieldActivityLocationsResponseSuccess
+  | activationListFieldActivityLocationsResponseError;
+
+export const getActivationListFieldActivityLocationsUrl = (
+  id: unknown,
+  params?: ActivationListFieldActivityLocationsParams
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/admin/activations/${id}/field-activity/locations?${stringifiedParams}`
+    : `/admin/activations/${id}/field-activity/locations`;
+};
+
+/**
+ * Location pings for users on this activation roster. Time range defaults to the activation window; optional from/to narrow it. Optional userId must be on the roster. Supervisor or admin only.
+ * @summary List roster location pings (field activity)
+ */
+export const activationListFieldActivityLocations = async (
+  id: unknown,
+  params?: ActivationListFieldActivityLocationsParams,
+  options?: RequestInit
+): Promise<activationListFieldActivityLocationsResponse> => {
+  return orvalFetcher<activationListFieldActivityLocationsResponse>(
+    getActivationListFieldActivityLocationsUrl(id, params),
+    {
+      ...options,
+      method: "GET"
+    }
+  );
+};
+
+export const getActivationListFieldActivityLocationsQueryKey = (
+  id: unknown,
+  params?: ActivationListFieldActivityLocationsParams
+) => {
+  return [
+    `/admin/activations/${id}/field-activity/locations`,
+    ...(params ? [params] : [])
+  ] as const;
+};
+
+export const getActivationListFieldActivityLocationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationListFieldActivityLocationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getActivationListFieldActivityLocationsQueryKey(id, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof activationListFieldActivityLocations>>
+  > = ({ signal }) =>
+    activationListFieldActivityLocations(id, params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ActivationListFieldActivityLocationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof activationListFieldActivityLocations>>
+>;
+export type ActivationListFieldActivityLocationsQueryError = void;
+
+export function useActivationListFieldActivityLocations<
+  TData = Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+  TError = void
+>(
+  id: unknown,
+  params: undefined | ActivationListFieldActivityLocationsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+          TError,
+          Awaited<ReturnType<typeof activationListFieldActivityLocations>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationListFieldActivityLocations<
+  TData = Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationListFieldActivityLocationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+          TError,
+          Awaited<ReturnType<typeof activationListFieldActivityLocations>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationListFieldActivityLocations<
+  TData = Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationListFieldActivityLocationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List roster location pings (field activity)
+ */
+
+export function useActivationListFieldActivityLocations<
+  TData = Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationListFieldActivityLocationsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof activationListFieldActivityLocations>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getActivationListFieldActivityLocationsQueryOptions(id, params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type activationGetFieldActivityCheckInResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type activationGetFieldActivityCheckInResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type activationGetFieldActivityCheckInResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type activationGetFieldActivityCheckInResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type activationGetFieldActivityCheckInResponseSuccess =
+  activationGetFieldActivityCheckInResponse200 & {
+    headers: Headers;
+  };
+export type activationGetFieldActivityCheckInResponseError = (
+  | activationGetFieldActivityCheckInResponse401
+  | activationGetFieldActivityCheckInResponse403
+  | activationGetFieldActivityCheckInResponse404
+) & {
+  headers: Headers;
+};
+
+export type activationGetFieldActivityCheckInResponse =
+  | activationGetFieldActivityCheckInResponseSuccess
+  | activationGetFieldActivityCheckInResponseError;
+
+export const getActivationGetFieldActivityCheckInUrl = (id: unknown, pingId: unknown) => {
+  return `/admin/activations/${id}/field-activity/check-ins/${pingId}`;
+};
+
+/**
+ * Returns coordinates, time, place label, staff member, and selfie as a data URL when verification was recorded. The ping must be from a roster user within the activation window.
+ * @summary Get one roster check-in (with selfie)
+ */
+export const activationGetFieldActivityCheckIn = async (
+  id: unknown,
+  pingId: unknown,
+  options?: RequestInit
+): Promise<activationGetFieldActivityCheckInResponse> => {
+  return orvalFetcher<activationGetFieldActivityCheckInResponse>(
+    getActivationGetFieldActivityCheckInUrl(id, pingId),
+    {
+      ...options,
+      method: "GET"
+    }
+  );
+};
+
+export const getActivationGetFieldActivityCheckInQueryKey = (id: unknown, pingId: unknown) => {
+  return [`/admin/activations/${id}/field-activity/check-ins/${pingId}`] as const;
+};
+
+export const getActivationGetFieldActivityCheckInQueryOptions = <
+  TData = Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>,
+  TError = void
+>(
+  id: unknown,
+  pingId: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getActivationGetFieldActivityCheckInQueryKey(id, pingId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>> = ({
+    signal
+  }) => activationGetFieldActivityCheckIn(id, pingId, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!(id && pingId), ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ActivationGetFieldActivityCheckInQueryResult = NonNullable<
+  Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>
+>;
+export type ActivationGetFieldActivityCheckInQueryError = void;
+
+export function useActivationGetFieldActivityCheckIn<
+  TData = Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>,
+  TError = void
+>(
+  id: unknown,
+  pingId: unknown,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>,
+          TError,
+          Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationGetFieldActivityCheckIn<
+  TData = Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>,
+  TError = void
+>(
+  id: unknown,
+  pingId: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>,
+          TError,
+          Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationGetFieldActivityCheckIn<
+  TData = Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>,
+  TError = void
+>(
+  id: unknown,
+  pingId: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get one roster check-in (with selfie)
+ */
+
+export function useActivationGetFieldActivityCheckIn<
+  TData = Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>,
+  TError = void
+>(
+  id: unknown,
+  pingId: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationGetFieldActivityCheckIn>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getActivationGetFieldActivityCheckInQueryOptions(id, pingId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type activationGetActivationResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type activationGetActivationResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type activationGetActivationResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type activationGetActivationResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type activationGetActivationResponseSuccess = activationGetActivationResponse200 & {
+  headers: Headers;
+};
+export type activationGetActivationResponseError = (
+  | activationGetActivationResponse401
+  | activationGetActivationResponse403
+  | activationGetActivationResponse404
+) & {
+  headers: Headers;
+};
+
+export type activationGetActivationResponse =
+  | activationGetActivationResponseSuccess
+  | activationGetActivationResponseError;
+
+export const getActivationGetActivationUrl = (id: unknown) => {
+  return `/admin/activations/${id}`;
+};
+
+/**
+ * @summary Get activation
+ */
+export const activationGetActivation = async (
+  id: unknown,
+  options?: RequestInit
+): Promise<activationGetActivationResponse> => {
+  return orvalFetcher<activationGetActivationResponse>(getActivationGetActivationUrl(id), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getActivationGetActivationQueryKey = (id: unknown) => {
+  return [`/admin/activations/${id}`] as const;
+};
+
+export const getActivationGetActivationQueryOptions = <
+  TData = Awaited<ReturnType<typeof activationGetActivation>>,
+  TError = void
+>(
+  id: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationGetActivation>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getActivationGetActivationQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof activationGetActivation>>> = ({
+    signal
+  }) => activationGetActivation(id, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof activationGetActivation>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ActivationGetActivationQueryResult = NonNullable<
+  Awaited<ReturnType<typeof activationGetActivation>>
+>;
+export type ActivationGetActivationQueryError = void;
+
+export function useActivationGetActivation<
+  TData = Awaited<ReturnType<typeof activationGetActivation>>,
+  TError = void
+>(
+  id: unknown,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationGetActivation>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationGetActivation>>,
+          TError,
+          Awaited<ReturnType<typeof activationGetActivation>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationGetActivation<
+  TData = Awaited<ReturnType<typeof activationGetActivation>>,
+  TError = void
+>(
+  id: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationGetActivation>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationGetActivation>>,
+          TError,
+          Awaited<ReturnType<typeof activationGetActivation>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationGetActivation<
+  TData = Awaited<ReturnType<typeof activationGetActivation>>,
+  TError = void
+>(
+  id: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationGetActivation>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get activation
+ */
+
+export function useActivationGetActivation<
+  TData = Awaited<ReturnType<typeof activationGetActivation>>,
+  TError = void
+>(
+  id: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationGetActivation>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getActivationGetActivationQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type activationUpdateActivationResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type activationUpdateActivationResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type activationUpdateActivationResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type activationUpdateActivationResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type activationUpdateActivationResponse409 = {
   data: void;
   status: 409;
 };
 
-export type adminActivationUpdateActivationResponseSuccess =
-  adminActivationUpdateActivationResponse200 & {
-    headers: Headers;
-  };
-export type adminActivationUpdateActivationResponseError = (
-  | adminActivationUpdateActivationResponse401
-  | adminActivationUpdateActivationResponse403
-  | adminActivationUpdateActivationResponse404
-  | adminActivationUpdateActivationResponse409
+export type activationUpdateActivationResponseSuccess = activationUpdateActivationResponse200 & {
+  headers: Headers;
+};
+export type activationUpdateActivationResponseError = (
+  | activationUpdateActivationResponse401
+  | activationUpdateActivationResponse403
+  | activationUpdateActivationResponse404
+  | activationUpdateActivationResponse409
 ) & {
   headers: Headers;
 };
 
-export type adminActivationUpdateActivationResponse =
-  | adminActivationUpdateActivationResponseSuccess
-  | adminActivationUpdateActivationResponseError;
+export type activationUpdateActivationResponse =
+  | activationUpdateActivationResponseSuccess
+  | activationUpdateActivationResponseError;
 
-export const getAdminActivationUpdateActivationUrl = (id: unknown) => {
-  return `/admin/activations/${String(id)}`;
+export const getActivationUpdateActivationUrl = (id: unknown) => {
+  return `/admin/activations/${id}`;
 };
 
 /**
- * Partial update. Send empty regionId to clear region.
  * @summary Update activation
  */
-export const adminActivationUpdateActivation = async (
+export const activationUpdateActivation = async (
   id: unknown,
-  adminActivationUpdateActivationBody: AdminActivationUpdateActivationBody,
+  updateActivationDto: UpdateActivationDto,
   options?: RequestInit
-): Promise<adminActivationUpdateActivationResponse> => {
-  return orvalFetcher<adminActivationUpdateActivationResponse>(
-    getAdminActivationUpdateActivationUrl(id),
-    {
-      ...options,
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(adminActivationUpdateActivationBody)
-    }
-  );
+): Promise<activationUpdateActivationResponse> => {
+  return orvalFetcher<activationUpdateActivationResponse>(getActivationUpdateActivationUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateActivationDto)
+  });
 };
 
-export const getAdminActivationUpdateActivationMutationOptions = <
+export const getActivationUpdateActivationMutationOptions = <
   TError = void,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminActivationUpdateActivation>>,
+    Awaited<ReturnType<typeof activationUpdateActivation>>,
     TError,
-    { id: unknown; data: AdminActivationUpdateActivationBody },
+    { id: unknown; data: UpdateActivationDto },
     TContext
   >;
   request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof adminActivationUpdateActivation>>,
+  Awaited<ReturnType<typeof activationUpdateActivation>>,
   TError,
-  { id: unknown; data: AdminActivationUpdateActivationBody },
+  { id: unknown; data: UpdateActivationDto },
   TContext
 > => {
-  const mutationKey = ["adminActivationUpdateActivation"];
+  const mutationKey = ["activationUpdateActivation"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
@@ -2712,123 +3322,119 @@ export const getAdminActivationUpdateActivationMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof adminActivationUpdateActivation>>,
-    { id: unknown; data: AdminActivationUpdateActivationBody }
+    Awaited<ReturnType<typeof activationUpdateActivation>>,
+    { id: unknown; data: UpdateActivationDto }
   > = (props) => {
     const { id, data } = props ?? {};
 
-    return adminActivationUpdateActivation(id, data, requestOptions);
+    return activationUpdateActivation(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type AdminActivationUpdateActivationMutationResult = NonNullable<
-  Awaited<ReturnType<typeof adminActivationUpdateActivation>>
+export type ActivationUpdateActivationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof activationUpdateActivation>>
 >;
-export type AdminActivationUpdateActivationMutationBody = AdminActivationUpdateActivationBody;
-export type AdminActivationUpdateActivationMutationError = void;
+export type ActivationUpdateActivationMutationBody = UpdateActivationDto;
+export type ActivationUpdateActivationMutationError = void;
 
 /**
  * @summary Update activation
  */
-export const useAdminActivationUpdateActivation = <TError = void, TContext = unknown>(
+export const useActivationUpdateActivation = <TError = void, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminActivationUpdateActivation>>,
+      Awaited<ReturnType<typeof activationUpdateActivation>>,
       TError,
-      { id: unknown; data: AdminActivationUpdateActivationBody },
+      { id: unknown; data: UpdateActivationDto },
       TContext
     >;
     request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
-  Awaited<ReturnType<typeof adminActivationUpdateActivation>>,
+  Awaited<ReturnType<typeof activationUpdateActivation>>,
   TError,
-  { id: unknown; data: AdminActivationUpdateActivationBody },
+  { id: unknown; data: UpdateActivationDto },
   TContext
 > => {
-  return useMutation(getAdminActivationUpdateActivationMutationOptions(options), queryClient);
+  return useMutation(getActivationUpdateActivationMutationOptions(options), queryClient);
 };
 
-export type adminActivationAddActivationProductResponse201 = {
+export type activationAddProductResponse201 = {
   data: void;
   status: 201;
 };
 
-export type adminActivationAddActivationProductResponse401 = {
+export type activationAddProductResponse401 = {
   data: void;
   status: 401;
 };
 
-export type adminActivationAddActivationProductResponse403 = {
+export type activationAddProductResponse403 = {
   data: void;
   status: 403;
 };
 
-export type adminActivationAddActivationProductResponse404 = {
+export type activationAddProductResponse404 = {
   data: void;
   status: 404;
 };
 
-export type adminActivationAddActivationProductResponseSuccess =
-  adminActivationAddActivationProductResponse201 & {
-    headers: Headers;
-  };
-export type adminActivationAddActivationProductResponseError = (
-  | adminActivationAddActivationProductResponse401
-  | adminActivationAddActivationProductResponse403
-  | adminActivationAddActivationProductResponse404
+export type activationAddProductResponseSuccess = activationAddProductResponse201 & {
+  headers: Headers;
+};
+export type activationAddProductResponseError = (
+  | activationAddProductResponse401
+  | activationAddProductResponse403
+  | activationAddProductResponse404
 ) & {
   headers: Headers;
 };
 
-export type adminActivationAddActivationProductResponse =
-  | adminActivationAddActivationProductResponseSuccess
-  | adminActivationAddActivationProductResponseError;
+export type activationAddProductResponse =
+  | activationAddProductResponseSuccess
+  | activationAddProductResponseError;
 
-export const getAdminActivationAddActivationProductUrl = (id: unknown) => {
-  return `/admin/activations/${String(id)}/products`;
+export const getActivationAddProductUrl = (id: unknown) => {
+  return `/admin/activations/${id}/products`;
 };
 
 /**
  * @summary Add product line to activation
  */
-export const adminActivationAddActivationProduct = async (
+export const activationAddProduct = async (
   id: unknown,
-  adminActivationAddActivationProductBody: AdminActivationAddActivationProductBody,
+  createActivationProductDto: CreateActivationProductDto,
   options?: RequestInit
-): Promise<adminActivationAddActivationProductResponse> => {
-  return orvalFetcher<adminActivationAddActivationProductResponse>(
-    getAdminActivationAddActivationProductUrl(id),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(adminActivationAddActivationProductBody)
-    }
-  );
+): Promise<activationAddProductResponse> => {
+  return orvalFetcher<activationAddProductResponse>(getActivationAddProductUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createActivationProductDto)
+  });
 };
 
-export const getAdminActivationAddActivationProductMutationOptions = <
+export const getActivationAddProductMutationOptions = <
   TError = void,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminActivationAddActivationProduct>>,
+    Awaited<ReturnType<typeof activationAddProduct>>,
     TError,
-    { id: unknown; data: AdminActivationAddActivationProductBody },
+    { id: unknown; data: CreateActivationProductDto },
     TContext
   >;
   request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof adminActivationAddActivationProduct>>,
+  Awaited<ReturnType<typeof activationAddProduct>>,
   TError,
-  { id: unknown; data: AdminActivationAddActivationProductBody },
+  { id: unknown; data: CreateActivationProductDto },
   TContext
 > => {
-  const mutationKey = ["adminActivationAddActivationProduct"];
+  const mutationKey = ["activationAddProduct"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
@@ -2836,97 +3442,84 @@ export const getAdminActivationAddActivationProductMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof adminActivationAddActivationProduct>>,
-    { id: unknown; data: AdminActivationAddActivationProductBody }
+    Awaited<ReturnType<typeof activationAddProduct>>,
+    { id: unknown; data: CreateActivationProductDto }
   > = (props) => {
     const { id, data } = props ?? {};
 
-    return adminActivationAddActivationProduct(id, data, requestOptions);
+    return activationAddProduct(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type AdminActivationAddActivationProductMutationResult = NonNullable<
-  Awaited<ReturnType<typeof adminActivationAddActivationProduct>>
+export type ActivationAddProductMutationResult = NonNullable<
+  Awaited<ReturnType<typeof activationAddProduct>>
 >;
-export type AdminActivationAddActivationProductMutationBody =
-  AdminActivationAddActivationProductBody;
-export type AdminActivationAddActivationProductMutationError = void;
+export type ActivationAddProductMutationBody = CreateActivationProductDto;
+export type ActivationAddProductMutationError = void;
 
 /**
  * @summary Add product line to activation
  */
-export const useAdminActivationAddActivationProduct = <TError = void, TContext = unknown>(
+export const useActivationAddProduct = <TError = void, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminActivationAddActivationProduct>>,
+      Awaited<ReturnType<typeof activationAddProduct>>,
       TError,
-      { id: unknown; data: AdminActivationAddActivationProductBody },
+      { id: unknown; data: CreateActivationProductDto },
       TContext
     >;
     request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
-  Awaited<ReturnType<typeof adminActivationAddActivationProduct>>,
+  Awaited<ReturnType<typeof activationAddProduct>>,
   TError,
-  { id: unknown; data: AdminActivationAddActivationProductBody },
+  { id: unknown; data: CreateActivationProductDto },
   TContext
 > => {
-  return useMutation(getAdminActivationAddActivationProductMutationOptions(options), queryClient);
+  return useMutation(getActivationAddProductMutationOptions(options), queryClient);
 };
 
-export type adminActivationRemoveActivationProductResponse200 = {
-  data: void;
-  status: 200;
-};
-
-export type adminActivationRemoveActivationProductResponse401 = {
+export type activationRemoveProductResponse401 = {
   data: void;
   status: 401;
 };
 
-export type adminActivationRemoveActivationProductResponse403 = {
+export type activationRemoveProductResponse403 = {
   data: void;
   status: 403;
 };
 
-export type adminActivationRemoveActivationProductResponse404 = {
+export type activationRemoveProductResponse404 = {
   data: void;
   status: 404;
 };
-
-export type adminActivationRemoveActivationProductResponseSuccess =
-  adminActivationRemoveActivationProductResponse200 & {
-    headers: Headers;
-  };
-export type adminActivationRemoveActivationProductResponseError = (
-  | adminActivationRemoveActivationProductResponse401
-  | adminActivationRemoveActivationProductResponse403
-  | adminActivationRemoveActivationProductResponse404
+export type activationRemoveProductResponseError = (
+  | activationRemoveProductResponse401
+  | activationRemoveProductResponse403
+  | activationRemoveProductResponse404
 ) & {
   headers: Headers;
 };
 
-export type adminActivationRemoveActivationProductResponse =
-  | adminActivationRemoveActivationProductResponseSuccess
-  | adminActivationRemoveActivationProductResponseError;
+export type activationRemoveProductResponse = activationRemoveProductResponseError;
 
-export const getAdminActivationRemoveActivationProductUrl = (id: unknown, productId: unknown) => {
-  return `/admin/activations/${String(id)}/products/${String(productId)}`;
+export const getActivationRemoveProductUrl = (id: unknown, productId: unknown) => {
+  return `/admin/activations/${id}/products/${productId}`;
 };
 
 /**
  * @summary Remove product line from activation
  */
-export const adminActivationRemoveActivationProduct = async (
+export const activationRemoveProduct = async (
   id: unknown,
   productId: unknown,
   options?: RequestInit
-): Promise<adminActivationRemoveActivationProductResponse> => {
-  return orvalFetcher<adminActivationRemoveActivationProductResponse>(
-    getAdminActivationRemoveActivationProductUrl(id, productId),
+): Promise<activationRemoveProductResponse> => {
+  return orvalFetcher<activationRemoveProductResponse>(
+    getActivationRemoveProductUrl(id, productId),
     {
       ...options,
       method: "DELETE"
@@ -2934,24 +3527,24 @@ export const adminActivationRemoveActivationProduct = async (
   );
 };
 
-export const getAdminActivationRemoveActivationProductMutationOptions = <
+export const getActivationRemoveProductMutationOptions = <
   TError = void,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminActivationRemoveActivationProduct>>,
+    Awaited<ReturnType<typeof activationRemoveProduct>>,
     TError,
     { id: unknown; productId: unknown },
     TContext
   >;
   request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof adminActivationRemoveActivationProduct>>,
+  Awaited<ReturnType<typeof activationRemoveProduct>>,
   TError,
   { id: unknown; productId: unknown },
   TContext
 > => {
-  const mutationKey = ["adminActivationRemoveActivationProduct"];
+  const mutationKey = ["activationRemoveProduct"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
@@ -2959,30 +3552,30 @@ export const getAdminActivationRemoveActivationProductMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof adminActivationRemoveActivationProduct>>,
+    Awaited<ReturnType<typeof activationRemoveProduct>>,
     { id: unknown; productId: unknown }
   > = (props) => {
     const { id, productId } = props ?? {};
 
-    return adminActivationRemoveActivationProduct(id, productId, requestOptions);
+    return activationRemoveProduct(id, productId, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type AdminActivationRemoveActivationProductMutationResult = NonNullable<
-  Awaited<ReturnType<typeof adminActivationRemoveActivationProduct>>
+export type ActivationRemoveProductMutationResult = NonNullable<
+  Awaited<ReturnType<typeof activationRemoveProduct>>
 >;
 
-export type AdminActivationRemoveActivationProductMutationError = void;
+export type ActivationRemoveProductMutationError = void;
 
 /**
  * @summary Remove product line from activation
  */
-export const useAdminActivationRemoveActivationProduct = <TError = void, TContext = unknown>(
+export const useActivationRemoveProduct = <TError = void, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminActivationRemoveActivationProduct>>,
+      Awaited<ReturnType<typeof activationRemoveProduct>>,
       TError,
       { id: unknown; productId: unknown },
       TContext
@@ -2991,234 +3584,99 @@ export const useAdminActivationRemoveActivationProduct = <TError = void, TContex
   },
   queryClient?: QueryClient
 ): UseMutationResult<
-  Awaited<ReturnType<typeof adminActivationRemoveActivationProduct>>,
+  Awaited<ReturnType<typeof activationRemoveProduct>>,
   TError,
   { id: unknown; productId: unknown },
   TContext
 > => {
-  return useMutation(
-    getAdminActivationRemoveActivationProductMutationOptions(options),
-    queryClient
-  );
+  return useMutation(getActivationRemoveProductMutationOptions(options), queryClient);
 };
 
-export type adminActivationAddToRosterResponse201 = {
-  data: void;
-  status: 201;
-};
-
-export type adminActivationAddToRosterResponse401 = {
-  data: void;
-  status: 401;
-};
-
-export type adminActivationAddToRosterResponse403 = {
-  data: void;
-  status: 403;
-};
-
-export type adminActivationAddToRosterResponse404 = {
-  data: void;
-  status: 404;
-};
-
-export type adminActivationAddToRosterResponse409 = {
-  data: void;
-  status: 409;
-};
-
-export type adminActivationAddToRosterResponseSuccess = adminActivationAddToRosterResponse201 & {
-  headers: Headers;
-};
-export type adminActivationAddToRosterResponseError = (
-  | adminActivationAddToRosterResponse401
-  | adminActivationAddToRosterResponse403
-  | adminActivationAddToRosterResponse404
-  | adminActivationAddToRosterResponse409
-) & {
-  headers: Headers;
-};
-
-export type adminActivationAddToRosterResponse =
-  | adminActivationAddToRosterResponseSuccess
-  | adminActivationAddToRosterResponseError;
-
-export const getAdminActivationAddToRosterUrl = (id: unknown) => {
-  return `/admin/activations/${String(id)}/roster`;
-};
-
-/**
- * Only active promoters and merchandizers may be assigned.
- * @summary Add promoter or merchandizer to roster
- */
-export const adminActivationAddToRoster = async (
-  id: unknown,
-  adminActivationAddToRosterBody: AdminActivationAddToRosterBody,
-  options?: RequestInit
-): Promise<adminActivationAddToRosterResponse> => {
-  return orvalFetcher<adminActivationAddToRosterResponse>(getAdminActivationAddToRosterUrl(id), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(adminActivationAddToRosterBody)
-  });
-};
-
-export const getAdminActivationAddToRosterMutationOptions = <
-  TError = void,
-  TContext = unknown
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminActivationAddToRoster>>,
-    TError,
-    { id: unknown; data: AdminActivationAddToRosterBody },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalFetcher>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof adminActivationAddToRoster>>,
-  TError,
-  { id: unknown; data: AdminActivationAddToRosterBody },
-  TContext
-> => {
-  const mutationKey = ["adminActivationAddToRoster"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof adminActivationAddToRoster>>,
-    { id: unknown; data: AdminActivationAddToRosterBody }
-  > = (props) => {
-    const { id, data } = props ?? {};
-
-    return adminActivationAddToRoster(id, data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type AdminActivationAddToRosterMutationResult = NonNullable<
-  Awaited<ReturnType<typeof adminActivationAddToRoster>>
->;
-export type AdminActivationAddToRosterMutationBody = AdminActivationAddToRosterBody;
-export type AdminActivationAddToRosterMutationError = void;
-
-/**
- * @summary Add promoter or merchandizer to roster
- */
-export const useAdminActivationAddToRoster = <TError = void, TContext = unknown>(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminActivationAddToRoster>>,
-      TError,
-      { id: unknown; data: AdminActivationAddToRosterBody },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof adminActivationAddToRoster>>,
-  TError,
-  { id: unknown; data: AdminActivationAddToRosterBody },
-  TContext
-> => {
-  return useMutation(getAdminActivationAddToRosterMutationOptions(options), queryClient);
-};
-
-export type adminActivationAddToRosterBatchResponse200 = {
+export type activationAddToRosterBatchResponse200 = {
   data: void;
   status: 200;
 };
 
-export type adminActivationAddToRosterBatchResponse400 = {
+export type activationAddToRosterBatchResponse400 = {
   data: void;
   status: 400;
 };
 
-export type adminActivationAddToRosterBatchResponse401 = {
+export type activationAddToRosterBatchResponse401 = {
   data: void;
   status: 401;
 };
 
-export type adminActivationAddToRosterBatchResponse403 = {
+export type activationAddToRosterBatchResponse403 = {
   data: void;
   status: 403;
 };
 
-export type adminActivationAddToRosterBatchResponse404 = {
+export type activationAddToRosterBatchResponse404 = {
   data: void;
   status: 404;
 };
 
-export type adminActivationAddToRosterBatchResponse409 = {
+export type activationAddToRosterBatchResponse409 = {
   data: void;
   status: 409;
 };
 
-export type adminActivationAddToRosterBatchResponseSuccess =
-  adminActivationAddToRosterBatchResponse200 & {
-    headers: Headers;
-  };
-export type adminActivationAddToRosterBatchResponseError = (
-  | adminActivationAddToRosterBatchResponse400
-  | adminActivationAddToRosterBatchResponse401
-  | adminActivationAddToRosterBatchResponse403
-  | adminActivationAddToRosterBatchResponse404
-  | adminActivationAddToRosterBatchResponse409
+export type activationAddToRosterBatchResponseSuccess = activationAddToRosterBatchResponse200 & {
+  headers: Headers;
+};
+export type activationAddToRosterBatchResponseError = (
+  | activationAddToRosterBatchResponse400
+  | activationAddToRosterBatchResponse401
+  | activationAddToRosterBatchResponse403
+  | activationAddToRosterBatchResponse404
+  | activationAddToRosterBatchResponse409
 ) & {
   headers: Headers;
 };
 
-export type adminActivationAddToRosterBatchResponse =
-  | adminActivationAddToRosterBatchResponseSuccess
-  | adminActivationAddToRosterBatchResponseError;
+export type activationAddToRosterBatchResponse =
+  | activationAddToRosterBatchResponseSuccess
+  | activationAddToRosterBatchResponseError;
 
-export const getAdminActivationAddToRosterBatchUrl = (id: unknown) => {
-  return `/admin/activations/${String(id)}/roster/batch`;
+export const getActivationAddToRosterBatchUrl = (id: unknown) => {
+  return `/admin/activations/${id}/roster/batch`;
 };
 
 /**
- * Add multiple active promoters or merchandizers to an activation roster in one request (all-or-nothing).
  * @summary Add multiple users to activation roster (atomic)
  */
-export const adminActivationAddToRosterBatch = async (
+export const activationAddToRosterBatch = async (
   id: unknown,
-  adminActivationAddToRosterBatchBody: AdminActivationAddToRosterBatchBody,
+  addActivationRosterBatchDto: AddActivationRosterBatchDto,
   options?: RequestInit
-): Promise<adminActivationAddToRosterBatchResponse> => {
-  return orvalFetcher<adminActivationAddToRosterBatchResponse>(
-    getAdminActivationAddToRosterBatchUrl(id),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(adminActivationAddToRosterBatchBody)
-    }
-  );
+): Promise<activationAddToRosterBatchResponse> => {
+  return orvalFetcher<activationAddToRosterBatchResponse>(getActivationAddToRosterBatchUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(addActivationRosterBatchDto)
+  });
 };
 
-export const getAdminActivationAddToRosterBatchMutationOptions = <
+export const getActivationAddToRosterBatchMutationOptions = <
   TError = void,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminActivationAddToRosterBatch>>,
+    Awaited<ReturnType<typeof activationAddToRosterBatch>>,
     TError,
-    { id: unknown; data: AdminActivationAddToRosterBatchBody },
+    { id: unknown; data: AddActivationRosterBatchDto },
     TContext
   >;
   request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof adminActivationAddToRosterBatch>>,
+  Awaited<ReturnType<typeof activationAddToRosterBatch>>,
   TError,
-  { id: unknown; data: AdminActivationAddToRosterBatchBody },
+  { id: unknown; data: AddActivationRosterBatchDto },
   TContext
 > => {
-  const mutationKey = ["adminActivationAddToRosterBatch"];
+  const mutationKey = ["activationAddToRosterBatch"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
@@ -3226,96 +3684,210 @@ export const getAdminActivationAddToRosterBatchMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof adminActivationAddToRosterBatch>>,
-    { id: unknown; data: AdminActivationAddToRosterBatchBody }
+    Awaited<ReturnType<typeof activationAddToRosterBatch>>,
+    { id: unknown; data: AddActivationRosterBatchDto }
   > = (props) => {
     const { id, data } = props ?? {};
 
-    return adminActivationAddToRosterBatch(id, data, requestOptions);
+    return activationAddToRosterBatch(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type AdminActivationAddToRosterBatchMutationResult = NonNullable<
-  Awaited<ReturnType<typeof adminActivationAddToRosterBatch>>
+export type ActivationAddToRosterBatchMutationResult = NonNullable<
+  Awaited<ReturnType<typeof activationAddToRosterBatch>>
 >;
-export type AdminActivationAddToRosterBatchMutationBody = AdminActivationAddToRosterBatchBody;
-export type AdminActivationAddToRosterBatchMutationError = void;
+export type ActivationAddToRosterBatchMutationBody = AddActivationRosterBatchDto;
+export type ActivationAddToRosterBatchMutationError = void;
 
 /**
  * @summary Add multiple users to activation roster (atomic)
  */
-export const useAdminActivationAddToRosterBatch = <TError = void, TContext = unknown>(
+export const useActivationAddToRosterBatch = <TError = void, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminActivationAddToRosterBatch>>,
+      Awaited<ReturnType<typeof activationAddToRosterBatch>>,
       TError,
-      { id: unknown; data: AdminActivationAddToRosterBatchBody },
+      { id: unknown; data: AddActivationRosterBatchDto },
       TContext
     >;
     request?: SecondParameter<typeof orvalFetcher>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
-  Awaited<ReturnType<typeof adminActivationAddToRosterBatch>>,
+  Awaited<ReturnType<typeof activationAddToRosterBatch>>,
   TError,
-  { id: unknown; data: AdminActivationAddToRosterBatchBody },
+  { id: unknown; data: AddActivationRosterBatchDto },
   TContext
 > => {
-  return useMutation(getAdminActivationAddToRosterBatchMutationOptions(options), queryClient);
+  return useMutation(getActivationAddToRosterBatchMutationOptions(options), queryClient);
 };
 
-export type adminActivationRemoveFromRosterResponse200 = {
+export type activationAddToRosterResponse201 = {
   data: void;
-  status: 200;
+  status: 201;
 };
 
-export type adminActivationRemoveFromRosterResponse401 = {
+export type activationAddToRosterResponse401 = {
   data: void;
   status: 401;
 };
 
-export type adminActivationRemoveFromRosterResponse403 = {
+export type activationAddToRosterResponse403 = {
   data: void;
   status: 403;
 };
 
-export type adminActivationRemoveFromRosterResponse404 = {
+export type activationAddToRosterResponse404 = {
   data: void;
   status: 404;
 };
 
-export type adminActivationRemoveFromRosterResponseSuccess =
-  adminActivationRemoveFromRosterResponse200 & {
-    headers: Headers;
-  };
-export type adminActivationRemoveFromRosterResponseError = (
-  | adminActivationRemoveFromRosterResponse401
-  | adminActivationRemoveFromRosterResponse403
-  | adminActivationRemoveFromRosterResponse404
+export type activationAddToRosterResponse409 = {
+  data: void;
+  status: 409;
+};
+
+export type activationAddToRosterResponseSuccess = activationAddToRosterResponse201 & {
+  headers: Headers;
+};
+export type activationAddToRosterResponseError = (
+  | activationAddToRosterResponse401
+  | activationAddToRosterResponse403
+  | activationAddToRosterResponse404
+  | activationAddToRosterResponse409
 ) & {
   headers: Headers;
 };
 
-export type adminActivationRemoveFromRosterResponse =
-  | adminActivationRemoveFromRosterResponseSuccess
-  | adminActivationRemoveFromRosterResponseError;
+export type activationAddToRosterResponse =
+  | activationAddToRosterResponseSuccess
+  | activationAddToRosterResponseError;
 
-export const getAdminActivationRemoveFromRosterUrl = (id: unknown, userId: unknown) => {
-  return `/admin/activations/${String(id)}/roster/${String(userId)}`;
+export const getActivationAddToRosterUrl = (id: unknown) => {
+  return `/admin/activations/${id}/roster`;
 };
 
 /**
- * @summary Remove user from roster
+ * @summary Add user to activation roster
  */
-export const adminActivationRemoveFromRoster = async (
+export const activationAddToRoster = async (
+  id: unknown,
+  addActivationRosterDto: AddActivationRosterDto,
+  options?: RequestInit
+): Promise<activationAddToRosterResponse> => {
+  return orvalFetcher<activationAddToRosterResponse>(getActivationAddToRosterUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(addActivationRosterDto)
+  });
+};
+
+export const getActivationAddToRosterMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof activationAddToRoster>>,
+    TError,
+    { id: unknown; data: AddActivationRosterDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof activationAddToRoster>>,
+  TError,
+  { id: unknown; data: AddActivationRosterDto },
+  TContext
+> => {
+  const mutationKey = ["activationAddToRoster"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof activationAddToRoster>>,
+    { id: unknown; data: AddActivationRosterDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return activationAddToRoster(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ActivationAddToRosterMutationResult = NonNullable<
+  Awaited<ReturnType<typeof activationAddToRoster>>
+>;
+export type ActivationAddToRosterMutationBody = AddActivationRosterDto;
+export type ActivationAddToRosterMutationError = void;
+
+/**
+ * @summary Add user to activation roster
+ */
+export const useActivationAddToRoster = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof activationAddToRoster>>,
+      TError,
+      { id: unknown; data: AddActivationRosterDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof activationAddToRoster>>,
+  TError,
+  { id: unknown; data: AddActivationRosterDto },
+  TContext
+> => {
+  return useMutation(getActivationAddToRosterMutationOptions(options), queryClient);
+};
+
+export type activationRemoveFromRosterResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type activationRemoveFromRosterResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type activationRemoveFromRosterResponse404 = {
+  data: void;
+  status: 404;
+};
+export type activationRemoveFromRosterResponseError = (
+  | activationRemoveFromRosterResponse401
+  | activationRemoveFromRosterResponse403
+  | activationRemoveFromRosterResponse404
+) & {
+  headers: Headers;
+};
+
+export type activationRemoveFromRosterResponse = activationRemoveFromRosterResponseError;
+
+export const getActivationRemoveFromRosterUrl = (id: unknown, userId: unknown) => {
+  return `/admin/activations/${id}/roster/${userId}`;
+};
+
+/**
+ * @summary Remove user from activation roster
+ */
+export const activationRemoveFromRoster = async (
   id: unknown,
   userId: unknown,
   options?: RequestInit
-): Promise<adminActivationRemoveFromRosterResponse> => {
-  return orvalFetcher<adminActivationRemoveFromRosterResponse>(
-    getAdminActivationRemoveFromRosterUrl(id, userId),
+): Promise<activationRemoveFromRosterResponse> => {
+  return orvalFetcher<activationRemoveFromRosterResponse>(
+    getActivationRemoveFromRosterUrl(id, userId),
     {
       ...options,
       method: "DELETE"
@@ -3323,24 +3895,24 @@ export const adminActivationRemoveFromRoster = async (
   );
 };
 
-export const getAdminActivationRemoveFromRosterMutationOptions = <
+export const getActivationRemoveFromRosterMutationOptions = <
   TError = void,
   TContext = unknown
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminActivationRemoveFromRoster>>,
+    Awaited<ReturnType<typeof activationRemoveFromRoster>>,
     TError,
     { id: unknown; userId: unknown },
     TContext
   >;
   request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof adminActivationRemoveFromRoster>>,
+  Awaited<ReturnType<typeof activationRemoveFromRoster>>,
   TError,
   { id: unknown; userId: unknown },
   TContext
 > => {
-  const mutationKey = ["adminActivationRemoveFromRoster"];
+  const mutationKey = ["activationRemoveFromRoster"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
       ? options
@@ -3348,30 +3920,30 @@ export const getAdminActivationRemoveFromRosterMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof adminActivationRemoveFromRoster>>,
+    Awaited<ReturnType<typeof activationRemoveFromRoster>>,
     { id: unknown; userId: unknown }
   > = (props) => {
     const { id, userId } = props ?? {};
 
-    return adminActivationRemoveFromRoster(id, userId, requestOptions);
+    return activationRemoveFromRoster(id, userId, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type AdminActivationRemoveFromRosterMutationResult = NonNullable<
-  Awaited<ReturnType<typeof adminActivationRemoveFromRoster>>
+export type ActivationRemoveFromRosterMutationResult = NonNullable<
+  Awaited<ReturnType<typeof activationRemoveFromRoster>>
 >;
 
-export type AdminActivationRemoveFromRosterMutationError = void;
+export type ActivationRemoveFromRosterMutationError = void;
 
 /**
- * @summary Remove user from roster
+ * @summary Remove user from activation roster
  */
-export const useAdminActivationRemoveFromRoster = <TError = void, TContext = unknown>(
+export const useActivationRemoveFromRoster = <TError = void, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminActivationRemoveFromRoster>>,
+      Awaited<ReturnType<typeof activationRemoveFromRoster>>,
       TError,
       { id: unknown; userId: unknown },
       TContext
@@ -3380,13 +3952,712 @@ export const useAdminActivationRemoveFromRoster = <TError = void, TContext = unk
   },
   queryClient?: QueryClient
 ): UseMutationResult<
-  Awaited<ReturnType<typeof adminActivationRemoveFromRoster>>,
+  Awaited<ReturnType<typeof activationRemoveFromRoster>>,
   TError,
   { id: unknown; userId: unknown },
   TContext
 > => {
-  return useMutation(getAdminActivationRemoveFromRosterMutationOptions(options), queryClient);
+  return useMutation(getActivationRemoveFromRosterMutationOptions(options), queryClient);
 };
+
+export type activationsListForFieldResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type activationsListForFieldResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type activationsListForFieldResponseSuccess = activationsListForFieldResponse200 & {
+  headers: Headers;
+};
+export type activationsListForFieldResponseError = activationsListForFieldResponse401 & {
+  headers: Headers;
+};
+
+export type activationsListForFieldResponse =
+  | activationsListForFieldResponseSuccess
+  | activationsListForFieldResponseError;
+
+export const getActivationsListForFieldUrl = () => {
+  return `/activations`;
+};
+
+/**
+ * Promoters and merchandizers see activations they are rostered on that are currently active. Supervisors and admins see all activations in their active date window.
+ * @summary List activations (field)
+ */
+export const activationsListForField = async (
+  options?: RequestInit
+): Promise<activationsListForFieldResponse> => {
+  return orvalFetcher<activationsListForFieldResponse>(getActivationsListForFieldUrl(), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getActivationsListForFieldQueryKey = () => {
+  return [`/activations`] as const;
+};
+
+export const getActivationsListForFieldQueryOptions = <
+  TData = Awaited<ReturnType<typeof activationsListForField>>,
+  TError = void
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof activationsListForField>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getActivationsListForFieldQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof activationsListForField>>> = ({
+    signal
+  }) => activationsListForField({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof activationsListForField>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ActivationsListForFieldQueryResult = NonNullable<
+  Awaited<ReturnType<typeof activationsListForField>>
+>;
+export type ActivationsListForFieldQueryError = void;
+
+export function useActivationsListForField<
+  TData = Awaited<ReturnType<typeof activationsListForField>>,
+  TError = void
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListForField>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationsListForField>>,
+          TError,
+          Awaited<ReturnType<typeof activationsListForField>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationsListForField<
+  TData = Awaited<ReturnType<typeof activationsListForField>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListForField>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationsListForField>>,
+          TError,
+          Awaited<ReturnType<typeof activationsListForField>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationsListForField<
+  TData = Awaited<ReturnType<typeof activationsListForField>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListForField>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List activations (field)
+ */
+
+export function useActivationsListForField<
+  TData = Awaited<ReturnType<typeof activationsListForField>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListForField>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getActivationsListForFieldQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type activationsListProductsForFieldResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type activationsListProductsForFieldResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type activationsListProductsForFieldResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type activationsListProductsForFieldResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type activationsListProductsForFieldResponseSuccess =
+  activationsListProductsForFieldResponse200 & {
+    headers: Headers;
+  };
+export type activationsListProductsForFieldResponseError = (
+  | activationsListProductsForFieldResponse401
+  | activationsListProductsForFieldResponse403
+  | activationsListProductsForFieldResponse404
+) & {
+  headers: Headers;
+};
+
+export type activationsListProductsForFieldResponse =
+  | activationsListProductsForFieldResponseSuccess
+  | activationsListProductsForFieldResponseError;
+
+export const getActivationsListProductsForFieldUrl = (
+  id: unknown,
+  params?: ActivationsListProductsForFieldParams
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/activations/${id}/products?${stringifiedParams}`
+    : `/activations/${id}/products`;
+};
+
+/**
+ * @summary List products for an activation (field)
+ */
+export const activationsListProductsForField = async (
+  id: unknown,
+  params?: ActivationsListProductsForFieldParams,
+  options?: RequestInit
+): Promise<activationsListProductsForFieldResponse> => {
+  return orvalFetcher<activationsListProductsForFieldResponse>(
+    getActivationsListProductsForFieldUrl(id, params),
+    {
+      ...options,
+      method: "GET"
+    }
+  );
+};
+
+export const getActivationsListProductsForFieldQueryKey = (
+  id: unknown,
+  params?: ActivationsListProductsForFieldParams
+) => {
+  return [`/activations/${id}/products`, ...(params ? [params] : [])] as const;
+};
+
+export const getActivationsListProductsForFieldQueryOptions = <
+  TData = Awaited<ReturnType<typeof activationsListProductsForField>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationsListProductsForFieldParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListProductsForField>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getActivationsListProductsForFieldQueryKey(id, params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof activationsListProductsForField>>> = ({
+    signal
+  }) => activationsListProductsForField(id, params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof activationsListProductsForField>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ActivationsListProductsForFieldQueryResult = NonNullable<
+  Awaited<ReturnType<typeof activationsListProductsForField>>
+>;
+export type ActivationsListProductsForFieldQueryError = void;
+
+export function useActivationsListProductsForField<
+  TData = Awaited<ReturnType<typeof activationsListProductsForField>>,
+  TError = void
+>(
+  id: unknown,
+  params: undefined | ActivationsListProductsForFieldParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListProductsForField>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationsListProductsForField>>,
+          TError,
+          Awaited<ReturnType<typeof activationsListProductsForField>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationsListProductsForField<
+  TData = Awaited<ReturnType<typeof activationsListProductsForField>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationsListProductsForFieldParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListProductsForField>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationsListProductsForField>>,
+          TError,
+          Awaited<ReturnType<typeof activationsListProductsForField>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationsListProductsForField<
+  TData = Awaited<ReturnType<typeof activationsListProductsForField>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationsListProductsForFieldParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListProductsForField>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List products for an activation (field)
+ */
+
+export function useActivationsListProductsForField<
+  TData = Awaited<ReturnType<typeof activationsListProductsForField>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationsListProductsForFieldParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListProductsForField>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getActivationsListProductsForFieldQueryOptions(id, params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type activationsGetByIdForFieldResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type activationsGetByIdForFieldResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type activationsGetByIdForFieldResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type activationsGetByIdForFieldResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type activationsGetByIdForFieldResponseSuccess = activationsGetByIdForFieldResponse200 & {
+  headers: Headers;
+};
+export type activationsGetByIdForFieldResponseError = (
+  | activationsGetByIdForFieldResponse401
+  | activationsGetByIdForFieldResponse403
+  | activationsGetByIdForFieldResponse404
+) & {
+  headers: Headers;
+};
+
+export type activationsGetByIdForFieldResponse =
+  | activationsGetByIdForFieldResponseSuccess
+  | activationsGetByIdForFieldResponseError;
+
+export const getActivationsGetByIdForFieldUrl = (id: unknown) => {
+  return `/activations/${id}`;
+};
+
+/**
+ * Full detail including products for supervisor/admin; promoters and merchandizers receive the same shape without the roster list.
+ * @summary Get activation (field)
+ */
+export const activationsGetByIdForField = async (
+  id: unknown,
+  options?: RequestInit
+): Promise<activationsGetByIdForFieldResponse> => {
+  return orvalFetcher<activationsGetByIdForFieldResponse>(getActivationsGetByIdForFieldUrl(id), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getActivationsGetByIdForFieldQueryKey = (id: unknown) => {
+  return [`/activations/${id}`] as const;
+};
+
+export const getActivationsGetByIdForFieldQueryOptions = <
+  TData = Awaited<ReturnType<typeof activationsGetByIdForField>>,
+  TError = void
+>(
+  id: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsGetByIdForField>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getActivationsGetByIdForFieldQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof activationsGetByIdForField>>> = ({
+    signal
+  }) => activationsGetByIdForField(id, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof activationsGetByIdForField>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ActivationsGetByIdForFieldQueryResult = NonNullable<
+  Awaited<ReturnType<typeof activationsGetByIdForField>>
+>;
+export type ActivationsGetByIdForFieldQueryError = void;
+
+export function useActivationsGetByIdForField<
+  TData = Awaited<ReturnType<typeof activationsGetByIdForField>>,
+  TError = void
+>(
+  id: unknown,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsGetByIdForField>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationsGetByIdForField>>,
+          TError,
+          Awaited<ReturnType<typeof activationsGetByIdForField>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationsGetByIdForField<
+  TData = Awaited<ReturnType<typeof activationsGetByIdForField>>,
+  TError = void
+>(
+  id: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsGetByIdForField>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationsGetByIdForField>>,
+          TError,
+          Awaited<ReturnType<typeof activationsGetByIdForField>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationsGetByIdForField<
+  TData = Awaited<ReturnType<typeof activationsGetByIdForField>>,
+  TError = void
+>(
+  id: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsGetByIdForField>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get activation (field)
+ */
+
+export function useActivationsGetByIdForField<
+  TData = Awaited<ReturnType<typeof activationsGetByIdForField>>,
+  TError = void
+>(
+  id: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsGetByIdForField>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getActivationsGetByIdForFieldQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type adminAttendanceGetDailySummaryResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminAttendanceGetDailySummaryResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminAttendanceGetDailySummaryResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminAttendanceGetDailySummaryResponseSuccess =
+  adminAttendanceGetDailySummaryResponse200 & {
+    headers: Headers;
+  };
+export type adminAttendanceGetDailySummaryResponseError = (
+  | adminAttendanceGetDailySummaryResponse401
+  | adminAttendanceGetDailySummaryResponse403
+) & {
+  headers: Headers;
+};
+
+export type adminAttendanceGetDailySummaryResponse =
+  | adminAttendanceGetDailySummaryResponseSuccess
+  | adminAttendanceGetDailySummaryResponseError;
+
+export const getAdminAttendanceGetDailySummaryUrl = (
+  params: AdminAttendanceGetDailySummaryParams
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/admin/attendance/daily?${stringifiedParams}`
+    : `/admin/attendance/daily`;
+};
+
+/**
+ * Per-field-staff roll-up for a calendar day in ATTENDANCE_TIMEZONE: first clock-in, last clock-out, missed, late (vs ATTENDANCE_EXPECTED_CHECK_IN_HHMM), and missing clock-out.
+ * @summary Daily attendance summary
+ */
+export const adminAttendanceGetDailySummary = async (
+  params: AdminAttendanceGetDailySummaryParams,
+  options?: RequestInit
+): Promise<adminAttendanceGetDailySummaryResponse> => {
+  return orvalFetcher<adminAttendanceGetDailySummaryResponse>(
+    getAdminAttendanceGetDailySummaryUrl(params),
+    {
+      ...options,
+      method: "GET"
+    }
+  );
+};
+
+export const getAdminAttendanceGetDailySummaryQueryKey = (
+  params?: AdminAttendanceGetDailySummaryParams
+) => {
+  return [`/admin/attendance/daily`, ...(params ? [params] : [])] as const;
+};
+
+export const getAdminAttendanceGetDailySummaryQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>,
+  TError = void
+>(
+  params: AdminAttendanceGetDailySummaryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminAttendanceGetDailySummaryQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>> = ({
+    signal
+  }) => adminAttendanceGetDailySummary(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminAttendanceGetDailySummaryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>
+>;
+export type AdminAttendanceGetDailySummaryQueryError = void;
+
+export function useAdminAttendanceGetDailySummary<
+  TData = Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>,
+  TError = void
+>(
+  params: AdminAttendanceGetDailySummaryParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>,
+          TError,
+          Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminAttendanceGetDailySummary<
+  TData = Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>,
+  TError = void
+>(
+  params: AdminAttendanceGetDailySummaryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>,
+          TError,
+          Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminAttendanceGetDailySummary<
+  TData = Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>,
+  TError = void
+>(
+  params: AdminAttendanceGetDailySummaryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Daily attendance summary
+ */
+
+export function useAdminAttendanceGetDailySummary<
+  TData = Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>,
+  TError = void
+>(
+  params: AdminAttendanceGetDailySummaryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminAttendanceGetDailySummary>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminAttendanceGetDailySummaryQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 export type adminUserListUsersResponse200 = {
   data: void;
@@ -3694,7 +4965,7 @@ export type adminUserUpdateUserResponse =
   | adminUserUpdateUserResponseError;
 
 export const getAdminUserUpdateUserUrl = (id: unknown) => {
-  return `/admin/users/${String(id)}`;
+  return `/admin/users/${id}`;
 };
 
 /**
@@ -4022,158 +5293,6 @@ export function useMeGetMe<TData = Awaited<ReturnType<typeof meGetMe>>, TError =
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
-/** GET /me/location/history — hand-maintained until OpenAPI regen includes this route. */
-const clampLocationHistoryLimit = (limit: number): number =>
-  Math.min(100, Math.max(1, Number.isFinite(limit) ? Math.trunc(limit) : 50));
-
-export type meListLocationHistoryResponse200 = {
-  data: unknown;
-  status: 200;
-};
-
-export type meListLocationHistoryResponse401 = {
-  data: void;
-  status: 401;
-};
-
-export type meListLocationHistoryResponseSuccess = meListLocationHistoryResponse200 & {
-  headers: Headers;
-};
-export type meListLocationHistoryResponseError = meListLocationHistoryResponse401 & {
-  headers: Headers;
-};
-
-export type meListLocationHistoryResponse =
-  | meListLocationHistoryResponseSuccess
-  | meListLocationHistoryResponseError;
-
-export const getMeListLocationHistoryUrl = (limit: number) => {
-  const take = clampLocationHistoryLimit(limit);
-  return `/me/location/history?limit=${String(take)}`;
-};
-
-export const meListLocationHistory = async (
-  limit: number,
-  options?: RequestInit
-): Promise<meListLocationHistoryResponse> => {
-  return orvalFetcher<meListLocationHistoryResponse>(getMeListLocationHistoryUrl(limit), {
-    ...options,
-    method: "GET"
-  });
-};
-
-export const getMeListLocationHistoryQueryKey = (limit: number) => {
-  return [`/me/location/history`, clampLocationHistoryLimit(limit)] as const;
-};
-
-export const getMeListLocationHistoryQueryOptions = <
-  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
-  TError = void
->(
-  limit: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  }
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-  const take = clampLocationHistoryLimit(limit);
-  const queryKey = queryOptions?.queryKey ?? getMeListLocationHistoryQueryKey(take);
-
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof meListLocationHistory>>> = ({ signal }) =>
-    meListLocationHistory(take, { signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof meListLocationHistory>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type MeListLocationHistoryQueryResult = NonNullable<
-  Awaited<ReturnType<typeof meListLocationHistory>>
->;
-export type MeListLocationHistoryQueryError = void;
-
-export function useMeListLocationHistory<
-  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
-  TError = void
->(
-  limit: number,
-  options: {
-    query: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof meListLocationHistory>>,
-          TError,
-          Awaited<ReturnType<typeof meListLocationHistory>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useMeListLocationHistory<
-  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
-  TError = void
->(
-  limit: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof meListLocationHistory>>,
-          TError,
-          Awaited<ReturnType<typeof meListLocationHistory>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useMeListLocationHistory<
-  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
-  TError = void
->(
-  limit: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-export function useMeListLocationHistory<
-  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
-  TError = void
->(
-  limit: number,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getMeListLocationHistoryQueryOptions(limit, options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-
-  return { ...query, queryKey: queryOptions.queryKey };
-}
-
 export type meUpdateMeResponse200 = {
   data: unknown;
   status: 200;
@@ -4273,6 +5392,312 @@ export const useMeUpdateMe = <TError = void, TContext = unknown>(
   return useMutation(getMeUpdateMeMutationOptions(options), queryClient);
 };
 
+export type meListMySalesResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type meListMySalesResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type meListMySalesResponseSuccess = meListMySalesResponse200 & {
+  headers: Headers;
+};
+export type meListMySalesResponseError = meListMySalesResponse401 & {
+  headers: Headers;
+};
+
+export type meListMySalesResponse = meListMySalesResponseSuccess | meListMySalesResponseError;
+
+export const getMeListMySalesUrl = (params?: MeListMySalesParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/me/sales?${stringifiedParams}` : `/me/sales`;
+};
+
+/**
+ * BACKEND_PRD §7.2 — the authenticated promoter's or merchandizer's sales, newest first.
+ * @summary List my sales
+ */
+export const meListMySales = async (
+  params?: MeListMySalesParams,
+  options?: RequestInit
+): Promise<meListMySalesResponse> => {
+  return orvalFetcher<meListMySalesResponse>(getMeListMySalesUrl(params), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getMeListMySalesQueryKey = (params?: MeListMySalesParams) => {
+  return [`/me/sales`, ...(params ? [params] : [])] as const;
+};
+
+export const getMeListMySalesQueryOptions = <
+  TData = Awaited<ReturnType<typeof meListMySales>>,
+  TError = void
+>(
+  params?: MeListMySalesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meListMySales>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getMeListMySalesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof meListMySales>>> = ({ signal }) =>
+    meListMySales(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof meListMySales>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MeListMySalesQueryResult = NonNullable<Awaited<ReturnType<typeof meListMySales>>>;
+export type MeListMySalesQueryError = void;
+
+export function useMeListMySales<TData = Awaited<ReturnType<typeof meListMySales>>, TError = void>(
+  params: undefined | MeListMySalesParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof meListMySales>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof meListMySales>>,
+          TError,
+          Awaited<ReturnType<typeof meListMySales>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useMeListMySales<TData = Awaited<ReturnType<typeof meListMySales>>, TError = void>(
+  params?: MeListMySalesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meListMySales>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof meListMySales>>,
+          TError,
+          Awaited<ReturnType<typeof meListMySales>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useMeListMySales<TData = Awaited<ReturnType<typeof meListMySales>>, TError = void>(
+  params?: MeListMySalesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meListMySales>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List my sales
+ */
+
+export function useMeListMySales<TData = Awaited<ReturnType<typeof meListMySales>>, TError = void>(
+  params?: MeListMySalesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meListMySales>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getMeListMySalesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type meListLocationHistoryResponse200 = {
+  data: unknown;
+  status: 200;
+};
+
+export type meListLocationHistoryResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type meListLocationHistoryResponseSuccess = meListLocationHistoryResponse200 & {
+  headers: Headers;
+};
+export type meListLocationHistoryResponseError = meListLocationHistoryResponse401 & {
+  headers: Headers;
+};
+
+export type meListLocationHistoryResponse =
+  | meListLocationHistoryResponseSuccess
+  | meListLocationHistoryResponseError;
+
+export const getMeListLocationHistoryUrl = (params?: MeListLocationHistoryParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/me/location/history?${stringifiedParams}`
+    : `/me/location/history`;
+};
+
+/**
+ * Returns recent location pings for the authenticated user, newest first.
+ * @summary List own location check-ins
+ */
+export const meListLocationHistory = async (
+  params?: MeListLocationHistoryParams,
+  options?: RequestInit
+): Promise<meListLocationHistoryResponse> => {
+  return orvalFetcher<meListLocationHistoryResponse>(getMeListLocationHistoryUrl(params), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getMeListLocationHistoryQueryKey = (params?: MeListLocationHistoryParams) => {
+  return [`/me/location/history`, ...(params ? [params] : [])] as const;
+};
+
+export const getMeListLocationHistoryQueryOptions = <
+  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
+  TError = void
+>(
+  params?: MeListLocationHistoryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getMeListLocationHistoryQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof meListLocationHistory>>> = ({ signal }) =>
+    meListLocationHistory(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof meListLocationHistory>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MeListLocationHistoryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof meListLocationHistory>>
+>;
+export type MeListLocationHistoryQueryError = void;
+
+export function useMeListLocationHistory<
+  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
+  TError = void
+>(
+  params: undefined | MeListLocationHistoryParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof meListLocationHistory>>,
+          TError,
+          Awaited<ReturnType<typeof meListLocationHistory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useMeListLocationHistory<
+  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
+  TError = void
+>(
+  params?: MeListLocationHistoryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof meListLocationHistory>>,
+          TError,
+          Awaited<ReturnType<typeof meListLocationHistory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useMeListLocationHistory<
+  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
+  TError = void
+>(
+  params?: MeListLocationHistoryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List own location check-ins
+ */
+
+export function useMeListLocationHistory<
+  TData = Awaited<ReturnType<typeof meListLocationHistory>>,
+  TError = void
+>(
+  params?: MeListLocationHistoryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meListLocationHistory>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getMeListLocationHistoryQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
 export type meUpdateMeLocationResponse200 = {
   data: unknown;
   status: 200;
@@ -4299,7 +5724,7 @@ export const getMeUpdateMeLocationUrl = () => {
 };
 
 /**
- * Stores a location ping for the authenticated user.
+ * Stores a location ping with a required selfie image for attendance verification (JPEG/PNG).
  * @summary Record user location
  */
 export const meUpdateMeLocation = async (
@@ -4376,361 +5801,62 @@ export const useMeUpdateMeLocation = <TError = void, TContext = unknown>(
   return useMutation(getMeUpdateMeLocationMutationOptions(options), queryClient);
 };
 
-// --- Field activations + sales (hand-maintained; align with BACKEND_PRD §7.3–7.4) ---
-
-export type FieldSalesCreateBody = {
-  activationId: string;
-  items: { productId: string; quantity: number }[];
-  latitude?: number;
-  longitude?: number;
+export type salesCreateResponse201 = {
+  data: void;
+  status: 201;
 };
 
-export type activationsListForFieldResponse200 = { data: unknown; status: 200 };
-export type activationsListForFieldResponse401 = { data: void; status: 401 };
-export type activationsListForFieldResponseSuccess = activationsListForFieldResponse200 & {
+export type salesCreateResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type salesCreateResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type salesCreateResponseSuccess = salesCreateResponse201 & {
   headers: Headers;
 };
-export type activationsListForFieldResponseError = activationsListForFieldResponse401 & {
-  headers: Headers;
-};
-export type activationsListForFieldResponse =
-  | activationsListForFieldResponseSuccess
-  | activationsListForFieldResponseError;
-
-export const getActivationsListForFieldUrl = (): string => `/activations`;
-
-export const activationsListForField = async (
-  options?: RequestInit
-): Promise<activationsListForFieldResponse> => {
-  return orvalFetcher<activationsListForFieldResponse>(getActivationsListForFieldUrl(), {
-    ...options,
-    method: "GET"
-  });
-};
-
-export const getActivationsListForFieldQueryKey = (): readonly ["/activations"] => ["/activations"];
-
-export const getActivationsListForFieldQueryOptions = <
-  TData = Awaited<ReturnType<typeof activationsListForField>>,
-  TError = void
->(options?: {
-  query?: Partial<
-    UseQueryOptions<Awaited<ReturnType<typeof activationsListForField>>, TError, TData>
-  >;
-  request?: SecondParameter<typeof orvalFetcher>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-  const queryKey = queryOptions?.queryKey ?? getActivationsListForFieldQueryKey();
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof activationsListForField>>> = ({
-    signal
-  }) => activationsListForField({ signal, ...requestOptions });
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof activationsListForField>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export function useActivationsListForField<
-  TData = Awaited<ReturnType<typeof activationsListForField>>,
-  TError = void
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof activationsListForField>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getActivationsListForFieldQueryOptions(options);
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-  return { ...query, queryKey: queryOptions.queryKey };
-}
-
-export type activationsGetByIdForFieldResponse200 = { data: unknown; status: 200 };
-export type activationsGetByIdForFieldResponse401 = { data: void; status: 401 };
-export type activationsGetByIdForFieldResponseSuccess = activationsGetByIdForFieldResponse200 & {
-  headers: Headers;
-};
-export type activationsGetByIdForFieldResponseError = activationsGetByIdForFieldResponse401 & {
-  headers: Headers;
-};
-export type activationsGetByIdForFieldResponse =
-  | activationsGetByIdForFieldResponseSuccess
-  | activationsGetByIdForFieldResponseError;
-
-export const getActivationsGetByIdForFieldUrl = (id: string): string => `/activations/${id}`;
-
-export const activationsGetByIdForField = async (
-  id: string,
-  options?: RequestInit
-): Promise<activationsGetByIdForFieldResponse> => {
-  return orvalFetcher<activationsGetByIdForFieldResponse>(getActivationsGetByIdForFieldUrl(id), {
-    ...options,
-    method: "GET"
-  });
-};
-
-export const getActivationsGetByIdForFieldQueryKey = (id: string): readonly [string, string] =>
-  ["/activations", id] as const;
-
-export const getActivationsGetByIdForFieldQueryOptions = <
-  TData = Awaited<ReturnType<typeof activationsGetByIdForField>>,
-  TError = void
->(
-  id: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof activationsGetByIdForField>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  }
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-  const queryKey = queryOptions?.queryKey ?? getActivationsGetByIdForFieldQueryKey(id);
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof activationsGetByIdForField>>> = ({
-    signal
-  }) => activationsGetByIdForField(id, { signal, ...requestOptions });
-  return {
-    queryKey,
-    queryFn,
-    enabled: id.length > 0,
-    ...queryOptions
-  } as UseQueryOptions<Awaited<ReturnType<typeof activationsGetByIdForField>>, TError, TData> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-};
-
-export function useActivationsGetByIdForField<
-  TData = Awaited<ReturnType<typeof activationsGetByIdForField>>,
-  TError = void
->(
-  id: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof activationsGetByIdForField>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getActivationsGetByIdForFieldQueryOptions(id, options);
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-  return { ...query, queryKey: queryOptions.queryKey };
-}
-
-export type ActivationsListProductsForFieldParams = { limit?: number; offset?: number };
-
-export type activationsListProductsForFieldResponse200 = { data: unknown; status: 200 };
-export type activationsListProductsForFieldResponse401 = { data: void; status: 401 };
-export type activationsListProductsForFieldResponseSuccess =
-  activationsListProductsForFieldResponse200 & { headers: Headers };
-export type activationsListProductsForFieldResponseError =
-  activationsListProductsForFieldResponse401 & {
-    headers: Headers;
-  };
-export type activationsListProductsForFieldResponse =
-  | activationsListProductsForFieldResponseSuccess
-  | activationsListProductsForFieldResponseError;
-
-export const getActivationsListProductsForFieldUrl = (
-  id: string,
-  params?: ActivationsListProductsForFieldParams
-): string => {
-  const search = new URLSearchParams();
-  if (params?.limit !== undefined) {
-    search.set("limit", String(params.limit));
-  }
-  if (params?.offset !== undefined) {
-    search.set("offset", String(params.offset));
-  }
-  const qs = search.toString();
-  return qs.length > 0 ? `/activations/${id}/products?${qs}` : `/activations/${id}/products`;
-};
-
-export const activationsListProductsForField = async (
-  id: string,
-  params?: ActivationsListProductsForFieldParams,
-  options?: RequestInit
-): Promise<activationsListProductsForFieldResponse> => {
-  return orvalFetcher<activationsListProductsForFieldResponse>(
-    getActivationsListProductsForFieldUrl(id, params),
-    { ...options, method: "GET" }
-  );
-};
-
-export const getActivationsListProductsForFieldQueryKey = (
-  id: string,
-  params?: ActivationsListProductsForFieldParams
-): readonly [string, string, ActivationsListProductsForFieldParams | undefined] =>
-  ["/activations/products", id, params] as const;
-
-export const getActivationsListProductsForFieldQueryOptions = <
-  TData = Awaited<ReturnType<typeof activationsListProductsForField>>,
-  TError = void
->(
-  id: string,
-  params?: ActivationsListProductsForFieldParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof activationsListProductsForField>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  }
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-  const queryKey = queryOptions?.queryKey ?? getActivationsListProductsForFieldQueryKey(id, params);
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof activationsListProductsForField>>> = ({
-    signal
-  }) => activationsListProductsForField(id, params, { signal, ...requestOptions });
-  return {
-    queryKey,
-    queryFn,
-    enabled: id.length > 0,
-    ...queryOptions
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof activationsListProductsForField>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export function useActivationsListProductsForField<
-  TData = Awaited<ReturnType<typeof activationsListProductsForField>>,
-  TError = void
->(
-  id: string,
-  params?: ActivationsListProductsForFieldParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof activationsListProductsForField>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getActivationsListProductsForFieldQueryOptions(id, params, options);
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-  return { ...query, queryKey: queryOptions.queryKey };
-}
-
-export type MeListMySalesParams = { limit?: number; activationId?: string };
-
-export type meListMySalesResponse200 = { data: unknown; status: 200 };
-export type meListMySalesResponse401 = { data: void; status: 401 };
-export type meListMySalesResponseSuccess = meListMySalesResponse200 & { headers: Headers };
-export type meListMySalesResponseError = meListMySalesResponse401 & { headers: Headers };
-export type meListMySalesResponse = meListMySalesResponseSuccess | meListMySalesResponseError;
-
-export const getMeListMySalesUrl = (params?: MeListMySalesParams): string => {
-  const search = new URLSearchParams();
-  if (params?.limit !== undefined) {
-    search.set("limit", String(params.limit));
-  }
-  if (params?.activationId !== undefined && params.activationId.length > 0) {
-    search.set("activationId", params.activationId);
-  }
-  const qs = search.toString();
-  return qs.length > 0 ? `/me/sales?${qs}` : `/me/sales`;
-};
-
-export const meListMySales = async (
-  params?: MeListMySalesParams,
-  options?: RequestInit
-): Promise<meListMySalesResponse> => {
-  return orvalFetcher<meListMySalesResponse>(getMeListMySalesUrl(params), {
-    ...options,
-    method: "GET"
-  });
-};
-
-export const getMeListMySalesQueryKey = (
-  params?: MeListMySalesParams
-): readonly ["/me/sales", MeListMySalesParams | undefined] => ["/me/sales", params] as const;
-
-export const getMeListMySalesQueryOptions = <
-  TData = Awaited<ReturnType<typeof meListMySales>>,
-  TError = void
->(
-  params?: MeListMySalesParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meListMySales>>, TError, TData>>;
-    request?: SecondParameter<typeof orvalFetcher>;
-  }
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-  const queryKey = queryOptions?.queryKey ?? getMeListMySalesQueryKey(params);
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof meListMySales>>> = ({ signal }) =>
-    meListMySales(params, { signal, ...requestOptions });
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof meListMySales>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export function useMeListMySales<TData = Awaited<ReturnType<typeof meListMySales>>, TError = void>(
-  params?: MeListMySalesParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meListMySales>>, TError, TData>>;
-    request?: SecondParameter<typeof orvalFetcher>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getMeListMySalesQueryOptions(params, options);
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-  return { ...query, queryKey: queryOptions.queryKey };
-}
-
-export type salesCreateResponse200 = { data: unknown; status: 201 };
-export type salesCreateResponse401 = { data: void; status: 401 };
-export type salesCreateResponse403 = { data: void; status: 403 };
-export type salesCreateResponseSuccess = salesCreateResponse200 & { headers: Headers };
 export type salesCreateResponseError = (salesCreateResponse401 | salesCreateResponse403) & {
   headers: Headers;
 };
+
 export type salesCreateResponse = salesCreateResponseSuccess | salesCreateResponseError;
 
-export const getSalesCreateUrl = (): string => `/sales`;
+export const getSalesCreateUrl = () => {
+  return `/sales`;
+};
 
+/**
+ * BACKEND_PRD §7.4 — creates a sale with line items. Optional `Idempotency-Key` header dedupes retries per user.
+ * @summary Record a sale
+ */
 export const salesCreate = async (
-  body: FieldSalesCreateBody,
+  createSaleDto: CreateSaleDto,
   options?: RequestInit
 ): Promise<salesCreateResponse> => {
   return orvalFetcher<salesCreateResponse>(getSalesCreateUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(body)
+    body: JSON.stringify(createSaleDto)
   });
-};
-
-export type SalesCreateMutationVariables = {
-  data: FieldSalesCreateBody;
-  idempotencyKey?: string;
 };
 
 export const getSalesCreateMutationOptions = <TError = void, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof salesCreate>>,
     TError,
-    SalesCreateMutationVariables,
+    { data: CreateSaleDto },
     TContext
   >;
   request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof salesCreate>>,
   TError,
-  SalesCreateMutationVariables,
+  { data: CreateSaleDto },
   TContext
 > => {
   const mutationKey = ["salesCreate"];
@@ -4742,28 +5868,29 @@ export const getSalesCreateMutationOptions = <TError = void, TContext = unknown>
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof salesCreate>>,
-    SalesCreateMutationVariables
+    { data: CreateSaleDto }
   > = (props) => {
-    const { data, idempotencyKey } = props ?? { data: { activationId: "", items: [] } };
-    return salesCreate(data, {
-      ...requestOptions,
-      headers: {
-        ...(idempotencyKey !== undefined && idempotencyKey.length > 0
-          ? { "Idempotency-Key": idempotencyKey }
-          : {})
-      }
-    });
+    const { data } = props ?? {};
+
+    return salesCreate(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
+export type SalesCreateMutationResult = NonNullable<Awaited<ReturnType<typeof salesCreate>>>;
+export type SalesCreateMutationBody = CreateSaleDto;
+export type SalesCreateMutationError = void;
+
+/**
+ * @summary Record a sale
+ */
 export const useSalesCreate = <TError = void, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof salesCreate>>,
       TError,
-      SalesCreateMutationVariables,
+      { data: CreateSaleDto },
       TContext
     >;
     request?: SecondParameter<typeof orvalFetcher>;
@@ -4772,213 +5899,8 @@ export const useSalesCreate = <TError = void, TContext = unknown>(
 ): UseMutationResult<
   Awaited<ReturnType<typeof salesCreate>>,
   TError,
-  SalesCreateMutationVariables,
+  { data: CreateSaleDto },
   TContext
 > => {
   return useMutation(getSalesCreateMutationOptions(options), queryClient);
 };
-
-/** Hand-maintained: admin field activity (supervisor / admin). */
-export type AdminActivationFieldActivitySalesParams = {
-  limit?: number;
-  userId?: string;
-  /** ISO 8601 */
-  from?: string;
-  /** ISO 8601 */
-  to?: string;
-};
-
-export const getAdminActivationFieldActivitySalesUrl = (
-  id: string,
-  params?: AdminActivationFieldActivitySalesParams
-): string => {
-  const search = new URLSearchParams();
-  if (params?.limit !== undefined) {
-    search.set("limit", String(params.limit));
-  }
-  if (params?.userId !== undefined && params.userId.length > 0) {
-    search.set("userId", params.userId);
-  }
-  if (params?.from !== undefined && params.from.length > 0) {
-    search.set("from", params.from);
-  }
-  if (params?.to !== undefined && params.to.length > 0) {
-    search.set("to", params.to);
-  }
-  const qs = search.toString();
-  const base = `/admin/activations/${id}/field-activity/sales`;
-  return qs.length > 0 ? `${base}?${qs}` : base;
-};
-
-export const adminActivationFieldActivitySales = async (
-  id: string,
-  params?: AdminActivationFieldActivitySalesParams,
-  options?: RequestInit
-): Promise<unknown> => {
-  return orvalFetcher<unknown>(getAdminActivationFieldActivitySalesUrl(id, params), {
-    ...options,
-    method: "GET"
-  });
-};
-
-export const getAdminActivationFieldActivitySalesQueryKey = (
-  id: string,
-  params?: AdminActivationFieldActivitySalesParams
-): readonly [string, string, AdminActivationFieldActivitySalesParams | undefined] =>
-  ["/admin/activations/field-activity/sales", id, params] as const;
-
-export const getAdminActivationFieldActivitySalesQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminActivationFieldActivitySales>>,
-  TError = void
->(
-  id: string,
-  params?: AdminActivationFieldActivitySalesParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof adminActivationFieldActivitySales>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  }
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-  const queryKey =
-    queryOptions?.queryKey ?? getAdminActivationFieldActivitySalesQueryKey(id, params);
-  const queryFn: QueryFunction = ({ signal }) =>
-    adminActivationFieldActivitySales(id, params, { signal, ...requestOptions });
-  return {
-    queryKey,
-    queryFn,
-    enabled: id.length > 0,
-    ...queryOptions
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminActivationFieldActivitySales>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export function useAdminActivationFieldActivitySales<
-  TData = Awaited<ReturnType<typeof adminActivationFieldActivitySales>>,
-  TError = void
->(
-  id: string,
-  params?: AdminActivationFieldActivitySalesParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof adminActivationFieldActivitySales>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminActivationFieldActivitySalesQueryOptions(id, params, options);
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-  return { ...query, queryKey: queryOptions.queryKey };
-}
-
-export type AdminActivationFieldActivityLocationsParams = {
-  limit?: number;
-  userId?: string;
-  from?: string;
-  to?: string;
-};
-
-export const getAdminActivationFieldActivityLocationsUrl = (
-  id: string,
-  params?: AdminActivationFieldActivityLocationsParams
-): string => {
-  const search = new URLSearchParams();
-  if (params?.limit !== undefined) {
-    search.set("limit", String(params.limit));
-  }
-  if (params?.userId !== undefined && params.userId.length > 0) {
-    search.set("userId", params.userId);
-  }
-  if (params?.from !== undefined && params.from.length > 0) {
-    search.set("from", params.from);
-  }
-  if (params?.to !== undefined && params.to.length > 0) {
-    search.set("to", params.to);
-  }
-  const qs = search.toString();
-  const base = `/admin/activations/${id}/field-activity/locations`;
-  return qs.length > 0 ? `${base}?${qs}` : base;
-};
-
-export const adminActivationFieldActivityLocations = async (
-  id: string,
-  params?: AdminActivationFieldActivityLocationsParams,
-  options?: RequestInit
-): Promise<unknown> => {
-  return orvalFetcher<unknown>(getAdminActivationFieldActivityLocationsUrl(id, params), {
-    ...options,
-    method: "GET"
-  });
-};
-
-export const getAdminActivationFieldActivityLocationsQueryKey = (
-  id: string,
-  params?: AdminActivationFieldActivityLocationsParams
-): readonly [string, string, AdminActivationFieldActivityLocationsParams | undefined] =>
-  ["/admin/activations/field-activity/locations", id, params] as const;
-
-export const getAdminActivationFieldActivityLocationsQueryOptions = <
-  TData = Awaited<ReturnType<typeof adminActivationFieldActivityLocations>>,
-  TError = void
->(
-  id: string,
-  params?: AdminActivationFieldActivityLocationsParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof adminActivationFieldActivityLocations>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  }
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-  const queryKey =
-    queryOptions?.queryKey ?? getAdminActivationFieldActivityLocationsQueryKey(id, params);
-  const queryFn: QueryFunction = ({ signal }) =>
-    adminActivationFieldActivityLocations(id, params, { signal, ...requestOptions });
-  return {
-    queryKey,
-    queryFn,
-    enabled: id.length > 0,
-    ...queryOptions
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminActivationFieldActivityLocations>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export function useAdminActivationFieldActivityLocations<
-  TData = Awaited<ReturnType<typeof adminActivationFieldActivityLocations>>,
-  TError = void
->(
-  id: string,
-  params?: AdminActivationFieldActivityLocationsParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof adminActivationFieldActivityLocations>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof orvalFetcher>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getAdminActivationFieldActivityLocationsQueryOptions(id, params, options);
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
-  return { ...query, queryKey: queryOptions.queryKey };
-}

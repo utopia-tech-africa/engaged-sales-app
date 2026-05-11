@@ -144,9 +144,11 @@ export class MeController {
       example: [
         {
           id: "cmad4p0bo0000iib0i0l9e8wk",
+          attendanceKind: "clock_in",
           latitude: -1.286389,
           longitude: 36.817223,
           placeLabel: "City Square, Nairobi, Kenya",
+          hasSelfieVerification: true,
           recordedAt: "2026-05-08T18:20:00.000Z"
         }
       ]
@@ -170,16 +172,19 @@ export class MeController {
   @ApiOperation({
     operationId: "Me_updateMeLocation",
     summary: "Record user location",
-    description: "Stores a location ping for the authenticated user."
+    description:
+      "Stores a location ping with a required selfie image for attendance verification (JPEG/PNG)."
   })
   @ApiBody({
     type: UpdateLocationDto,
     examples: {
       nairobiDowntown: {
-        summary: "Nairobi CBD location ping",
+        summary: "Nairobi CBD check-in with selfie",
         value: {
           latitude: -1.286389,
-          longitude: 36.817223
+          longitude: 36.817223,
+          attendanceKind: "clock_in",
+          selfieImageBase64: "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
         }
       }
     }
@@ -189,9 +194,11 @@ export class MeController {
     schema: {
       example: {
         userId: "cmad4p0bo0000iib0i0l9e8wk",
+        attendanceKind: "clock_in",
         latitude: -1.286389,
         longitude: 36.817223,
         placeLabel: "City Square, Nairobi, Kenya",
+        hasSelfieVerification: true,
         recordedAt: "2026-05-08T18:20:00.000Z"
       }
     }

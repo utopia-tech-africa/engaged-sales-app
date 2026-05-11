@@ -1,13 +1,16 @@
 import { Inject, Injectable } from "@nestjs/common";
 
+import type { AttendanceKind } from "../../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 
 /** Shape returned by {@link MeRepository.listLocationPingsByUser} (explicit for ESLint / Prisma inference). */
 export type LocationPingHistoryRow = {
   id: string;
+  attendanceKind: AttendanceKind;
   latitude: number;
   longitude: number;
   placeLabel: string | null;
+  hasSelfieVerification: boolean;
   recordedAt: Date;
 };
 
@@ -59,20 +62,29 @@ export class MeRepository {
     userId: string,
     latitude: number,
     longitude: number,
-    placeLabel: string | null
+    placeLabel: string | null,
+    selfieMimeType: string,
+    selfieImage: Buffer,
+    attendanceKind: AttendanceKind
   ) {
     return this.prisma.locationPing.create({
       data: {
         userId,
+        attendanceKind,
         latitude,
         longitude,
-        placeLabel
+        placeLabel,
+        selfieMimeType,
+        selfieImage: new Uint8Array(selfieImage),
+        hasSelfieVerification: true
       },
       select: {
         userId: true,
+        attendanceKind: true,
         latitude: true,
         longitude: true,
         placeLabel: true,
+        hasSelfieVerification: true,
         recordedAt: true
       }
     });
@@ -88,9 +100,11 @@ export class MeRepository {
       take,
       select: {
         id: true,
+        attendanceKind: true,
         latitude: true,
         longitude: true,
         placeLabel: true,
+        hasSelfieVerification: true,
         recordedAt: true
       }
     });

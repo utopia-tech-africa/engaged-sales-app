@@ -56,10 +56,13 @@ export default tseslint.config(
   {
     files: ["apps/web/src/lib/api/generated/**/*.ts"],
     rules: {
+      "@typescript-eslint/no-base-to-string": "off",
       "@typescript-eslint/no-invalid-void-type": "off",
       "@typescript-eslint/no-misused-spread": "off",
       "@typescript-eslint/no-unnecessary-condition": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/prefer-nullish-coalescing": "off",
+      "@typescript-eslint/restrict-template-expressions": "off",
       "@typescript-eslint/unified-signatures": "off"
     }
   }

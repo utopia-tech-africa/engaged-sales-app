@@ -45,9 +45,11 @@ export const parseAdminFieldActivitySalesFromOrval = (
 const locationPingSchema = z.object({
   id: z.string(),
   userId: z.string(),
+  attendanceKind: z.enum(["clock_in", "clock_out"]).optional().default("clock_in"),
   latitude: z.number(),
   longitude: z.number(),
   placeLabel: z.string().nullable().optional(),
+  hasSelfieVerification: z.boolean().optional().default(false),
   recordedAt: z.string()
 });
 
@@ -57,4 +59,30 @@ export const parseAdminFieldActivityLocationsFromOrval = (
   result: unknown
 ): AdminFieldActivityLocationPing[] => {
   return z.array(locationPingSchema).parse(unwrapOrvalResponseBody(result));
+};
+
+const fieldActivityCheckInDetailSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  attendanceKind: z.enum(["clock_in", "clock_out"]).optional().default("clock_in"),
+  latitude: z.number(),
+  longitude: z.number(),
+  placeLabel: z.string().nullable().optional(),
+  recordedAt: z.string(),
+  hasSelfieVerification: z.boolean(),
+  selfieDataUrl: z.string().nullable(),
+  user: z.object({
+    id: z.string(),
+    fullName: z.string(),
+    phone: z.string(),
+    role: z.string()
+  })
+});
+
+export type AdminFieldActivityCheckInDetail = z.infer<typeof fieldActivityCheckInDetailSchema>;
+
+export const parseAdminFieldActivityCheckInFromOrval = (
+  result: unknown
+): AdminFieldActivityCheckInDetail => {
+  return fieldActivityCheckInDetailSchema.parse(unwrapOrvalResponseBody(result));
 };

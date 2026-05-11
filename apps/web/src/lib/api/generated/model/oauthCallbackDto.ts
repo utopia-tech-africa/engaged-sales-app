@@ -5,7 +5,7 @@
  * API documentation for Engaged Sales backend
  * OpenAPI spec version: 1.0.0
  */
-import type { OauthCallbackDtoProvider } from "./oauthCallbackDtoProvider";
+import type { OauthCallbackDtoProvider } from './oauthCallbackDtoProvider';
 
 export type OauthCallbackDto = {
   provider: OauthCallbackDtoProvider;
@@ -18,4 +18,4 @@ export type OauthCallbackDto = {
   latitude?: number;
   /** Device longitude (pair with latitude when required for field roles). */
   longitude?: number;
-};
+}

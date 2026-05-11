@@ -19,6 +19,7 @@ const navItemsForRole = (role: AuthUser["role"]): NavItem[] => {
   ];
   if (role === "admin" || role === "supervisor") {
     items.push({ href: "/ops/activations", label: "Activations" });
+    items.push({ href: "/ops/attendance", label: "Attendance" });
   }
   items.push(
     { href: "/ops/organization", label: "Organization" },

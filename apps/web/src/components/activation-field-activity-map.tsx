@@ -1,7 +1,7 @@
 "use client";
 
 import { type LatLngExpression } from "leaflet";
-import { Fragment, type ReactElement, useMemo } from "react";
+import { type ReactElement, useMemo } from "react";
 import { CircleMarker, MapContainer, Polyline, Popup, TileLayer } from "react-leaflet";
 
 import "leaflet/dist/leaflet.css";
@@ -27,21 +27,26 @@ const colorForUser = (userId: string, indexMap: Map<string, number>): string => 
 export type FieldActivityRosterLabel = { userId: string; fullName: string };
 
 export type FieldActivityPing = {
+  id: string;
   userId: string;
   latitude: number;
   longitude: number;
   placeLabel?: string | null;
   recordedAt: string;
+  hasSelfieVerification?: boolean;
+  attendanceKind?: "clock_in" | "clock_out";
 };
 
 type ActivationFieldActivityMapProps = {
   roster: FieldActivityRosterLabel[];
   pings: FieldActivityPing[];
+  onSelectPing?: (pingId: string) => void;
 };
 
 export const ActivationFieldActivityMap = ({
   roster,
-  pings
+  pings,
+  onSelectPing
 }: ActivationFieldActivityMapProps): ReactElement => {
   const userIndex = useMemo(() => {
     const m = new Map<string, number>();
@@ -96,33 +101,63 @@ export const ActivationFieldActivityMap = ({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {trails.map(({ userId, positions, latest }) => {
+      {trails.map(({ userId, positions }) => {
         const color = colorForUser(userId, userIndex);
+        return positions.length > 1 ? (
+          <Polyline
+            key={`trail-${userId}`}
+            positions={positions}
+            pathOptions={{ color, weight: 4, opacity: 0.78 }}
+          />
+        ) : null;
+      })}
+      {pings.map((p) => {
+        const color = colorForUser(p.userId, userIndex);
         return (
-          <Fragment key={userId}>
-            {positions.length > 1 ? (
-              <Polyline positions={positions} pathOptions={{ color, weight: 4, opacity: 0.78 }} />
-            ) : null}
-            <CircleMarker
-              center={[latest.latitude, latest.longitude]}
-              radius={8}
-              pathOptions={{ color, fillColor: color, fillOpacity: 0.9, weight: 2 }}
-            >
-              <Popup>
-                <span className="font-semibold">{nameFor(userId)}</span>
-                <br />
-                {new Date(latest.recordedAt).toLocaleString()}
-                {latest.placeLabel !== null &&
-                latest.placeLabel !== undefined &&
-                latest.placeLabel.length > 0 ? (
-                  <>
-                    <br />
-                    {latest.placeLabel}
-                  </>
-                ) : null}
-              </Popup>
-            </CircleMarker>
-          </Fragment>
+          <CircleMarker
+            key={p.id}
+            center={[p.latitude, p.longitude]}
+            radius={6}
+            pathOptions={{ color, fillColor: color, fillOpacity: 0.88, weight: 2 }}
+          >
+            <Popup>
+              <span className="font-semibold">{nameFor(p.userId)}</span>
+              <br />
+              {new Date(p.recordedAt).toLocaleString()}
+              <br />
+              <span className="text-xs font-medium capitalize text-muted-foreground">
+                {p.attendanceKind === "clock_out" ? "Clock out" : "Clock in"}
+              </span>
+              {p.hasSelfieVerification ? (
+                <>
+                  <br />
+                  <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                    Selfie verified
+                  </span>
+                </>
+              ) : null}
+              {p.placeLabel !== null && p.placeLabel !== undefined && p.placeLabel.length > 0 ? (
+                <>
+                  <br />
+                  {p.placeLabel}
+                </>
+              ) : null}
+              {onSelectPing !== undefined ? (
+                <>
+                  <br />
+                  <button
+                    type="button"
+                    className="mt-1 text-xs font-semibold text-primary underline"
+                    onClick={() => {
+                      onSelectPing(p.id);
+                    }}
+                  >
+                    View check-in details
+                  </button>
+                </>
+              ) : null}
+            </Popup>
+          </CircleMarker>
         );
       })}
     </MapContainer>

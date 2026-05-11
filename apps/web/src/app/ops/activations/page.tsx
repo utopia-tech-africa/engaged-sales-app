@@ -14,9 +14,9 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import {
-  getAdminActivationListActivationsQueryKey,
-  useAdminActivationCreateActivation,
-  useAdminActivationListActivations,
+  getActivationListActivationsQueryKey,
+  useActivationCreateActivation,
+  useActivationListActivations,
   useAdminRegionListRegions
 } from "@/lib/api/generated/client";
 import { ApiError } from "@/lib/api/problem-details";
@@ -58,7 +58,7 @@ export default function OpsActivationsPage(): ReactElement {
     }
   }, [canManageActivations, router]);
 
-  const listQuery = useAdminActivationListActivations({
+  const listQuery = useActivationListActivations({
     query: {
       enabled: accessToken !== null && canManageActivations,
       select: (r) => parseActivationsFromOrval(r)
@@ -73,10 +73,10 @@ export default function OpsActivationsPage(): ReactElement {
   });
 
   const invalidateList = async (): Promise<void> => {
-    await queryClient.invalidateQueries({ queryKey: getAdminActivationListActivationsQueryKey() });
+    await queryClient.invalidateQueries({ queryKey: getActivationListActivationsQueryKey() });
   };
 
-  const createMutation = useAdminActivationCreateActivation({
+  const createMutation = useActivationCreateActivation({
     mutation: {
       onSuccess: async (raw) => {
         await invalidateList();

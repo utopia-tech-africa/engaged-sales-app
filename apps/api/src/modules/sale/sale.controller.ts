@@ -1,6 +1,7 @@
 import { Body, Controller, Headers, Inject, Post, UseGuards } from "@nestjs/common";
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiHeader,
@@ -34,6 +35,7 @@ export class SaleController {
     required: false,
     description: "Optional UUID or opaque string; duplicate requests return the original sale."
   })
+  @ApiBody({ type: CreateSaleDto })
   @ApiCreatedResponse({ description: "Sale with line items and activation summary" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
   @ApiForbiddenResponse({ description: "Not assigned to activation or not a field role" })

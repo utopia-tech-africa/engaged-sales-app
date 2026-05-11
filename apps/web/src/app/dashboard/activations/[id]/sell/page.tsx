@@ -66,7 +66,6 @@ export default function FieldRecordSalePage(): ReactElement {
       return;
     }
     saleMutation.mutate({
-      idempotencyKey: crypto.randomUUID(),
       data: { activationId, items: lineItems }
     });
   };

@@ -1,10 +1,12 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.type";
+import type { AttendanceKind } from "../../generated/prisma/client";
 import type { UpdateLocationDto } from "./dto/update-location.dto";
 import type { UpdateMeDto } from "./dto/update-me.dto";
 import { type LocationPingHistoryRow, MeRepository } from "./me.repository";
 import { ReverseGeocodeService } from "./reverse-geocode.service";
+import { parseSelfieBase64 } from "./selfie-image.util";
 
 const toProfilePatch = (
   value: UpdateMeDto
@@ -46,15 +48,20 @@ export class MeService {
   }
 
   public async updateLocation(currentUser: AuthenticatedUser, payload: UpdateLocationDto) {
+    const selfie = parseSelfieBase64(payload.selfieImageBase64);
     const placeLabel = await this.reverseGeocode.resolvePlaceLabel(
       payload.latitude,
       payload.longitude
     );
+    const attendanceKind: AttendanceKind = payload.attendanceKind ?? "clock_in";
     return this.meRepository.addLocation(
       currentUser.id,
       payload.latitude,
       payload.longitude,
-      placeLabel
+      placeLabel,
+      selfie.mimeType,
+      selfie.buffer,
+      attendanceKind
     );
   }
 

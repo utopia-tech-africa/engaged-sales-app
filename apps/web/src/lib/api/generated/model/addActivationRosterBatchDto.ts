@@ -9,4 +9,4 @@
 export type AddActivationRosterBatchDto = {
   /** User ids (cuid) to add. Each must be an active promoter or merchandizer, and not already on this roster. */
   userIds: string[];
-};
+}

@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type AddActivationRosterDto = Record<string, unknown>;
+export type AddActivationRosterDto = Record<string, unknown>

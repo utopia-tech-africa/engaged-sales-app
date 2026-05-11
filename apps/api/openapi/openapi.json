@@ -830,6 +830,47 @@
       "post": {
         "operationId": "Activation_createActivation",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "startsAt"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "slug": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 64
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "regionId": {
+                    "type": "string"
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "endsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": "Activation created"
@@ -996,6 +1037,49 @@
         "tags": ["Admin activations (supervisor / admin)"]
       }
     },
+    "/admin/activations/{id}/field-activity/check-ins/{pingId}": {
+      "get": {
+        "description": "Returns coordinates, time, place label, staff member, and selfie as a data URL when verification was recorded. The ping must be from a roster user within the activation window.",
+        "operationId": "Activation_getFieldActivityCheckIn",
+        "parameters": [
+          {
+            "name": "pingId",
+            "required": true,
+            "in": "path",
+            "description": "LocationPing id (cuid)",
+            "schema": {}
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Activation id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Check-in detail"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Activation or check-in not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one roster check-in (with selfie)",
+        "tags": ["Admin activations (supervisor / admin)"]
+      }
+    },
     "/admin/activations/{id}": {
       "get": {
         "operationId": "Activation_getActivation",
@@ -1041,6 +1125,16 @@
             "schema": {}
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateActivationDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Activation updated"
@@ -1401,6 +1495,48 @@
         "tags": ["Activations (field)"]
       }
     },
+    "/admin/attendance/daily": {
+      "get": {
+        "description": "Per-field-staff roll-up for a calendar day in ATTENDANCE_TIMEZONE: first clock-in, last clock-out, missed, late (vs ATTENDANCE_EXPECTED_CHECK_IN_HHMM), and missing clock-out.",
+        "operationId": "AdminAttendance_getDailySummary",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "description": "Optional region id (cuid) to restrict to one city/territory",
+            "schema": {}
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "Calendar date YYYY-MM-DD (interpreted in ATTENDANCE_TIMEZONE)",
+            "schema": {
+              "example": "2026-05-08"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daily attendance rows and summary counts"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Daily attendance summary",
+        "tags": ["Admin attendance (supervisor / admin)"]
+      }
+    },
     "/admin/users": {
       "get": {
         "description": "Supervisors see promoters and merchandizers only; admins see all users. Sends invite email (Resend) on create when `RESEND_API_KEY` is set.",
@@ -1740,9 +1876,11 @@
                   "example": [
                     {
                       "id": "cmad4p0bo0000iib0i0l9e8wk",
+                      "attendanceKind": "clock_in",
                       "latitude": -1.286389,
                       "longitude": 36.817223,
                       "placeLabel": "City Square, Nairobi, Kenya",
+                      "hasSelfieVerification": true,
                       "recordedAt": "2026-05-08T18:20:00.000Z"
                     }
                   ]
@@ -1765,7 +1903,7 @@
     },
     "/me/location": {
       "post": {
-        "description": "Stores a location ping for the authenticated user.",
+        "description": "Stores a location ping with a required selfie image for attendance verification (JPEG/PNG).",
         "operationId": "Me_updateMeLocation",
         "parameters": [],
         "requestBody": {
@@ -1777,10 +1915,12 @@
               },
               "examples": {
                 "nairobiDowntown": {
-                  "summary": "Nairobi CBD location ping",
+                  "summary": "Nairobi CBD check-in with selfie",
                   "value": {
                     "latitude": -1.286389,
-                    "longitude": 36.817223
+                    "longitude": 36.817223,
+                    "attendanceKind": "clock_in",
+                    "selfieImageBase64": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
                   }
                 }
               }
@@ -1795,9 +1935,11 @@
                 "schema": {
                   "example": {
                     "userId": "cmad4p0bo0000iib0i0l9e8wk",
+                    "attendanceKind": "clock_in",
                     "latitude": -1.286389,
                     "longitude": 36.817223,
                     "placeLabel": "City Square, Nairobi, Kenya",
+                    "hasSelfieVerification": true,
                     "recordedAt": "2026-05-08T18:20:00.000Z"
                   }
                 }
@@ -1832,6 +1974,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSaleDto"
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": "Sale with line items and activation summary"
@@ -2036,6 +2188,10 @@
         },
         "required": ["refreshToken"]
       },
+      "UpdateActivationDto": {
+        "type": "object",
+        "properties": {}
+      },
       "CreateActivationProductDto": {
         "type": "object",
         "properties": {}
@@ -2087,9 +2243,24 @@
             "type": "number",
             "example": 36.817223,
             "description": "Longitude in decimal degrees"
+          },
+          "attendanceKind": {
+            "type": "string",
+            "enum": ["clock_in", "clock_out"],
+            "description": "Attendance event type. Defaults to clock_in when omitted.",
+            "default": "clock_in"
+          },
+          "selfieImageBase64": {
+            "type": "string",
+            "description": "Base64-encoded selfie (JPEG or PNG) for attendance verification. May be a data URL (`data:image/jpeg;base64,...`).",
+            "example": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
           }
         },
-        "required": ["latitude", "longitude"]
+        "required": ["latitude", "longitude", "selfieImageBase64"]
+      },
+      "CreateSaleDto": {
+        "type": "object",
+        "properties": {}
       }
     }
   }

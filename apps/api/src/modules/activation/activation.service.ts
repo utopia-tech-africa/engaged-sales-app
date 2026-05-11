@@ -515,4 +515,66 @@ export class ActivationService {
 
     return this.repository.listFieldLocationPingsForUsers(rosterIds, limit, range, trimmedUser);
   }
+
+  /**
+   * Supervisor/admin: full check-in for one location ping on this activation (roster + time window).
+   * Includes selfie as a data URL when present.
+   */
+  public async getFieldActivityCheckInForAdmin(
+    currentUser: AuthenticatedUser,
+    activationId: string,
+    pingId: string
+  ) {
+    this.requireSupervisorOrAdmin(currentUser);
+    const activation = await this.repository.findById(activationId);
+    if (activation === null) {
+      throw new NotFoundException("Activation not found");
+    }
+    const rosterIds = new Set(activation.roster.map((r) => r.userId));
+
+    const ping = await this.repository.findLocationPingByIdWithUserAndSelfie(pingId);
+    if (ping === null) {
+      throw new NotFoundException("Check-in not found");
+    }
+    if (!rosterIds.has(ping.userId)) {
+      throw new NotFoundException("Check-in not found");
+    }
+
+    const recordedAt = ping.recordedAt;
+    if (recordedAt < activation.startsAt) {
+      throw new NotFoundException("Check-in not found");
+    }
+    if (activation.endsAt !== null && recordedAt > activation.endsAt) {
+      throw new NotFoundException("Check-in not found");
+    }
+
+    let selfieDataUrl: string | null = null;
+    if (
+      ping.hasSelfieVerification &&
+      ping.selfieMimeType !== null &&
+      ping.selfieImage !== null &&
+      ping.selfieImage.byteLength > 0
+    ) {
+      const b64 = Buffer.from(ping.selfieImage).toString("base64");
+      selfieDataUrl = `data:${ping.selfieMimeType};base64,${b64}`;
+    }
+
+    return {
+      id: ping.id,
+      userId: ping.userId,
+      attendanceKind: ping.attendanceKind,
+      latitude: ping.latitude,
+      longitude: ping.longitude,
+      placeLabel: ping.placeLabel,
+      recordedAt: ping.recordedAt.toISOString(),
+      hasSelfieVerification: ping.hasSelfieVerification,
+      selfieDataUrl,
+      user: {
+        id: ping.user.id,
+        fullName: ping.user.fullName,
+        phone: ping.user.phone,
+        role: ping.user.role
+      }
+    };
+  }
 }

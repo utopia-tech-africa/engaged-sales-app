@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import type { Prisma } from "../../generated/prisma/client";
+import type { AttendanceKind, Prisma } from "../../generated/prisma/client";
 
 import { PrismaService } from "../prisma/prisma.service";
 
@@ -333,9 +333,11 @@ export class ActivationRepository {
         [] as {
           id: string;
           userId: string;
+          attendanceKind: AttendanceKind;
           latitude: number;
           longitude: number;
           placeLabel: string | null;
+          hasSelfieVerification: boolean;
           recordedAt: Date;
         }[]
       );
@@ -358,10 +360,41 @@ export class ActivationRepository {
       select: {
         id: true,
         userId: true,
+        attendanceKind: true,
         latitude: true,
         longitude: true,
         placeLabel: true,
+        hasSelfieVerification: true,
         recordedAt: true
+      }
+    });
+  }
+
+  /**
+   * Single ping with user and optional selfie blob (for supervisor check-in review).
+   */
+  public findLocationPingByIdWithUserAndSelfie(pingId: string) {
+    return this.prisma.locationPing.findUnique({
+      where: { id: pingId },
+      select: {
+        id: true,
+        userId: true,
+        attendanceKind: true,
+        latitude: true,
+        longitude: true,
+        placeLabel: true,
+        recordedAt: true,
+        hasSelfieVerification: true,
+        selfieMimeType: true,
+        selfieImage: true,
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            role: true
+          }
+        }
       }
     });
   }

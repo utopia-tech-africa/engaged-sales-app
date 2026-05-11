@@ -25,6 +25,11 @@ enum AuthProvider {
   google
 }
 
+enum AttendanceKind {
+  clock_in
+  clock_out
+}
+
 model User {
   id         String        @id @default(cuid())
   fullName   String
@@ -80,10 +85,17 @@ model AuthSession {
 model LocationPing {
   id         String   @id @default(cuid())
   userId     String
+  /// Whether this ping is a field clock-in or clock-out (legacy rows default to clock_in).
+  attendanceKind AttendanceKind @default(clock_in)
   latitude   Float
   longitude  Float
   /// Human-readable place from reverse geocoding when the ping was saved (nullable for legacy rows).
   placeLabel String?
+  /// Stored selfie blob for attendance verification (JPEG/PNG); omit from list APIs.
+  selfieMimeType String?
+  selfieImage    Bytes?
+  /// Mirrors presence of `selfieImage` without loading the blob in history queries.
+  hasSelfieVerification Boolean @default(false)
   recordedAt DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

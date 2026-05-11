@@ -63,6 +63,21 @@ export class ActivationController {
 
   @Post()
   @ApiOperation({ summary: "Create activation" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      required: ["name", "startsAt"],
+      properties: {
+        name: { type: "string", minLength: 1, maxLength: 128 },
+        slug: { type: "string", minLength: 2, maxLength: 64 },
+        description: { type: "string", maxLength: 2000 },
+        regionId: { type: "string" },
+        startsAt: { type: "string", format: "date-time" },
+        endsAt: { type: "string", format: "date-time" },
+        isActive: { type: "boolean" }
+      }
+    }
+  })
   @ApiCreatedResponse({ description: "Activation created" })
   @ApiConflictResponse({ description: "Slug already in use" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
@@ -156,6 +171,26 @@ export class ActivationController {
     );
   }
 
+  @Get(":id/field-activity/check-ins/:pingId")
+  @ApiParam({ name: "id", description: "Activation id (cuid)" })
+  @ApiParam({ name: "pingId", description: "LocationPing id (cuid)" })
+  @ApiOperation({
+    summary: "Get one roster check-in (with selfie)",
+    description:
+      "Returns coordinates, time, place label, staff member, and selfie as a data URL when verification was recorded. The ping must be from a roster user within the activation window."
+  })
+  @ApiOkResponse({ description: "Check-in detail" })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
+  @ApiForbiddenResponse({ description: "Requires supervisor or admin role" })
+  @ApiNotFoundResponse({ description: "Activation or check-in not found" })
+  public getFieldActivityCheckIn(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Param("id") id: string,
+    @Param("pingId") pingId: string
+  ) {
+    return this.activationService.getFieldActivityCheckInForAdmin(currentUser, id, pingId);
+  }
+
   @Get(":id")
   @ApiParam({ name: "id", description: "Activation id (cuid)" })
   @ApiOperation({ summary: "Get activation" })
@@ -170,6 +205,7 @@ export class ActivationController {
   @Patch(":id")
   @ApiParam({ name: "id", description: "Activation id (cuid)" })
   @ApiOperation({ summary: "Update activation" })
+  @ApiBody({ type: UpdateActivationDto })
   @ApiOkResponse({ description: "Activation updated" })
   @ApiNotFoundResponse({ description: "Activation or region not found" })
   @ApiConflictResponse({ description: "Slug already in use" })
