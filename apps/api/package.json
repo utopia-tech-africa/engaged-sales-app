@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prebuild": "prisma generate --schema prisma/schema.prisma",
     "build": "tsc --project tsconfig.json",
     "dev": "tsx watch src/main.ts",
     "docs:openapi": "tsx src/scripts/export-openapi.ts",
