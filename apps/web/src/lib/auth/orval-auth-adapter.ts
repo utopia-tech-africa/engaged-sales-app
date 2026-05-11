@@ -105,6 +105,9 @@ export const parseSessionsFromOrval = (result: unknown): SessionsPayload => {
 const locationPingSchema = z.object({
   userId: z.string(),
   attendanceKind: z.enum(["clock_in", "clock_out"]).optional().default("clock_in"),
+  geofenceId: z.string().nullable().optional(),
+  distanceToGeofenceMeters: z.number().nullable().optional(),
+  dwellSecondsAtGeofence: z.number().nullable().optional(),
   latitude: z.number(),
   longitude: z.number(),
   placeLabel: z.string().nullable().optional(),
@@ -121,6 +124,9 @@ export const parseLocationPingFromOrval = (result: unknown): LocationPing => {
 const locationHistoryPingSchema = z.object({
   id: z.string(),
   attendanceKind: z.enum(["clock_in", "clock_out"]).optional().default("clock_in"),
+  geofenceId: z.string().nullable().optional(),
+  distanceToGeofenceMeters: z.number().nullable().optional(),
+  dwellSecondsAtGeofence: z.number().nullable().optional(),
   latitude: z.number(),
   longitude: z.number(),
   placeLabel: z.string().nullable().optional(),

@@ -86,6 +86,17 @@ export default function FieldHistoryPage(): ReactElement {
                   longitude={row.longitude}
                 />
               </p>
+              {row.distanceToGeofenceMeters !== undefined &&
+              row.distanceToGeofenceMeters !== null ? (
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Outlet distance: {row.distanceToGeofenceMeters.toFixed(1)}m
+                  {row.dwellSecondsAtGeofence !== undefined && row.dwellSecondsAtGeofence !== null
+                    ? ` · Dwell: ${String(Math.floor(row.dwellSecondsAtGeofence / 60))}m ${String(
+                        row.dwellSecondsAtGeofence % 60
+                      )}s`
+                    : ""}
+                </p>
+              ) : null}
             </li>
           ))}
         </ul>

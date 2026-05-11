@@ -87,6 +87,12 @@ model LocationPing {
   userId     String
   /// Whether this ping is a field clock-in or clock-out (legacy rows default to clock_in).
   attendanceKind AttendanceKind @default(clock_in)
+  /// Optional matched geofence/outlet id used for outlet-distance validation.
+  geofenceId String?
+  /// Distance in meters from ping point to matched geofence center.
+  distanceToGeofenceMeters Float?
+  /// Duration from previous ping while still on same matched geofence.
+  dwellSecondsAtGeofence Int?
   latitude   Float
   longitude  Float
   /// Human-readable place from reverse geocoding when the ping was saved (nullable for legacy rows).
@@ -100,6 +106,7 @@ model LocationPing {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, recordedAt(sort: Desc)])
+  @@index([geofenceId, recordedAt(sort: Desc)])
 }
 
 model OauthNonce {

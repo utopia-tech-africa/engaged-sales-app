@@ -54,6 +54,48 @@ export class GeofenceService {
     }
   }
 
+  /**
+   * Returns nearest active geofence (if any) and great-circle distance from the point.
+   */
+  public async findNearestActiveGeofence(
+    latitude: number,
+    longitude: number
+  ): Promise<{
+    geofenceId: string;
+    label: string;
+    distanceMeters: number;
+    radiusMeters: number;
+  } | null> {
+    const active = await this.repository.findActive();
+    if (active.length === 0) {
+      return null;
+    }
+
+    let nearest: {
+      geofenceId: string;
+      label: string;
+      distanceMeters: number;
+      radiusMeters: number;
+    } | null = null;
+    for (const fence of active) {
+      const distanceMeters = haversineDistanceMeters(
+        latitude,
+        longitude,
+        fence.centerLatitude,
+        fence.centerLongitude
+      );
+      if (nearest === null || distanceMeters < nearest.distanceMeters) {
+        nearest = {
+          geofenceId: fence.id,
+          label: fence.label,
+          distanceMeters,
+          radiusMeters: fence.radiusMeters
+        };
+      }
+    }
+    return nearest;
+  }
+
   public listForAdmin(currentUser: AuthenticatedUser) {
     this.requireSupervisorOrAdmin(currentUser);
     return this.repository.findAll();

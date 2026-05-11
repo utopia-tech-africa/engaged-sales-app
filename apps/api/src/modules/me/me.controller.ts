@@ -145,6 +145,9 @@ export class MeController {
         {
           id: "cmad4p0bo0000iib0i0l9e8wk",
           attendanceKind: "clock_in",
+          geofenceId: "cmad4p0bo0000iib0i0l9e8wk",
+          distanceToGeofenceMeters: 42.7,
+          dwellSecondsAtGeofence: 480,
           latitude: -1.286389,
           longitude: 36.817223,
           placeLabel: "City Square, Nairobi, Kenya",
@@ -195,6 +198,9 @@ export class MeController {
       example: {
         userId: "cmad4p0bo0000iib0i0l9e8wk",
         attendanceKind: "clock_in",
+        geofenceId: "cmad4p0bo0000iib0i0l9e8wk",
+        distanceToGeofenceMeters: 42.7,
+        dwellSecondsAtGeofence: 480,
         latitude: -1.286389,
         longitude: 36.817223,
         placeLabel: "City Square, Nairobi, Kenya",

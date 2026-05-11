@@ -188,6 +188,7 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
     {
       query: {
         enabled: fieldActivityEnabled,
+        refetchInterval: detailTab === "field-activity" ? 30_000 : false,
         select: (r) => parseAdminFieldActivitySalesFromOrval(r)
       }
     }
@@ -199,6 +200,7 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
     {
       query: {
         enabled: fieldActivityEnabled,
+        refetchInterval: detailTab === "field-activity" ? 30_000 : false,
         select: (r) => parseAdminFieldActivityLocationsFromOrval(r)
       }
     }

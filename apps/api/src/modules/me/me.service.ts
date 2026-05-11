@@ -1,7 +1,11 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.type";
 import type { AttendanceKind } from "../../generated/prisma/client";
+import type { EnvironmentVariables } from "../../config/environment";
+import { GeofenceService } from "../geofence/geofence.service";
+import { TrackingStreamService } from "../tracking/tracking-stream.service";
 import type { UpdateLocationDto } from "./dto/update-location.dto";
 import type { UpdateMeDto } from "./dto/update-me.dto";
 import { type LocationPingHistoryRow, MeRepository } from "./me.repository";
@@ -26,7 +30,11 @@ const toProfilePatch = (
 export class MeService {
   public constructor(
     @Inject(MeRepository) private readonly meRepository: MeRepository,
-    @Inject(ReverseGeocodeService) private readonly reverseGeocode: ReverseGeocodeService
+    @Inject(ReverseGeocodeService) private readonly reverseGeocode: ReverseGeocodeService,
+    @Inject(GeofenceService) private readonly geofenceService: GeofenceService,
+    @Inject(TrackingStreamService) private readonly trackingStream: TrackingStreamService,
+    @Inject(ConfigService)
+    private readonly configService: ConfigService<EnvironmentVariables, true>
   ) {}
 
   public async getCurrentUser(currentUser: AuthenticatedUser) {
@@ -49,20 +57,74 @@ export class MeService {
 
   public async updateLocation(currentUser: AuthenticatedUser, payload: UpdateLocationDto) {
     const selfie = parseSelfieBase64(payload.selfieImageBase64);
+    const nearest = await this.geofenceService.findNearestActiveGeofence(
+      payload.latitude,
+      payload.longitude
+    );
+    const enforceDistance = this.configService.get("ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE", {
+      infer: true
+    });
+    const maxDistanceMeters = this.configService.get("ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS", {
+      infer: true
+    });
+    if (
+      enforceDistance &&
+      nearest !== null &&
+      nearest.distanceMeters > maxDistanceMeters &&
+      payload.attendanceKind !== "clock_out"
+    ) {
+      throw new BadRequestException(
+        `Check-in rejected: you must be within ${String(maxDistanceMeters)} meters of the assigned outlet/work area.`
+      );
+    }
+
     const placeLabel = await this.reverseGeocode.resolvePlaceLabel(
       payload.latitude,
       payload.longitude
     );
+    const previous = await this.meRepository.findLatestLocationPingByUser(currentUser.id);
+    const dwellSecondsAtGeofence =
+      previous?.geofenceId !== null &&
+      previous?.geofenceId !== undefined &&
+      nearest !== null &&
+      previous.geofenceId === nearest.geofenceId
+        ? Math.max(0, Math.floor((Date.now() - previous.recordedAt.getTime()) / 1000))
+        : null;
     const attendanceKind: AttendanceKind = payload.attendanceKind ?? "clock_in";
-    return this.meRepository.addLocation(
+    const saved = await this.meRepository.addLocation(
       currentUser.id,
       payload.latitude,
       payload.longitude,
       placeLabel,
       selfie.mimeType,
       selfie.buffer,
-      attendanceKind
+      attendanceKind,
+      nearest?.geofenceId ?? null,
+      nearest !== null ? Number(nearest.distanceMeters.toFixed(2)) : null,
+      dwellSecondsAtGeofence
     );
+    const trackingProfile = await this.meRepository.getTrackingProfile(currentUser.id);
+    if (trackingProfile !== null) {
+      this.trackingStream.publish({
+        userId: trackingProfile.id,
+        fullName: trackingProfile.fullName,
+        phone: trackingProfile.phone,
+        role: trackingProfile.role,
+        regionId: trackingProfile.regionId,
+        regionName: trackingProfile.region?.name ?? null,
+        locationPingId: saved.id,
+        attendanceKind: saved.attendanceKind,
+        geofenceId: saved.geofenceId,
+        distanceToGeofenceMeters: saved.distanceToGeofenceMeters,
+        dwellSecondsAtGeofence: saved.dwellSecondsAtGeofence,
+        latitude: saved.latitude,
+        longitude: saved.longitude,
+        placeLabel: saved.placeLabel,
+        hasSelfieVerification: saved.hasSelfieVerification,
+        recordedAt: saved.recordedAt.toISOString()
+      });
+    }
+    return saved;
   }
 
   public async listLocationHistory(

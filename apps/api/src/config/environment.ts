@@ -119,6 +119,16 @@ class EnvironmentVariablesDto {
   @Matches(/^\d{2}:\d{2}$/)
   public ATTENDANCE_EXPECTED_CHECK_IN_HHMM = "09:00";
 
+  /** Enforce outlet/geofence proximity for check-ins when active geofences exist. */
+  @IsBoolean()
+  public ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE = true;
+
+  /** Maximum allowed meters from nearest active geofence center for a valid visit/check-in. */
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  public ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS = 120;
+
   @IsBoolean()
   public ATTENDANCE_DIGEST_ENABLED = false;
 
@@ -156,6 +166,8 @@ export type EnvironmentVariables = {
   APP_PUBLIC_URL: string;
   ATTENDANCE_TIMEZONE: string;
   ATTENDANCE_EXPECTED_CHECK_IN_HHMM: string;
+  ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE: boolean;
+  ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS: number;
   ATTENDANCE_DIGEST_ENABLED: boolean;
   ATTENDANCE_DIGEST_CRON: string;
   ATTENDANCE_DIGEST_TIMEZONE: string;
@@ -190,6 +202,17 @@ export const validateEnvironment = (config: Record<string, unknown>): Environmen
       config["ATTENDANCE_EXPECTED_CHECK_IN_HHMM"].trim().length > 0
         ? config["ATTENDANCE_EXPECTED_CHECK_IN_HHMM"].trim()
         : undefined) ?? "09:00",
+    ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE: parseEnvBool(
+      config["ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE"],
+      true
+    ),
+    ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS:
+      typeof config["ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS"] === "number"
+        ? config["ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS"]
+        : typeof config["ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS"] === "string" &&
+            config["ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS"].trim().length > 0
+          ? Number(config["ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS"])
+          : 120,
     ATTENDANCE_DIGEST_ENABLED: parseEnvBool(config["ATTENDANCE_DIGEST_ENABLED"], false),
     ATTENDANCE_DIGEST_CRON:
       typeof config["ATTENDANCE_DIGEST_CRON"] === "string" &&
@@ -234,6 +257,9 @@ export const validateEnvironment = (config: Record<string, unknown>): Environmen
     APP_PUBLIC_URL: validatedEnvironment.APP_PUBLIC_URL,
     ATTENDANCE_TIMEZONE: validatedEnvironment.ATTENDANCE_TIMEZONE,
     ATTENDANCE_EXPECTED_CHECK_IN_HHMM: validatedEnvironment.ATTENDANCE_EXPECTED_CHECK_IN_HHMM,
+    ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE: validatedEnvironment.ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE,
+    ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS:
+      validatedEnvironment.ATTENDANCE_MIN_DISTANCE_TO_OUTLET_METERS,
     ATTENDANCE_DIGEST_ENABLED: validatedEnvironment.ATTENDANCE_DIGEST_ENABLED,
     ATTENDANCE_DIGEST_CRON: validatedEnvironment.ATTENDANCE_DIGEST_CRON,
     ATTENDANCE_DIGEST_TIMEZONE: validatedEnvironment.ATTENDANCE_DIGEST_TIMEZONE,

@@ -7,6 +7,9 @@ import { PrismaService } from "../prisma/prisma.service";
 export type LocationPingHistoryRow = {
   id: string;
   attendanceKind: AttendanceKind;
+  geofenceId: string | null;
+  distanceToGeofenceMeters: number | null;
+  dwellSecondsAtGeofence: number | null;
   latitude: number;
   longitude: number;
   placeLabel: string | null;
@@ -28,6 +31,22 @@ export class MeRepository {
         role: true,
         gender: true,
         regionId: true
+      }
+    });
+  }
+
+  public getTrackingProfile(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        fullName: true,
+        phone: true,
+        role: true,
+        regionId: true,
+        region: {
+          select: { name: true }
+        }
       }
     });
   }
@@ -65,12 +84,18 @@ export class MeRepository {
     placeLabel: string | null,
     selfieMimeType: string,
     selfieImage: Buffer,
-    attendanceKind: AttendanceKind
+    attendanceKind: AttendanceKind,
+    geofenceId: string | null,
+    distanceToGeofenceMeters: number | null,
+    dwellSecondsAtGeofence: number | null
   ) {
     return this.prisma.locationPing.create({
       data: {
         userId,
         attendanceKind,
+        geofenceId,
+        distanceToGeofenceMeters,
+        dwellSecondsAtGeofence,
         latitude,
         longitude,
         placeLabel,
@@ -79,8 +104,12 @@ export class MeRepository {
         hasSelfieVerification: true
       },
       select: {
+        id: true,
         userId: true,
         attendanceKind: true,
+        geofenceId: true,
+        distanceToGeofenceMeters: true,
+        dwellSecondsAtGeofence: true,
         latitude: true,
         longitude: true,
         placeLabel: true,
@@ -101,10 +130,24 @@ export class MeRepository {
       select: {
         id: true,
         attendanceKind: true,
+        geofenceId: true,
+        distanceToGeofenceMeters: true,
+        dwellSecondsAtGeofence: true,
         latitude: true,
         longitude: true,
         placeLabel: true,
         hasSelfieVerification: true,
+        recordedAt: true
+      }
+    });
+  }
+
+  public findLatestLocationPingByUser(userId: string) {
+    return this.prisma.locationPing.findFirst({
+      where: { userId },
+      orderBy: { recordedAt: "desc" },
+      select: {
+        geofenceId: true,
         recordedAt: true
       }
     });

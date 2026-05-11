@@ -35,6 +35,9 @@ export type FieldActivityPing = {
   recordedAt: string;
   hasSelfieVerification?: boolean;
   attendanceKind?: "clock_in" | "clock_out";
+  geofenceId?: string | null;
+  distanceToGeofenceMeters?: number | null;
+  dwellSecondsAtGeofence?: number | null;
 };
 
 type ActivationFieldActivityMapProps = {
@@ -140,6 +143,23 @@ export const ActivationFieldActivityMap = ({
                 <>
                   <br />
                   {p.placeLabel}
+                </>
+              ) : null}
+              {p.distanceToGeofenceMeters !== null && p.distanceToGeofenceMeters !== undefined ? (
+                <>
+                  <br />
+                  <span className="text-xs text-muted-foreground">
+                    Outlet distance: {p.distanceToGeofenceMeters.toFixed(1)}m
+                  </span>
+                </>
+              ) : null}
+              {p.dwellSecondsAtGeofence !== null && p.dwellSecondsAtGeofence !== undefined ? (
+                <>
+                  <br />
+                  <span className="text-xs text-muted-foreground">
+                    Dwell: {Math.floor(p.dwellSecondsAtGeofence / 60)}m{" "}
+                    {p.dwellSecondsAtGeofence % 60}s
+                  </span>
                 </>
               ) : null}
               {onSelectPing !== undefined ? (

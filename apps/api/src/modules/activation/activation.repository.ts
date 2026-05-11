@@ -334,6 +334,9 @@ export class ActivationRepository {
           id: string;
           userId: string;
           attendanceKind: AttendanceKind;
+          geofenceId: string | null;
+          distanceToGeofenceMeters: number | null;
+          dwellSecondsAtGeofence: number | null;
           latitude: number;
           longitude: number;
           placeLabel: string | null;
@@ -361,6 +364,9 @@ export class ActivationRepository {
         id: true,
         userId: true,
         attendanceKind: true,
+        geofenceId: true,
+        distanceToGeofenceMeters: true,
+        dwellSecondsAtGeofence: true,
         latitude: true,
         longitude: true,
         placeLabel: true,
@@ -380,6 +386,9 @@ export class ActivationRepository {
         id: true,
         userId: true,
         attendanceKind: true,
+        geofenceId: true,
+        distanceToGeofenceMeters: true,
+        dwellSecondsAtGeofence: true,
         latitude: true,
         longitude: true,
         placeLabel: true,

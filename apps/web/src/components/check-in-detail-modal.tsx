@@ -188,6 +188,28 @@ export function CheckInDetailModal({
                   />
                 </p>
               </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-border bg-card/80 px-4 py-3 shadow-sm dark:bg-card/50">
+                  <p className="text-xs font-medium text-muted-foreground">Outlet distance</p>
+                  <p className="mt-2 text-sm font-medium tabular-nums text-foreground">
+                    {detail.distanceToGeofenceMeters !== null &&
+                    detail.distanceToGeofenceMeters !== undefined
+                      ? `${detail.distanceToGeofenceMeters.toFixed(1)}m`
+                      : "—"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border bg-card/80 px-4 py-3 shadow-sm dark:bg-card/50">
+                  <p className="text-xs font-medium text-muted-foreground">Dwell at outlet</p>
+                  <p className="mt-2 text-sm font-medium tabular-nums text-foreground">
+                    {detail.dwellSecondsAtGeofence !== null &&
+                    detail.dwellSecondsAtGeofence !== undefined
+                      ? `${String(Math.floor(detail.dwellSecondsAtGeofence / 60))}m ${String(
+                          detail.dwellSecondsAtGeofence % 60
+                        )}s`
+                      : "—"}
+                  </p>
+                </div>
+              </div>
             </div>
           ) : null}
         </div>
