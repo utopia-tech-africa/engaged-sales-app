@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { type ReactElement } from "react";
 
-import { fieldNavItems } from "@/components/field-shell";
+import { getFieldNavItemsForUser } from "@/components/field-shell";
 import {
   getMeListMySalesQueryKey,
   meListMySales,
@@ -21,6 +21,8 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function DashboardHomePage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
+  const user = useAuthStore((state) => state.user);
+  const isClient = user?.role === "client";
 
   const meQuery = useMeGetMe({
     query: {
@@ -39,22 +41,26 @@ export default function DashboardHomePage(): ReactElement {
   const recentSalesQuery = useQuery({
     queryKey: getMeListMySalesQueryKey({ limit: 5 }),
     queryFn: () => meListMySales({ limit: 5 }),
-    enabled: accessToken !== null,
+    enabled: accessToken !== null && !isClient,
     select: (result) => parseMySalesListFromOrval(result)
   });
+
+  const shortcuts = user !== null ? getFieldNavItemsForUser(user).slice(1) : [];
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-xl font-semibold tracking-tight text-foreground">Home</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Profile, sessions, and shortcuts to field tools.
+          {isClient
+            ? "Profile, sessions, and read-only access to activations you are assigned to."
+            : "Profile, sessions, and shortcuts to field tools."}
         </p>
       </div>
 
       <nav aria-label="Shortcuts">
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {fieldNavItems.slice(1).map(({ href, label, Icon }) => (
+          {shortcuts.map(({ href, label, Icon }) => (
             <li key={href}>
               <Link
                 href={href === CHECK_IN_PATH ? fieldCheckInHref({ source: "home" }) : href}
@@ -70,41 +76,51 @@ export default function DashboardHomePage(): ReactElement {
         </ul>
       </nav>
 
-      <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-base font-semibold text-foreground">Recent sales</h2>
-          <Link href="/dashboard/activations" className={calmMutedLinkClass}>
-            Activations
-          </Link>
-        </div>
-        {recentSalesQuery.isLoading ? (
-          <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-        ) : null}
-        {recentSalesQuery.isError ? (
-          <p className="mt-2 text-sm text-muted-foreground">Sales history unavailable.</p>
-        ) : null}
-        {recentSalesQuery.data?.length === 0 ? (
+      {!isClient ? (
+        <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-base font-semibold text-foreground">Recent sales</h2>
+            <Link href="/dashboard/activations" className={calmMutedLinkClass}>
+              Activations
+            </Link>
+          </div>
+          {recentSalesQuery.isLoading ? (
+            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
+          ) : null}
+          {recentSalesQuery.isError ? (
+            <p className="mt-2 text-sm text-muted-foreground">Sales history unavailable.</p>
+          ) : null}
+          {recentSalesQuery.data?.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              No sales yet. Open an activation to record one.
+            </p>
+          ) : null}
+          {recentSalesQuery.data !== undefined && recentSalesQuery.data.length > 0 ? (
+            <ul className="mt-3 space-y-2">
+              {recentSalesQuery.data.map((sale) => (
+                <li
+                  key={sale.id}
+                  className="rounded-lg border border-border bg-muted/30 p-3 text-xs dark:bg-muted/15"
+                >
+                  <p className="font-medium text-foreground">{sale.activation.name}</p>
+                  <p className="text-muted-foreground">
+                    {formatFieldCheckInDateTime(sale.createdAt)} · {sale.items.length} line
+                    {sale.items.length === 1 ? "" : "s"}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : (
+        <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
+          <h2 className="text-base font-semibold text-foreground">Activations</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            No sales yet. Open an activation to record one.
+            Open <Link href="/dashboard/activations">Activations</Link> to view assigned campaigns,
+            team sales, and download Excel reports.
           </p>
-        ) : null}
-        {recentSalesQuery.data !== undefined && recentSalesQuery.data.length > 0 ? (
-          <ul className="mt-3 space-y-2">
-            {recentSalesQuery.data.map((sale) => (
-              <li
-                key={sale.id}
-                className="rounded-lg border border-border bg-muted/30 p-3 text-xs dark:bg-muted/15"
-              >
-                <p className="font-medium text-foreground">{sale.activation.name}</p>
-                <p className="text-muted-foreground">
-                  {formatFieldCheckInDateTime(sale.createdAt)} · {sale.items.length} line
-                  {sale.items.length === 1 ? "" : "s"}
-                </p>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </section>
+        </section>
+      )}
 
       <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
         <h2 className="text-base font-semibold text-foreground">Profile</h2>

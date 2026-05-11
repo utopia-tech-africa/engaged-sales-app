@@ -63,6 +63,7 @@ export class ResendEmailService {
     subject: string;
     html: string;
     text: string;
+    attachments?: { filename: string; content: string; type: string }[];
   }): Promise<void> {
     const uniqueRecipients = [
       ...new Set(params.to.map((e) => e.trim()).filter((e) => e.length > 0))
@@ -86,7 +87,10 @@ export class ResendEmailService {
         to: uniqueRecipients,
         subject: params.subject,
         html: params.html,
-        text: params.text
+        text: params.text,
+        ...(params.attachments !== undefined && params.attachments.length > 0
+          ? { attachments: params.attachments }
+          : {})
       });
       if (error) {
         this.logger.error(`Resend rejected operational email: ${error.message}`);

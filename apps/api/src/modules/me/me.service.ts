@@ -42,8 +42,8 @@ export class MeService {
   ) {}
 
   private ensureFieldVisitRole(role: AuthenticatedUser["role"]): void {
-    if (role !== "promoter" && role !== "merchandizer") {
-      throw new BadRequestException("Only promoters and merchandizers can submit outlet visits");
+    if (role !== "promoter") {
+      throw new BadRequestException("Only promoters can submit outlet visits");
     }
   }
 

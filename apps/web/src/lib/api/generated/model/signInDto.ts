@@ -13,8 +13,8 @@ export type SignInDto = {
   /** Unique promoter code */
   uniqueCode: string;
   role: SignInDtoRole;
-  /** Device latitude (decimal degrees). For promoters and merchandizers: required when at least one geofence is active (send with longitude). Supervisors and admins may omit coordinates. */
+  /** Device latitude (decimal degrees). For promoters: required when at least one geofence is active (send with longitude). Clients, supervisors, and admins may omit coordinates. */
   latitude?: number;
-  /** Device longitude (decimal degrees). For promoters and merchandizers: required with latitude when geofencing is enforced. Supervisors and admins may omit. */
+  /** Device longitude (decimal degrees). For promoters: required with latitude when geofencing is enforced. Clients, supervisors, and admins may omit. */
   longitude?: number;
 }

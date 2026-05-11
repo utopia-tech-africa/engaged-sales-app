@@ -25,31 +25,48 @@ import type {
   ActivationCreateActivationBody,
   ActivationListFieldActivityLocationsParams,
   ActivationListFieldActivitySalesParams,
+  ActivationsExportClientActivationWorkbookParams,
   ActivationsListProductsForFieldParams,
+  ActivationsListTeamSalesForClientParams,
   AddActivationRosterBatchDto,
   AddActivationRosterDto,
   AdminAttendanceGetDailySummaryParams,
   AdminGeofenceCreateGeofenceBody,
   AdminGeofenceUpdateGeofenceBody,
+  AdminOutletListOutletVisitsParams,
   AdminRegionCreateRegionBody,
   AdminRegionUpdateRegionBody,
+  AdminSubwholesaleListSubwholesalesParams,
   AdminUserCreateUserBody,
   AdminUserUpdateUserBody,
   CreateActivationProductDto,
+  CreateOutletDto,
+  CreateOutletVisitDto,
   CreateSaleDto,
+  CreateStockPickupDto,
+  CreateStockSaleDto,
+  CreateSubwholesaleDto,
   MeListLocationHistoryParams,
   MeListMySalesParams,
+  MeListOutletVisitsParams,
   OauthCallbackDto,
   OauthStartDto,
   ProfileCompletionDto,
   RefreshTokenDto,
+  ReportsGetDashboardParams,
   RevokeUserSessionsDto,
   SignInDto,
   SignOutDto,
   SignUpDto,
+  StockGetAdminOverviewParams,
+  StockGetDailySummaryParams,
+  StockGetTargetMonitoringParams,
   UpdateActivationDto,
   UpdateLocationDto,
-  UpdateMeDto
+  UpdateMeDto,
+  UpdateOutletDto,
+  UpdateReportSettingsDto,
+  UpdateSubwholesaleDto
 } from "./model";
 
 import { orvalFetcher } from "./orval-fetcher";
@@ -2171,6 +2188,1022 @@ export const useAdminRegionUpdateRegion = <TError = void, TContext = unknown>(
   return useMutation(getAdminRegionUpdateRegionMutationOptions(options), queryClient);
 };
 
+export type adminSubwholesaleListSubwholesalesResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminSubwholesaleListSubwholesalesResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminSubwholesaleListSubwholesalesResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminSubwholesaleListSubwholesalesResponseSuccess =
+  adminSubwholesaleListSubwholesalesResponse200 & {
+    headers: Headers;
+  };
+export type adminSubwholesaleListSubwholesalesResponseError = (
+  | adminSubwholesaleListSubwholesalesResponse401
+  | adminSubwholesaleListSubwholesalesResponse403
+) & {
+  headers: Headers;
+};
+
+export type adminSubwholesaleListSubwholesalesResponse =
+  | adminSubwholesaleListSubwholesalesResponseSuccess
+  | adminSubwholesaleListSubwholesalesResponseError;
+
+export const getAdminSubwholesaleListSubwholesalesUrl = (
+  params?: AdminSubwholesaleListSubwholesalesParams
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/admin/subwholesales?${stringifiedParams}`
+    : `/admin/subwholesales`;
+};
+
+/**
+ * Returns subwholesale nodes under regions, optionally filtered by region id.
+ * @summary List subwholesales
+ */
+export const adminSubwholesaleListSubwholesales = async (
+  params?: AdminSubwholesaleListSubwholesalesParams,
+  options?: RequestInit
+): Promise<adminSubwholesaleListSubwholesalesResponse> => {
+  return orvalFetcher<adminSubwholesaleListSubwholesalesResponse>(
+    getAdminSubwholesaleListSubwholesalesUrl(params),
+    {
+      ...options,
+      method: "GET"
+    }
+  );
+};
+
+export const getAdminSubwholesaleListSubwholesalesQueryKey = (
+  params?: AdminSubwholesaleListSubwholesalesParams
+) => {
+  return [`/admin/subwholesales`, ...(params ? [params] : [])] as const;
+};
+
+export const getAdminSubwholesaleListSubwholesalesQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>,
+  TError = void
+>(
+  params?: AdminSubwholesaleListSubwholesalesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminSubwholesaleListSubwholesalesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>> = ({
+    signal
+  }) => adminSubwholesaleListSubwholesales(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminSubwholesaleListSubwholesalesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>
+>;
+export type AdminSubwholesaleListSubwholesalesQueryError = void;
+
+export function useAdminSubwholesaleListSubwholesales<
+  TData = Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>,
+  TError = void
+>(
+  params: undefined | AdminSubwholesaleListSubwholesalesParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>,
+          TError,
+          Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminSubwholesaleListSubwholesales<
+  TData = Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>,
+  TError = void
+>(
+  params?: AdminSubwholesaleListSubwholesalesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>,
+          TError,
+          Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminSubwholesaleListSubwholesales<
+  TData = Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>,
+  TError = void
+>(
+  params?: AdminSubwholesaleListSubwholesalesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List subwholesales
+ */
+
+export function useAdminSubwholesaleListSubwholesales<
+  TData = Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>,
+  TError = void
+>(
+  params?: AdminSubwholesaleListSubwholesalesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminSubwholesaleListSubwholesales>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminSubwholesaleListSubwholesalesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type adminSubwholesaleCreateSubwholesaleResponse201 = {
+  data: void;
+  status: 201;
+};
+
+export type adminSubwholesaleCreateSubwholesaleResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminSubwholesaleCreateSubwholesaleResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminSubwholesaleCreateSubwholesaleResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminSubwholesaleCreateSubwholesaleResponse409 = {
+  data: void;
+  status: 409;
+};
+
+export type adminSubwholesaleCreateSubwholesaleResponseSuccess =
+  adminSubwholesaleCreateSubwholesaleResponse201 & {
+    headers: Headers;
+  };
+export type adminSubwholesaleCreateSubwholesaleResponseError = (
+  | adminSubwholesaleCreateSubwholesaleResponse401
+  | adminSubwholesaleCreateSubwholesaleResponse403
+  | adminSubwholesaleCreateSubwholesaleResponse404
+  | adminSubwholesaleCreateSubwholesaleResponse409
+) & {
+  headers: Headers;
+};
+
+export type adminSubwholesaleCreateSubwholesaleResponse =
+  | adminSubwholesaleCreateSubwholesaleResponseSuccess
+  | adminSubwholesaleCreateSubwholesaleResponseError;
+
+export const getAdminSubwholesaleCreateSubwholesaleUrl = () => {
+  return `/admin/subwholesales`;
+};
+
+/**
+ * Creates a subwholesale under a region. Slug is unique per region.
+ * @summary Create subwholesale
+ */
+export const adminSubwholesaleCreateSubwholesale = async (
+  createSubwholesaleDto: CreateSubwholesaleDto,
+  options?: RequestInit
+): Promise<adminSubwholesaleCreateSubwholesaleResponse> => {
+  return orvalFetcher<adminSubwholesaleCreateSubwholesaleResponse>(
+    getAdminSubwholesaleCreateSubwholesaleUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(createSubwholesaleDto)
+    }
+  );
+};
+
+export const getAdminSubwholesaleCreateSubwholesaleMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminSubwholesaleCreateSubwholesale>>,
+    TError,
+    { data: CreateSubwholesaleDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminSubwholesaleCreateSubwholesale>>,
+  TError,
+  { data: CreateSubwholesaleDto },
+  TContext
+> => {
+  const mutationKey = ["adminSubwholesaleCreateSubwholesale"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminSubwholesaleCreateSubwholesale>>,
+    { data: CreateSubwholesaleDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminSubwholesaleCreateSubwholesale(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminSubwholesaleCreateSubwholesaleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminSubwholesaleCreateSubwholesale>>
+>;
+export type AdminSubwholesaleCreateSubwholesaleMutationBody = CreateSubwholesaleDto;
+export type AdminSubwholesaleCreateSubwholesaleMutationError = void;
+
+/**
+ * @summary Create subwholesale
+ */
+export const useAdminSubwholesaleCreateSubwholesale = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminSubwholesaleCreateSubwholesale>>,
+      TError,
+      { data: CreateSubwholesaleDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminSubwholesaleCreateSubwholesale>>,
+  TError,
+  { data: CreateSubwholesaleDto },
+  TContext
+> => {
+  return useMutation(getAdminSubwholesaleCreateSubwholesaleMutationOptions(options), queryClient);
+};
+
+export type adminSubwholesaleUpdateSubwholesaleResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminSubwholesaleUpdateSubwholesaleResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminSubwholesaleUpdateSubwholesaleResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminSubwholesaleUpdateSubwholesaleResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminSubwholesaleUpdateSubwholesaleResponse409 = {
+  data: void;
+  status: 409;
+};
+
+export type adminSubwholesaleUpdateSubwholesaleResponseSuccess =
+  adminSubwholesaleUpdateSubwholesaleResponse200 & {
+    headers: Headers;
+  };
+export type adminSubwholesaleUpdateSubwholesaleResponseError = (
+  | adminSubwholesaleUpdateSubwholesaleResponse401
+  | adminSubwholesaleUpdateSubwholesaleResponse403
+  | adminSubwholesaleUpdateSubwholesaleResponse404
+  | adminSubwholesaleUpdateSubwholesaleResponse409
+) & {
+  headers: Headers;
+};
+
+export type adminSubwholesaleUpdateSubwholesaleResponse =
+  | adminSubwholesaleUpdateSubwholesaleResponseSuccess
+  | adminSubwholesaleUpdateSubwholesaleResponseError;
+
+export const getAdminSubwholesaleUpdateSubwholesaleUrl = (id: unknown) => {
+  return `/admin/subwholesales/${id}`;
+};
+
+/**
+ * Partial update including optional move to another region.
+ * @summary Update subwholesale
+ */
+export const adminSubwholesaleUpdateSubwholesale = async (
+  id: unknown,
+  updateSubwholesaleDto: UpdateSubwholesaleDto,
+  options?: RequestInit
+): Promise<adminSubwholesaleUpdateSubwholesaleResponse> => {
+  return orvalFetcher<adminSubwholesaleUpdateSubwholesaleResponse>(
+    getAdminSubwholesaleUpdateSubwholesaleUrl(id),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateSubwholesaleDto)
+    }
+  );
+};
+
+export const getAdminSubwholesaleUpdateSubwholesaleMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminSubwholesaleUpdateSubwholesale>>,
+    TError,
+    { id: unknown; data: UpdateSubwholesaleDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminSubwholesaleUpdateSubwholesale>>,
+  TError,
+  { id: unknown; data: UpdateSubwholesaleDto },
+  TContext
+> => {
+  const mutationKey = ["adminSubwholesaleUpdateSubwholesale"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminSubwholesaleUpdateSubwholesale>>,
+    { id: unknown; data: UpdateSubwholesaleDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return adminSubwholesaleUpdateSubwholesale(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminSubwholesaleUpdateSubwholesaleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminSubwholesaleUpdateSubwholesale>>
+>;
+export type AdminSubwholesaleUpdateSubwholesaleMutationBody = UpdateSubwholesaleDto;
+export type AdminSubwholesaleUpdateSubwholesaleMutationError = void;
+
+/**
+ * @summary Update subwholesale
+ */
+export const useAdminSubwholesaleUpdateSubwholesale = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminSubwholesaleUpdateSubwholesale>>,
+      TError,
+      { id: unknown; data: UpdateSubwholesaleDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminSubwholesaleUpdateSubwholesale>>,
+  TError,
+  { id: unknown; data: UpdateSubwholesaleDto },
+  TContext
+> => {
+  return useMutation(getAdminSubwholesaleUpdateSubwholesaleMutationOptions(options), queryClient);
+};
+
+export type adminOutletListOutletsResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminOutletListOutletsResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminOutletListOutletsResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminOutletListOutletsResponseSuccess = adminOutletListOutletsResponse200 & {
+  headers: Headers;
+};
+export type adminOutletListOutletsResponseError = (
+  | adminOutletListOutletsResponse401
+  | adminOutletListOutletsResponse403
+) & {
+  headers: Headers;
+};
+
+export type adminOutletListOutletsResponse =
+  | adminOutletListOutletsResponseSuccess
+  | adminOutletListOutletsResponseError;
+
+export const getAdminOutletListOutletsUrl = () => {
+  return `/admin/outlets`;
+};
+
+/**
+ * Returns all outlets with distributor, area and contact details.
+ * @summary List outlet database
+ */
+export const adminOutletListOutlets = async (
+  options?: RequestInit
+): Promise<adminOutletListOutletsResponse> => {
+  return orvalFetcher<adminOutletListOutletsResponse>(getAdminOutletListOutletsUrl(), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getAdminOutletListOutletsQueryKey = () => {
+  return [`/admin/outlets`] as const;
+};
+
+export const getAdminOutletListOutletsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminOutletListOutlets>>,
+  TError = void
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof adminOutletListOutlets>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminOutletListOutletsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminOutletListOutlets>>> = ({ signal }) =>
+    adminOutletListOutlets({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminOutletListOutlets>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminOutletListOutletsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminOutletListOutlets>>
+>;
+export type AdminOutletListOutletsQueryError = void;
+
+export function useAdminOutletListOutlets<
+  TData = Awaited<ReturnType<typeof adminOutletListOutlets>>,
+  TError = void
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminOutletListOutlets>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminOutletListOutlets>>,
+          TError,
+          Awaited<ReturnType<typeof adminOutletListOutlets>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminOutletListOutlets<
+  TData = Awaited<ReturnType<typeof adminOutletListOutlets>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminOutletListOutlets>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminOutletListOutlets>>,
+          TError,
+          Awaited<ReturnType<typeof adminOutletListOutlets>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminOutletListOutlets<
+  TData = Awaited<ReturnType<typeof adminOutletListOutlets>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminOutletListOutlets>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List outlet database
+ */
+
+export function useAdminOutletListOutlets<
+  TData = Awaited<ReturnType<typeof adminOutletListOutlets>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminOutletListOutlets>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminOutletListOutletsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type adminOutletCreateOutletResponse201 = {
+  data: void;
+  status: 201;
+};
+
+export type adminOutletCreateOutletResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminOutletCreateOutletResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminOutletCreateOutletResponseSuccess = adminOutletCreateOutletResponse201 & {
+  headers: Headers;
+};
+export type adminOutletCreateOutletResponseError = (
+  | adminOutletCreateOutletResponse401
+  | adminOutletCreateOutletResponse403
+) & {
+  headers: Headers;
+};
+
+export type adminOutletCreateOutletResponse =
+  | adminOutletCreateOutletResponseSuccess
+  | adminOutletCreateOutletResponseError;
+
+export const getAdminOutletCreateOutletUrl = () => {
+  return `/admin/outlets`;
+};
+
+/**
+ * Adds a new outlet with category, distributor link and contact details.
+ * @summary Create outlet
+ */
+export const adminOutletCreateOutlet = async (
+  createOutletDto: CreateOutletDto,
+  options?: RequestInit
+): Promise<adminOutletCreateOutletResponse> => {
+  return orvalFetcher<adminOutletCreateOutletResponse>(getAdminOutletCreateOutletUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createOutletDto)
+  });
+};
+
+export const getAdminOutletCreateOutletMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminOutletCreateOutlet>>,
+    TError,
+    { data: CreateOutletDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminOutletCreateOutlet>>,
+  TError,
+  { data: CreateOutletDto },
+  TContext
+> => {
+  const mutationKey = ["adminOutletCreateOutlet"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminOutletCreateOutlet>>,
+    { data: CreateOutletDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return adminOutletCreateOutlet(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminOutletCreateOutletMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminOutletCreateOutlet>>
+>;
+export type AdminOutletCreateOutletMutationBody = CreateOutletDto;
+export type AdminOutletCreateOutletMutationError = void;
+
+/**
+ * @summary Create outlet
+ */
+export const useAdminOutletCreateOutlet = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminOutletCreateOutlet>>,
+      TError,
+      { data: CreateOutletDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminOutletCreateOutlet>>,
+  TError,
+  { data: CreateOutletDto },
+  TContext
+> => {
+  return useMutation(getAdminOutletCreateOutletMutationOptions(options), queryClient);
+};
+
+export type adminOutletListOutletVisitsResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminOutletListOutletVisitsResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminOutletListOutletVisitsResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminOutletListOutletVisitsResponseSuccess = adminOutletListOutletVisitsResponse200 & {
+  headers: Headers;
+};
+export type adminOutletListOutletVisitsResponseError = (
+  | adminOutletListOutletVisitsResponse401
+  | adminOutletListOutletVisitsResponse403
+) & {
+  headers: Headers;
+};
+
+export type adminOutletListOutletVisitsResponse =
+  | adminOutletListOutletVisitsResponseSuccess
+  | adminOutletListOutletVisitsResponseError;
+
+export const getAdminOutletListOutletVisitsUrl = (params?: AdminOutletListOutletVisitsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/admin/outlets/visits?${stringifiedParams}`
+    : `/admin/outlets/visits`;
+};
+
+/**
+ * Returns outlet visits with optional filters for outlet, user and datetime range.
+ * @summary List outlet visit reports
+ */
+export const adminOutletListOutletVisits = async (
+  params?: AdminOutletListOutletVisitsParams,
+  options?: RequestInit
+): Promise<adminOutletListOutletVisitsResponse> => {
+  return orvalFetcher<adminOutletListOutletVisitsResponse>(
+    getAdminOutletListOutletVisitsUrl(params),
+    {
+      ...options,
+      method: "GET"
+    }
+  );
+};
+
+export const getAdminOutletListOutletVisitsQueryKey = (
+  params?: AdminOutletListOutletVisitsParams
+) => {
+  return [`/admin/outlets/visits`, ...(params ? [params] : [])] as const;
+};
+
+export const getAdminOutletListOutletVisitsQueryOptions = <
+  TData = Awaited<ReturnType<typeof adminOutletListOutletVisits>>,
+  TError = void
+>(
+  params?: AdminOutletListOutletVisitsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminOutletListOutletVisits>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getAdminOutletListOutletVisitsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof adminOutletListOutletVisits>>> = ({
+    signal
+  }) => adminOutletListOutletVisits(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof adminOutletListOutletVisits>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AdminOutletListOutletVisitsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof adminOutletListOutletVisits>>
+>;
+export type AdminOutletListOutletVisitsQueryError = void;
+
+export function useAdminOutletListOutletVisits<
+  TData = Awaited<ReturnType<typeof adminOutletListOutletVisits>>,
+  TError = void
+>(
+  params: undefined | AdminOutletListOutletVisitsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminOutletListOutletVisits>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminOutletListOutletVisits>>,
+          TError,
+          Awaited<ReturnType<typeof adminOutletListOutletVisits>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminOutletListOutletVisits<
+  TData = Awaited<ReturnType<typeof adminOutletListOutletVisits>>,
+  TError = void
+>(
+  params?: AdminOutletListOutletVisitsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminOutletListOutletVisits>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof adminOutletListOutletVisits>>,
+          TError,
+          Awaited<ReturnType<typeof adminOutletListOutletVisits>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAdminOutletListOutletVisits<
+  TData = Awaited<ReturnType<typeof adminOutletListOutletVisits>>,
+  TError = void
+>(
+  params?: AdminOutletListOutletVisitsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminOutletListOutletVisits>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List outlet visit reports
+ */
+
+export function useAdminOutletListOutletVisits<
+  TData = Awaited<ReturnType<typeof adminOutletListOutletVisits>>,
+  TError = void
+>(
+  params?: AdminOutletListOutletVisitsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof adminOutletListOutletVisits>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAdminOutletListOutletVisitsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type adminOutletUpdateOutletResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type adminOutletUpdateOutletResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type adminOutletUpdateOutletResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type adminOutletUpdateOutletResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type adminOutletUpdateOutletResponseSuccess = adminOutletUpdateOutletResponse200 & {
+  headers: Headers;
+};
+export type adminOutletUpdateOutletResponseError = (
+  | adminOutletUpdateOutletResponse401
+  | adminOutletUpdateOutletResponse403
+  | adminOutletUpdateOutletResponse404
+) & {
+  headers: Headers;
+};
+
+export type adminOutletUpdateOutletResponse =
+  | adminOutletUpdateOutletResponseSuccess
+  | adminOutletUpdateOutletResponseError;
+
+export const getAdminOutletUpdateOutletUrl = (id: unknown) => {
+  return `/admin/outlets/${id}`;
+};
+
+/**
+ * Partial update for outlet attributes.
+ * @summary Update outlet
+ */
+export const adminOutletUpdateOutlet = async (
+  id: unknown,
+  updateOutletDto: UpdateOutletDto,
+  options?: RequestInit
+): Promise<adminOutletUpdateOutletResponse> => {
+  return orvalFetcher<adminOutletUpdateOutletResponse>(getAdminOutletUpdateOutletUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateOutletDto)
+  });
+};
+
+export const getAdminOutletUpdateOutletMutationOptions = <
+  TError = void,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adminOutletUpdateOutlet>>,
+    TError,
+    { id: unknown; data: UpdateOutletDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adminOutletUpdateOutlet>>,
+  TError,
+  { id: unknown; data: UpdateOutletDto },
+  TContext
+> => {
+  const mutationKey = ["adminOutletUpdateOutlet"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adminOutletUpdateOutlet>>,
+    { id: unknown; data: UpdateOutletDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return adminOutletUpdateOutlet(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdminOutletUpdateOutletMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adminOutletUpdateOutlet>>
+>;
+export type AdminOutletUpdateOutletMutationBody = UpdateOutletDto;
+export type AdminOutletUpdateOutletMutationError = void;
+
+/**
+ * @summary Update outlet
+ */
+export const useAdminOutletUpdateOutlet = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof adminOutletUpdateOutlet>>,
+      TError,
+      { id: unknown; data: UpdateOutletDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof adminOutletUpdateOutlet>>,
+  TError,
+  { id: unknown; data: UpdateOutletDto },
+  TContext
+> => {
+  return useMutation(getAdminOutletUpdateOutletMutationOptions(options), queryClient);
+};
+
 export type activationListActivationsResponse200 = {
   data: void;
   status: 200;
@@ -3986,7 +5019,7 @@ export const getActivationsListForFieldUrl = () => {
 };
 
 /**
- * Promoters and merchandizers see activations they are rostered on that are currently active. Supervisors and admins see all activations in their active date window.
+ * Promoters and rostered clients see activations they are assigned to that are currently active. Supervisors and admins see all activations in their active date window.
  * @summary List activations (field)
  */
 export const activationsListForField = async (
@@ -4100,6 +5133,418 @@ export function useActivationsListForField<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getActivationsListForFieldQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type activationsListTeamSalesForClientResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type activationsListTeamSalesForClientResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type activationsListTeamSalesForClientResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type activationsListTeamSalesForClientResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type activationsListTeamSalesForClientResponseSuccess =
+  activationsListTeamSalesForClientResponse200 & {
+    headers: Headers;
+  };
+export type activationsListTeamSalesForClientResponseError = (
+  | activationsListTeamSalesForClientResponse401
+  | activationsListTeamSalesForClientResponse403
+  | activationsListTeamSalesForClientResponse404
+) & {
+  headers: Headers;
+};
+
+export type activationsListTeamSalesForClientResponse =
+  | activationsListTeamSalesForClientResponseSuccess
+  | activationsListTeamSalesForClientResponseError;
+
+export const getActivationsListTeamSalesForClientUrl = (
+  id: unknown,
+  params?: ActivationsListTeamSalesForClientParams
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/activations/${id}/team-sales?${stringifiedParams}`
+    : `/activations/${id}/team-sales`;
+};
+
+/**
+ * Read-only. Rostered clients see sales line items recorded by field staff on this activation.
+ * @summary List team sales on activation (client)
+ */
+export const activationsListTeamSalesForClient = async (
+  id: unknown,
+  params?: ActivationsListTeamSalesForClientParams,
+  options?: RequestInit
+): Promise<activationsListTeamSalesForClientResponse> => {
+  return orvalFetcher<activationsListTeamSalesForClientResponse>(
+    getActivationsListTeamSalesForClientUrl(id, params),
+    {
+      ...options,
+      method: "GET"
+    }
+  );
+};
+
+export const getActivationsListTeamSalesForClientQueryKey = (
+  id: unknown,
+  params?: ActivationsListTeamSalesForClientParams
+) => {
+  return [`/activations/${id}/team-sales`, ...(params ? [params] : [])] as const;
+};
+
+export const getActivationsListTeamSalesForClientQueryOptions = <
+  TData = Awaited<ReturnType<typeof activationsListTeamSalesForClient>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationsListTeamSalesForClientParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListTeamSalesForClient>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getActivationsListTeamSalesForClientQueryKey(id, params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof activationsListTeamSalesForClient>>> = ({
+    signal
+  }) => activationsListTeamSalesForClient(id, params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof activationsListTeamSalesForClient>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ActivationsListTeamSalesForClientQueryResult = NonNullable<
+  Awaited<ReturnType<typeof activationsListTeamSalesForClient>>
+>;
+export type ActivationsListTeamSalesForClientQueryError = void;
+
+export function useActivationsListTeamSalesForClient<
+  TData = Awaited<ReturnType<typeof activationsListTeamSalesForClient>>,
+  TError = void
+>(
+  id: unknown,
+  params: undefined | ActivationsListTeamSalesForClientParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListTeamSalesForClient>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationsListTeamSalesForClient>>,
+          TError,
+          Awaited<ReturnType<typeof activationsListTeamSalesForClient>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationsListTeamSalesForClient<
+  TData = Awaited<ReturnType<typeof activationsListTeamSalesForClient>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationsListTeamSalesForClientParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListTeamSalesForClient>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationsListTeamSalesForClient>>,
+          TError,
+          Awaited<ReturnType<typeof activationsListTeamSalesForClient>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationsListTeamSalesForClient<
+  TData = Awaited<ReturnType<typeof activationsListTeamSalesForClient>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationsListTeamSalesForClientParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListTeamSalesForClient>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List team sales on activation (client)
+ */
+
+export function useActivationsListTeamSalesForClient<
+  TData = Awaited<ReturnType<typeof activationsListTeamSalesForClient>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationsListTeamSalesForClientParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof activationsListTeamSalesForClient>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getActivationsListTeamSalesForClientQueryOptions(id, params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type activationsExportClientActivationWorkbookResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type activationsExportClientActivationWorkbookResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type activationsExportClientActivationWorkbookResponse404 = {
+  data: void;
+  status: 404;
+};
+export type activationsExportClientActivationWorkbookResponseError = (
+  | activationsExportClientActivationWorkbookResponse401
+  | activationsExportClientActivationWorkbookResponse403
+  | activationsExportClientActivationWorkbookResponse404
+) & {
+  headers: Headers;
+};
+
+export type activationsExportClientActivationWorkbookResponse =
+  activationsExportClientActivationWorkbookResponseError;
+
+export const getActivationsExportClientActivationWorkbookUrl = (
+  id: unknown,
+  params?: ActivationsExportClientActivationWorkbookParams
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/activations/${id}/export.xlsx?${stringifiedParams}`
+    : `/activations/${id}/export.xlsx`;
+};
+
+/**
+ * Read-only export: activation summary, products, and sales line items for roster field staff. Optional `from` / `to` ISO date-times are intersected with the activation window.
+ * @summary Download activation Excel report (client)
+ */
+export const activationsExportClientActivationWorkbook = async (
+  id: unknown,
+  params?: ActivationsExportClientActivationWorkbookParams,
+  options?: RequestInit
+): Promise<activationsExportClientActivationWorkbookResponse> => {
+  return orvalFetcher<activationsExportClientActivationWorkbookResponse>(
+    getActivationsExportClientActivationWorkbookUrl(id, params),
+    {
+      ...options,
+      method: "GET"
+    }
+  );
+};
+
+export const getActivationsExportClientActivationWorkbookQueryKey = (
+  id: unknown,
+  params?: ActivationsExportClientActivationWorkbookParams
+) => {
+  return [`/activations/${id}/export.xlsx`, ...(params ? [params] : [])] as const;
+};
+
+export const getActivationsExportClientActivationWorkbookQueryOptions = <
+  TData = Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationsExportClientActivationWorkbookParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getActivationsExportClientActivationWorkbookQueryKey(id, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>
+  > = ({ signal }) =>
+    activationsExportClientActivationWorkbook(id, params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ActivationsExportClientActivationWorkbookQueryResult = NonNullable<
+  Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>
+>;
+export type ActivationsExportClientActivationWorkbookQueryError = void;
+
+export function useActivationsExportClientActivationWorkbook<
+  TData = Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+  TError = void
+>(
+  id: unknown,
+  params: undefined | ActivationsExportClientActivationWorkbookParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+          TError,
+          Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationsExportClientActivationWorkbook<
+  TData = Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationsExportClientActivationWorkbookParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+          TError,
+          Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useActivationsExportClientActivationWorkbook<
+  TData = Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationsExportClientActivationWorkbookParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Download activation Excel report (client)
+ */
+
+export function useActivationsExportClientActivationWorkbook<
+  TData = Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+  TError = void
+>(
+  id: unknown,
+  params?: ActivationsExportClientActivationWorkbookParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof activationsExportClientActivationWorkbook>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getActivationsExportClientActivationWorkbookQueryOptions(
+    id,
+    params,
+    options
+  );
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
@@ -4345,7 +5790,7 @@ export const getActivationsGetByIdForFieldUrl = (id: unknown) => {
 };
 
 /**
- * Full detail including products for supervisor/admin; promoters and merchandizers receive the same shape without the roster list.
+ * Full detail including products for supervisor/admin; promoters and clients receive the same shape without the roster list.
  * @summary Get activation (field)
  */
 export const activationsGetByIdForField = async (
@@ -4693,7 +6138,7 @@ export const getAdminUserListUsersUrl = () => {
 };
 
 /**
- * Supervisors see promoters and merchandizers only; admins see all users. Sends invite email (Resend) on create when `RESEND_API_KEY` is set.
+ * Supervisors see promoters and clients only; admins see all users. Sends invite email (Resend) on create when `RESEND_API_KEY` is set.
  * @summary List users (supervisor / admin)
  */
 export const adminUserListUsers = async (
@@ -4969,7 +6414,7 @@ export const getAdminUserUpdateUserUrl = (id: unknown) => {
 };
 
 /**
- * Partial update. Supervisors may edit promoters and merchandizers only. Only admins may assign supervisor or admin roles.
+ * Partial update. Supervisors may edit promoters and clients only. Only admins may assign supervisor or admin roles.
  * @summary Update user
  */
 export const adminUserUpdateUser = async (
@@ -5426,7 +6871,7 @@ export const getMeListMySalesUrl = (params?: MeListMySalesParams) => {
 };
 
 /**
- * BACKEND_PRD §7.2 — the authenticated promoter's or merchandizer's sales, newest first.
+ * BACKEND_PRD §7.2 — the authenticated promoter's sales, newest first (promoters only).
  * @summary List my sales
  */
 export const meListMySales = async (
@@ -5801,6 +7246,268 @@ export const useMeUpdateMeLocation = <TError = void, TContext = unknown>(
   return useMutation(getMeUpdateMeLocationMutationOptions(options), queryClient);
 };
 
+export type meCreateOutletVisitResponse200 = {
+  data: unknown;
+  status: 200;
+};
+
+export type meCreateOutletVisitResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type meCreateOutletVisitResponseSuccess = meCreateOutletVisitResponse200 & {
+  headers: Headers;
+};
+export type meCreateOutletVisitResponseError = meCreateOutletVisitResponse401 & {
+  headers: Headers;
+};
+
+export type meCreateOutletVisitResponse =
+  | meCreateOutletVisitResponseSuccess
+  | meCreateOutletVisitResponseError;
+
+export const getMeCreateOutletVisitUrl = () => {
+  return `/me/outlet-visits`;
+};
+
+/**
+ * Creates an outlet visit check-in and records outlet photo, stock availability, sales made, consumer engagement and visibility execution.
+ * @summary Check in and execute outlet visit
+ */
+export const meCreateOutletVisit = async (
+  createOutletVisitDto: CreateOutletVisitDto,
+  options?: RequestInit
+): Promise<meCreateOutletVisitResponse> => {
+  return orvalFetcher<meCreateOutletVisitResponse>(getMeCreateOutletVisitUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createOutletVisitDto)
+  });
+};
+
+export const getMeCreateOutletVisitMutationOptions = <TError = void, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof meCreateOutletVisit>>,
+    TError,
+    { data: CreateOutletVisitDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof meCreateOutletVisit>>,
+  TError,
+  { data: CreateOutletVisitDto },
+  TContext
+> => {
+  const mutationKey = ["meCreateOutletVisit"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof meCreateOutletVisit>>,
+    { data: CreateOutletVisitDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return meCreateOutletVisit(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MeCreateOutletVisitMutationResult = NonNullable<
+  Awaited<ReturnType<typeof meCreateOutletVisit>>
+>;
+export type MeCreateOutletVisitMutationBody = CreateOutletVisitDto;
+export type MeCreateOutletVisitMutationError = void;
+
+/**
+ * @summary Check in and execute outlet visit
+ */
+export const useMeCreateOutletVisit = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof meCreateOutletVisit>>,
+      TError,
+      { data: CreateOutletVisitDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof meCreateOutletVisit>>,
+  TError,
+  { data: CreateOutletVisitDto },
+  TContext
+> => {
+  return useMutation(getMeCreateOutletVisitMutationOptions(options), queryClient);
+};
+
+export type meListOutletVisitsResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type meListOutletVisitsResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type meListOutletVisitsResponseSuccess = meListOutletVisitsResponse200 & {
+  headers: Headers;
+};
+export type meListOutletVisitsResponseError = meListOutletVisitsResponse401 & {
+  headers: Headers;
+};
+
+export type meListOutletVisitsResponse =
+  | meListOutletVisitsResponseSuccess
+  | meListOutletVisitsResponseError;
+
+export const getMeListOutletVisitsUrl = (params?: MeListOutletVisitsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/me/outlet-visits?${stringifiedParams}`
+    : `/me/outlet-visits`;
+};
+
+/**
+ * Returns recent outlet visits for the authenticated field user.
+ * @summary List own outlet visits
+ */
+export const meListOutletVisits = async (
+  params?: MeListOutletVisitsParams,
+  options?: RequestInit
+): Promise<meListOutletVisitsResponse> => {
+  return orvalFetcher<meListOutletVisitsResponse>(getMeListOutletVisitsUrl(params), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getMeListOutletVisitsQueryKey = (params?: MeListOutletVisitsParams) => {
+  return [`/me/outlet-visits`, ...(params ? [params] : [])] as const;
+};
+
+export const getMeListOutletVisitsQueryOptions = <
+  TData = Awaited<ReturnType<typeof meListOutletVisits>>,
+  TError = void
+>(
+  params?: MeListOutletVisitsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meListOutletVisits>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getMeListOutletVisitsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof meListOutletVisits>>> = ({ signal }) =>
+    meListOutletVisits(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof meListOutletVisits>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MeListOutletVisitsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof meListOutletVisits>>
+>;
+export type MeListOutletVisitsQueryError = void;
+
+export function useMeListOutletVisits<
+  TData = Awaited<ReturnType<typeof meListOutletVisits>>,
+  TError = void
+>(
+  params: undefined | MeListOutletVisitsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof meListOutletVisits>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof meListOutletVisits>>,
+          TError,
+          Awaited<ReturnType<typeof meListOutletVisits>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useMeListOutletVisits<
+  TData = Awaited<ReturnType<typeof meListOutletVisits>>,
+  TError = void
+>(
+  params?: MeListOutletVisitsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meListOutletVisits>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof meListOutletVisits>>,
+          TError,
+          Awaited<ReturnType<typeof meListOutletVisits>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useMeListOutletVisits<
+  TData = Awaited<ReturnType<typeof meListOutletVisits>>,
+  TError = void
+>(
+  params?: MeListOutletVisitsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meListOutletVisits>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List own outlet visits
+ */
+
+export function useMeListOutletVisits<
+  TData = Awaited<ReturnType<typeof meListOutletVisits>>,
+  TError = void
+>(
+  params?: MeListOutletVisitsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meListOutletVisits>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getMeListOutletVisitsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
 export type salesCreateResponse201 = {
   data: void;
   status: 201;
@@ -5903,4 +7610,1325 @@ export const useSalesCreate = <TError = void, TContext = unknown>(
   TContext
 > => {
   return useMutation(getSalesCreateMutationOptions(options), queryClient);
+};
+
+export type stockRecordPickupResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type stockRecordPickupResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type stockRecordPickupResponseSuccess = stockRecordPickupResponse200 & {
+  headers: Headers;
+};
+export type stockRecordPickupResponseError = stockRecordPickupResponse401 & {
+  headers: Headers;
+};
+
+export type stockRecordPickupResponse =
+  | stockRecordPickupResponseSuccess
+  | stockRecordPickupResponseError;
+
+export const getStockRecordPickupUrl = () => {
+  return `/stock/pickups`;
+};
+
+/**
+ * Captures distributor name, SKU picked, quantity, cost price and pickup datetime for field inventory receipts.
+ * @summary Record stock pick-up
+ */
+export const stockRecordPickup = async (
+  createStockPickupDto: CreateStockPickupDto,
+  options?: RequestInit
+): Promise<stockRecordPickupResponse> => {
+  return orvalFetcher<stockRecordPickupResponse>(getStockRecordPickupUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createStockPickupDto)
+  });
+};
+
+export const getStockRecordPickupMutationOptions = <TError = void, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof stockRecordPickup>>,
+    TError,
+    { data: CreateStockPickupDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof stockRecordPickup>>,
+  TError,
+  { data: CreateStockPickupDto },
+  TContext
+> => {
+  const mutationKey = ["stockRecordPickup"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof stockRecordPickup>>,
+    { data: CreateStockPickupDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return stockRecordPickup(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type StockRecordPickupMutationResult = NonNullable<
+  Awaited<ReturnType<typeof stockRecordPickup>>
+>;
+export type StockRecordPickupMutationBody = CreateStockPickupDto;
+export type StockRecordPickupMutationError = void;
+
+/**
+ * @summary Record stock pick-up
+ */
+export const useStockRecordPickup = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof stockRecordPickup>>,
+      TError,
+      { data: CreateStockPickupDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof stockRecordPickup>>,
+  TError,
+  { data: CreateStockPickupDto },
+  TContext
+> => {
+  return useMutation(getStockRecordPickupMutationOptions(options), queryClient);
+};
+
+export type stockRecordSaleResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type stockRecordSaleResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type stockRecordSaleResponseSuccess = stockRecordSaleResponse200 & {
+  headers: Headers;
+};
+export type stockRecordSaleResponseError = stockRecordSaleResponse401 & {
+  headers: Headers;
+};
+
+export type stockRecordSaleResponse = stockRecordSaleResponseSuccess | stockRecordSaleResponseError;
+
+export const getStockRecordSaleUrl = () => {
+  return `/stock/sales`;
+};
+
+/**
+ * Captures sold SKU, quantity, selling price and returns remaining stock balance per sold SKU.
+ * @summary Record stock sale with pricing
+ */
+export const stockRecordSale = async (
+  createStockSaleDto: CreateStockSaleDto,
+  options?: RequestInit
+): Promise<stockRecordSaleResponse> => {
+  return orvalFetcher<stockRecordSaleResponse>(getStockRecordSaleUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createStockSaleDto)
+  });
+};
+
+export const getStockRecordSaleMutationOptions = <TError = void, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof stockRecordSale>>,
+    TError,
+    { data: CreateStockSaleDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof stockRecordSale>>,
+  TError,
+  { data: CreateStockSaleDto },
+  TContext
+> => {
+  const mutationKey = ["stockRecordSale"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof stockRecordSale>>,
+    { data: CreateStockSaleDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return stockRecordSale(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type StockRecordSaleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof stockRecordSale>>
+>;
+export type StockRecordSaleMutationBody = CreateStockSaleDto;
+export type StockRecordSaleMutationError = void;
+
+/**
+ * @summary Record stock sale with pricing
+ */
+export const useStockRecordSale = <TError = void, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof stockRecordSale>>,
+      TError,
+      { data: CreateStockSaleDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof stockRecordSale>>,
+  TError,
+  { data: CreateStockSaleDto },
+  TContext
+> => {
+  return useMutation(getStockRecordSaleMutationOptions(options), queryClient);
+};
+
+export type stockGetDailySummaryResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type stockGetDailySummaryResponseSuccess = stockGetDailySummaryResponse200 & {
+  headers: Headers;
+};
+export type stockGetDailySummaryResponse = stockGetDailySummaryResponseSuccess;
+
+export const getStockGetDailySummaryUrl = (params: StockGetDailySummaryParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/stock/daily-summary?${stringifiedParams}`
+    : `/stock/daily-summary`;
+};
+
+/**
+ * Returns opening stock, stock received, stock sold, closing balance, daily sales value and case achievement per SKU.
+ * @summary Get daily inventory and sales summary
+ */
+export const stockGetDailySummary = async (
+  params: StockGetDailySummaryParams,
+  options?: RequestInit
+): Promise<stockGetDailySummaryResponse> => {
+  return orvalFetcher<stockGetDailySummaryResponse>(getStockGetDailySummaryUrl(params), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getStockGetDailySummaryQueryKey = (params?: StockGetDailySummaryParams) => {
+  return [`/stock/daily-summary`, ...(params ? [params] : [])] as const;
+};
+
+export const getStockGetDailySummaryQueryOptions = <
+  TData = Awaited<ReturnType<typeof stockGetDailySummary>>,
+  TError = unknown
+>(
+  params: StockGetDailySummaryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetDailySummary>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getStockGetDailySummaryQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof stockGetDailySummary>>> = ({ signal }) =>
+    stockGetDailySummary(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof stockGetDailySummary>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type StockGetDailySummaryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof stockGetDailySummary>>
+>;
+export type StockGetDailySummaryQueryError = unknown;
+
+export function useStockGetDailySummary<
+  TData = Awaited<ReturnType<typeof stockGetDailySummary>>,
+  TError = unknown
+>(
+  params: StockGetDailySummaryParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetDailySummary>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof stockGetDailySummary>>,
+          TError,
+          Awaited<ReturnType<typeof stockGetDailySummary>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useStockGetDailySummary<
+  TData = Awaited<ReturnType<typeof stockGetDailySummary>>,
+  TError = unknown
+>(
+  params: StockGetDailySummaryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetDailySummary>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof stockGetDailySummary>>,
+          TError,
+          Awaited<ReturnType<typeof stockGetDailySummary>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useStockGetDailySummary<
+  TData = Awaited<ReturnType<typeof stockGetDailySummary>>,
+  TError = unknown
+>(
+  params: StockGetDailySummaryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetDailySummary>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get daily inventory and sales summary
+ */
+
+export function useStockGetDailySummary<
+  TData = Awaited<ReturnType<typeof stockGetDailySummary>>,
+  TError = unknown
+>(
+  params: StockGetDailySummaryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetDailySummary>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getStockGetDailySummaryQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type stockGetAdminOverviewResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type stockGetAdminOverviewResponseSuccess = stockGetAdminOverviewResponse200 & {
+  headers: Headers;
+};
+export type stockGetAdminOverviewResponse = stockGetAdminOverviewResponseSuccess;
+
+export const getStockGetAdminOverviewUrl = (params: StockGetAdminOverviewParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/stock/admin-overview?${stringifiedParams}`
+    : `/stock/admin-overview`;
+};
+
+/**
+ * Cross-user stock rollup by SKU with per-distributor pickup analytics and daily sales value.
+ * @summary Get ops stock overview
+ */
+export const stockGetAdminOverview = async (
+  params: StockGetAdminOverviewParams,
+  options?: RequestInit
+): Promise<stockGetAdminOverviewResponse> => {
+  return orvalFetcher<stockGetAdminOverviewResponse>(getStockGetAdminOverviewUrl(params), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getStockGetAdminOverviewQueryKey = (params?: StockGetAdminOverviewParams) => {
+  return [`/stock/admin-overview`, ...(params ? [params] : [])] as const;
+};
+
+export const getStockGetAdminOverviewQueryOptions = <
+  TData = Awaited<ReturnType<typeof stockGetAdminOverview>>,
+  TError = unknown
+>(
+  params: StockGetAdminOverviewParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetAdminOverview>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getStockGetAdminOverviewQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof stockGetAdminOverview>>> = ({ signal }) =>
+    stockGetAdminOverview(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof stockGetAdminOverview>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type StockGetAdminOverviewQueryResult = NonNullable<
+  Awaited<ReturnType<typeof stockGetAdminOverview>>
+>;
+export type StockGetAdminOverviewQueryError = unknown;
+
+export function useStockGetAdminOverview<
+  TData = Awaited<ReturnType<typeof stockGetAdminOverview>>,
+  TError = unknown
+>(
+  params: StockGetAdminOverviewParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetAdminOverview>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof stockGetAdminOverview>>,
+          TError,
+          Awaited<ReturnType<typeof stockGetAdminOverview>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useStockGetAdminOverview<
+  TData = Awaited<ReturnType<typeof stockGetAdminOverview>>,
+  TError = unknown
+>(
+  params: StockGetAdminOverviewParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetAdminOverview>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof stockGetAdminOverview>>,
+          TError,
+          Awaited<ReturnType<typeof stockGetAdminOverview>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useStockGetAdminOverview<
+  TData = Awaited<ReturnType<typeof stockGetAdminOverview>>,
+  TError = unknown
+>(
+  params: StockGetAdminOverviewParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetAdminOverview>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get ops stock overview
+ */
+
+export function useStockGetAdminOverview<
+  TData = Awaited<ReturnType<typeof stockGetAdminOverview>>,
+  TError = unknown
+>(
+  params: StockGetAdminOverviewParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetAdminOverview>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getStockGetAdminOverviewQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type stockGetTargetMonitoringResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type stockGetTargetMonitoringResponseSuccess = stockGetTargetMonitoringResponse200 & {
+  headers: Headers;
+};
+export type stockGetTargetMonitoringResponse = stockGetTargetMonitoringResponseSuccess;
+
+export const getStockGetTargetMonitoringUrl = (params: StockGetTargetMonitoringParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/stock/target-monitoring?${stringifiedParams}`
+    : `/stock/target-monitoring`;
+};
+
+/**
+ * Returns daily achievement %, team achievement %, leaderboard, underperformer alerts and supervisor summary for trade developers.
+ * @summary Get daily target monitoring for team performance
+ */
+export const stockGetTargetMonitoring = async (
+  params: StockGetTargetMonitoringParams,
+  options?: RequestInit
+): Promise<stockGetTargetMonitoringResponse> => {
+  return orvalFetcher<stockGetTargetMonitoringResponse>(getStockGetTargetMonitoringUrl(params), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getStockGetTargetMonitoringQueryKey = (params?: StockGetTargetMonitoringParams) => {
+  return [`/stock/target-monitoring`, ...(params ? [params] : [])] as const;
+};
+
+export const getStockGetTargetMonitoringQueryOptions = <
+  TData = Awaited<ReturnType<typeof stockGetTargetMonitoring>>,
+  TError = unknown
+>(
+  params: StockGetTargetMonitoringParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetTargetMonitoring>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getStockGetTargetMonitoringQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof stockGetTargetMonitoring>>> = ({
+    signal
+  }) => stockGetTargetMonitoring(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof stockGetTargetMonitoring>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type StockGetTargetMonitoringQueryResult = NonNullable<
+  Awaited<ReturnType<typeof stockGetTargetMonitoring>>
+>;
+export type StockGetTargetMonitoringQueryError = unknown;
+
+export function useStockGetTargetMonitoring<
+  TData = Awaited<ReturnType<typeof stockGetTargetMonitoring>>,
+  TError = unknown
+>(
+  params: StockGetTargetMonitoringParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetTargetMonitoring>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof stockGetTargetMonitoring>>,
+          TError,
+          Awaited<ReturnType<typeof stockGetTargetMonitoring>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useStockGetTargetMonitoring<
+  TData = Awaited<ReturnType<typeof stockGetTargetMonitoring>>,
+  TError = unknown
+>(
+  params: StockGetTargetMonitoringParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetTargetMonitoring>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof stockGetTargetMonitoring>>,
+          TError,
+          Awaited<ReturnType<typeof stockGetTargetMonitoring>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useStockGetTargetMonitoring<
+  TData = Awaited<ReturnType<typeof stockGetTargetMonitoring>>,
+  TError = unknown
+>(
+  params: StockGetTargetMonitoringParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetTargetMonitoring>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get daily target monitoring for team performance
+ */
+
+export function useStockGetTargetMonitoring<
+  TData = Awaited<ReturnType<typeof stockGetTargetMonitoring>>,
+  TError = unknown
+>(
+  params: StockGetTargetMonitoringParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof stockGetTargetMonitoring>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getStockGetTargetMonitoringQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type reportsGetDashboardResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type reportsGetDashboardResponseSuccess = reportsGetDashboardResponse200 & {
+  headers: Headers;
+};
+export type reportsGetDashboardResponse = reportsGetDashboardResponseSuccess;
+
+export const getReportsGetDashboardUrl = (params?: ReportsGetDashboardParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/reports/dashboard?${stringifiedParams}`
+    : `/reports/dashboard`;
+};
+
+/**
+ * @summary Get unified reporting dashboard
+ */
+export const reportsGetDashboard = async (
+  params?: ReportsGetDashboardParams,
+  options?: RequestInit
+): Promise<reportsGetDashboardResponse> => {
+  return orvalFetcher<reportsGetDashboardResponse>(getReportsGetDashboardUrl(params), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getReportsGetDashboardQueryKey = (params?: ReportsGetDashboardParams) => {
+  return [`/reports/dashboard`, ...(params ? [params] : [])] as const;
+};
+
+export const getReportsGetDashboardQueryOptions = <
+  TData = Awaited<ReturnType<typeof reportsGetDashboard>>,
+  TError = unknown
+>(
+  params?: ReportsGetDashboardParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsGetDashboard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getReportsGetDashboardQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof reportsGetDashboard>>> = ({ signal }) =>
+    reportsGetDashboard(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof reportsGetDashboard>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ReportsGetDashboardQueryResult = NonNullable<
+  Awaited<ReturnType<typeof reportsGetDashboard>>
+>;
+export type ReportsGetDashboardQueryError = unknown;
+
+export function useReportsGetDashboard<
+  TData = Awaited<ReturnType<typeof reportsGetDashboard>>,
+  TError = unknown
+>(
+  params: undefined | ReportsGetDashboardParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsGetDashboard>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportsGetDashboard>>,
+          TError,
+          Awaited<ReturnType<typeof reportsGetDashboard>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportsGetDashboard<
+  TData = Awaited<ReturnType<typeof reportsGetDashboard>>,
+  TError = unknown
+>(
+  params?: ReportsGetDashboardParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsGetDashboard>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportsGetDashboard>>,
+          TError,
+          Awaited<ReturnType<typeof reportsGetDashboard>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportsGetDashboard<
+  TData = Awaited<ReturnType<typeof reportsGetDashboard>>,
+  TError = unknown
+>(
+  params?: ReportsGetDashboardParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsGetDashboard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get unified reporting dashboard
+ */
+
+export function useReportsGetDashboard<
+  TData = Awaited<ReturnType<typeof reportsGetDashboard>>,
+  TError = unknown
+>(
+  params?: ReportsGetDashboardParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsGetDashboard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getReportsGetDashboardQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type reportsExportDashboardExcelResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type reportsExportDashboardExcelResponseSuccess = reportsExportDashboardExcelResponse200 & {
+  headers: Headers;
+};
+export type reportsExportDashboardExcelResponse = reportsExportDashboardExcelResponseSuccess;
+
+export const getReportsExportDashboardExcelUrl = () => {
+  return `/reports/dashboard/export.xlsx`;
+};
+
+/**
+ * @summary Export reporting dashboard as Excel
+ */
+export const reportsExportDashboardExcel = async (
+  options?: RequestInit
+): Promise<reportsExportDashboardExcelResponse> => {
+  return orvalFetcher<reportsExportDashboardExcelResponse>(getReportsExportDashboardExcelUrl(), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getReportsExportDashboardExcelQueryKey = () => {
+  return [`/reports/dashboard/export.xlsx`] as const;
+};
+
+export const getReportsExportDashboardExcelQueryOptions = <
+  TData = Awaited<ReturnType<typeof reportsExportDashboardExcel>>,
+  TError = unknown
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof reportsExportDashboardExcel>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getReportsExportDashboardExcelQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof reportsExportDashboardExcel>>> = ({
+    signal
+  }) => reportsExportDashboardExcel({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof reportsExportDashboardExcel>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ReportsExportDashboardExcelQueryResult = NonNullable<
+  Awaited<ReturnType<typeof reportsExportDashboardExcel>>
+>;
+export type ReportsExportDashboardExcelQueryError = unknown;
+
+export function useReportsExportDashboardExcel<
+  TData = Awaited<ReturnType<typeof reportsExportDashboardExcel>>,
+  TError = unknown
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsExportDashboardExcel>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportsExportDashboardExcel>>,
+          TError,
+          Awaited<ReturnType<typeof reportsExportDashboardExcel>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportsExportDashboardExcel<
+  TData = Awaited<ReturnType<typeof reportsExportDashboardExcel>>,
+  TError = unknown
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsExportDashboardExcel>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportsExportDashboardExcel>>,
+          TError,
+          Awaited<ReturnType<typeof reportsExportDashboardExcel>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportsExportDashboardExcel<
+  TData = Awaited<ReturnType<typeof reportsExportDashboardExcel>>,
+  TError = unknown
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsExportDashboardExcel>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Export reporting dashboard as Excel
+ */
+
+export function useReportsExportDashboardExcel<
+  TData = Awaited<ReturnType<typeof reportsExportDashboardExcel>>,
+  TError = unknown
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsExportDashboardExcel>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getReportsExportDashboardExcelQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type reportsExportDashboardPdfResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type reportsExportDashboardPdfResponseSuccess = reportsExportDashboardPdfResponse200 & {
+  headers: Headers;
+};
+export type reportsExportDashboardPdfResponse = reportsExportDashboardPdfResponseSuccess;
+
+export const getReportsExportDashboardPdfUrl = () => {
+  return `/reports/dashboard/export.pdf`;
+};
+
+/**
+ * @summary Export reporting dashboard as PDF
+ */
+export const reportsExportDashboardPdf = async (
+  options?: RequestInit
+): Promise<reportsExportDashboardPdfResponse> => {
+  return orvalFetcher<reportsExportDashboardPdfResponse>(getReportsExportDashboardPdfUrl(), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getReportsExportDashboardPdfQueryKey = () => {
+  return [`/reports/dashboard/export.pdf`] as const;
+};
+
+export const getReportsExportDashboardPdfQueryOptions = <
+  TData = Awaited<ReturnType<typeof reportsExportDashboardPdf>>,
+  TError = unknown
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof reportsExportDashboardPdf>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getReportsExportDashboardPdfQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof reportsExportDashboardPdf>>> = ({
+    signal
+  }) => reportsExportDashboardPdf({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof reportsExportDashboardPdf>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ReportsExportDashboardPdfQueryResult = NonNullable<
+  Awaited<ReturnType<typeof reportsExportDashboardPdf>>
+>;
+export type ReportsExportDashboardPdfQueryError = unknown;
+
+export function useReportsExportDashboardPdf<
+  TData = Awaited<ReturnType<typeof reportsExportDashboardPdf>>,
+  TError = unknown
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsExportDashboardPdf>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportsExportDashboardPdf>>,
+          TError,
+          Awaited<ReturnType<typeof reportsExportDashboardPdf>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportsExportDashboardPdf<
+  TData = Awaited<ReturnType<typeof reportsExportDashboardPdf>>,
+  TError = unknown
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsExportDashboardPdf>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportsExportDashboardPdf>>,
+          TError,
+          Awaited<ReturnType<typeof reportsExportDashboardPdf>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportsExportDashboardPdf<
+  TData = Awaited<ReturnType<typeof reportsExportDashboardPdf>>,
+  TError = unknown
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsExportDashboardPdf>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Export reporting dashboard as PDF
+ */
+
+export function useReportsExportDashboardPdf<
+  TData = Awaited<ReturnType<typeof reportsExportDashboardPdf>>,
+  TError = unknown
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsExportDashboardPdf>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getReportsExportDashboardPdfQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type reportsGetSettingsResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type reportsGetSettingsResponseSuccess = reportsGetSettingsResponse200 & {
+  headers: Headers;
+};
+export type reportsGetSettingsResponse = reportsGetSettingsResponseSuccess;
+
+export const getReportsGetSettingsUrl = () => {
+  return `/reports/settings`;
+};
+
+/**
+ * @summary Get automated report settings and recipients
+ */
+export const reportsGetSettings = async (
+  options?: RequestInit
+): Promise<reportsGetSettingsResponse> => {
+  return orvalFetcher<reportsGetSettingsResponse>(getReportsGetSettingsUrl(), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getReportsGetSettingsQueryKey = () => {
+  return [`/reports/settings`] as const;
+};
+
+export const getReportsGetSettingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof reportsGetSettings>>,
+  TError = unknown
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsGetSettings>>, TError, TData>>;
+  request?: SecondParameter<typeof orvalFetcher>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getReportsGetSettingsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof reportsGetSettings>>> = ({ signal }) =>
+    reportsGetSettings({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof reportsGetSettings>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ReportsGetSettingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof reportsGetSettings>>
+>;
+export type ReportsGetSettingsQueryError = unknown;
+
+export function useReportsGetSettings<
+  TData = Awaited<ReturnType<typeof reportsGetSettings>>,
+  TError = unknown
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsGetSettings>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportsGetSettings>>,
+          TError,
+          Awaited<ReturnType<typeof reportsGetSettings>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportsGetSettings<
+  TData = Awaited<ReturnType<typeof reportsGetSettings>>,
+  TError = unknown
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof reportsGetSettings>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof reportsGetSettings>>,
+          TError,
+          Awaited<ReturnType<typeof reportsGetSettings>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useReportsGetSettings<
+  TData = Awaited<ReturnType<typeof reportsGetSettings>>,
+  TError = unknown
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsGetSettings>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get automated report settings and recipients
+ */
+
+export function useReportsGetSettings<
+  TData = Awaited<ReturnType<typeof reportsGetSettings>>,
+  TError = unknown
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof reportsGetSettings>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getReportsGetSettingsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type reportsUpdateSettingsResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type reportsUpdateSettingsResponseSuccess = reportsUpdateSettingsResponse200 & {
+  headers: Headers;
+};
+export type reportsUpdateSettingsResponse = reportsUpdateSettingsResponseSuccess;
+
+export const getReportsUpdateSettingsUrl = () => {
+  return `/reports/settings`;
+};
+
+/**
+ * @summary Update automated reporting schedules and recipient list
+ */
+export const reportsUpdateSettings = async (
+  updateReportSettingsDto: UpdateReportSettingsDto,
+  options?: RequestInit
+): Promise<reportsUpdateSettingsResponse> => {
+  return orvalFetcher<reportsUpdateSettingsResponse>(getReportsUpdateSettingsUrl(), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateReportSettingsDto)
+  });
+};
+
+export const getReportsUpdateSettingsMutationOptions = <
+  TError = unknown,
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reportsUpdateSettings>>,
+    TError,
+    { data: UpdateReportSettingsDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalFetcher>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof reportsUpdateSettings>>,
+  TError,
+  { data: UpdateReportSettingsDto },
+  TContext
+> => {
+  const mutationKey = ["reportsUpdateSettings"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof reportsUpdateSettings>>,
+    { data: UpdateReportSettingsDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return reportsUpdateSettings(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReportsUpdateSettingsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof reportsUpdateSettings>>
+>;
+export type ReportsUpdateSettingsMutationBody = UpdateReportSettingsDto;
+export type ReportsUpdateSettingsMutationError = unknown;
+
+/**
+ * @summary Update automated reporting schedules and recipient list
+ */
+export const useReportsUpdateSettings = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof reportsUpdateSettings>>,
+      TError,
+      { data: UpdateReportSettingsDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof reportsUpdateSettings>>,
+  TError,
+  { data: UpdateReportSettingsDto },
+  TContext
+> => {
+  return useMutation(getReportsUpdateSettingsMutationOptions(options), queryClient);
 };

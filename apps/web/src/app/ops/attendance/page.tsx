@@ -113,9 +113,8 @@ export default function OpsAttendancePage(): ReactElement {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Daily attendance</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          Roll-up for field staff (promoters and merchandizers) by calendar day. Boundaries and
-          &ldquo;late&rdquo; use the API{" "}
-          <span className="font-mono text-xs text-foreground">ATTENDANCE_TIMEZONE</span> and{" "}
+          Roll-up for field staff (promoters) by calendar day. Boundaries and &ldquo;late&rdquo; use
+          the API <span className="font-mono text-xs text-foreground">ATTENDANCE_TIMEZONE</span> and{" "}
           <span className="font-mono text-xs text-foreground">
             ATTENDANCE_EXPECTED_CHECK_IN_HHMM
           </span>

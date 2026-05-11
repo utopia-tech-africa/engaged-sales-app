@@ -135,7 +135,7 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
 
   const fieldTeamUsers = useMemo(() => {
     return (usersQuery.data ?? []).filter(
-      (u) => (u.role === "promoter" || u.role === "merchandizer") && u.isActive
+      (u) => (u.role === "promoter" || u.role === "client") && u.isActive
     );
   }, [usersQuery.data]);
 
@@ -695,7 +695,7 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
                           {rosterAddCandidates.length === 0 ? (
                             <p className="p-4 text-sm text-muted-foreground">
                               {fieldTeamUsers.length === 0
-                                ? "No active promoters or merchandizers in the directory."
+                                ? "No active promoters or clients in the directory."
                                 : "Everyone eligible is already on this roster."}
                             </p>
                           ) : (
@@ -933,9 +933,9 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
                     <div>
                       <h3 className={labelClass}>Sales (roster only)</h3>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        Line items from promoters and merchandizers on this activation&apos;s
-                        roster, within the activation window and your filters above. Sales by
-                        non-rostered users are hidden.
+                        Line items from promoters on this activation&apos;s roster, within the
+                        activation window and your filters above. Sales by non-rostered users are
+                        hidden.
                       </p>
                       {fieldSalesQuery.isLoading ? (
                         <p className="mt-4 text-sm text-muted-foreground">Loading sales…</p>

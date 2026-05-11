@@ -28,9 +28,9 @@ export class CreateAdminUserDto {
   @Matches(/^\+?[1-9]\d{7,14}$/)
   public phone!: string;
 
-  @ApiProperty({ enum: ["promoter", "merchandizer", "supervisor", "admin"] })
-  @IsIn(["promoter", "merchandizer", "supervisor", "admin"])
-  public role!: "promoter" | "merchandizer" | "supervisor" | "admin";
+  @ApiProperty({ enum: ["promoter", "client", "supervisor", "admin"] })
+  @IsIn(["promoter", "client", "supervisor", "admin"])
+  public role!: "promoter" | "client" | "supervisor" | "admin";
 
   @ApiPropertyOptional({ description: "Region id (cuid) for assignment" })
   @IsOptional()

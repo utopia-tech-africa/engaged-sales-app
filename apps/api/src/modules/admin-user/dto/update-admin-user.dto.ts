@@ -9,10 +9,10 @@ export class UpdateAdminUserDto {
   @MaxLength(128)
   public fullName?: string;
 
-  @ApiPropertyOptional({ enum: ["promoter", "merchandizer", "supervisor", "admin"] })
+  @ApiPropertyOptional({ enum: ["promoter", "client", "supervisor", "admin"] })
   @IsOptional()
-  @IsIn(["promoter", "merchandizer", "supervisor", "admin"])
-  public role?: "promoter" | "merchandizer" | "supervisor" | "admin";
+  @IsIn(["promoter", "client", "supervisor", "admin"])
+  public role?: "promoter" | "client" | "supervisor" | "admin";
 
   @ApiPropertyOptional({ description: "Region id (cuid)" })
   @IsOptional()

@@ -280,12 +280,15 @@ export class ActivationRepository {
     userId?: string;
     createdFrom?: Date;
     createdTo?: Date;
+    /** Upper bound for returned rows (default 200; exports may pass up to 5000). */
+    maxRows?: number;
   }) {
-    const { activationId, rosterUserIds, take, userId, createdFrom, createdTo } = args;
+    const { activationId, rosterUserIds, take, userId, createdFrom, createdTo, maxRows } = args;
     if (rosterUserIds.length === 0) {
       return Promise.resolve([] as FieldSaleAdminRow[]);
     }
-    const lim = Math.min(200, Math.max(1, take));
+    const cap = Math.min(maxRows ?? 200, 5000);
+    const lim = Math.min(cap, Math.max(1, take));
     const userFilter =
       userId !== undefined
         ? rosterUserIds.includes(userId)

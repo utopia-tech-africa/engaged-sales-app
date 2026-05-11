@@ -430,9 +430,9 @@ export class AuthService {
     }
   }
 
-  /** Promoters and merchandizers are checked against active geofences at login; supervisors and admins are not. */
+  /** Promoters are checked against active geofences at login; clients, supervisors, and admins are not. */
   private loginRoleRequiresWorkAreaCheck(role: User["role"]): boolean {
-    return role === "promoter" || role === "merchandizer";
+    return role === "promoter";
   }
 
   private async issueTokens(

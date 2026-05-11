@@ -9,7 +9,7 @@ datasource db {
 
 enum UserRole {
   promoter
-  merchandizer
+  client
   supervisor
   admin
 }
@@ -28,6 +28,11 @@ enum AuthProvider {
 enum AttendanceKind {
   clock_in
   clock_out
+}
+
+enum ReportFrequency {
+  daily
+  weekly
 }
 
 model User {
@@ -51,6 +56,7 @@ model User {
   sales      Sale[]
   outletVisits OutletVisit[]
   stockPickups StockPickup[]
+  reportConfigs ReportConfig[]
 
   @@index([regionId])
 }
@@ -63,8 +69,28 @@ model Region {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  users        User[]
-  activations  Activation[]
+  users         User[]
+  activations   Activation[]
+  subwholesales Subwholesale[]
+}
+
+/// Wholesale sub-node under a region (e.g. distributor hub or secondary territory).
+model Subwholesale {
+  id           String   @id @default(cuid())
+  regionId     String
+  slug         String
+  name         String
+  contactName  String?
+  contactPhone String?
+  contactEmail String?
+  notes        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  region       Region   @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@unique([regionId, slug])
+  @@index([regionId])
 }
 
 model AuthSession {
@@ -286,4 +312,35 @@ model StockPickupItem {
 
   @@index([pickupId])
   @@index([productId])
+}
+
+model ReportConfig {
+  id               String   @id @default(cuid())
+  key              String   @unique
+  timezone         String   @default("UTC")
+  dailyEnabled     Boolean  @default(false)
+  dailyCron        String   @default("0 0 19 * * *")
+  weeklyEnabled    Boolean  @default(false)
+  weeklyCron       String   @default("0 0 19 * * 1")
+  dailyLastSentAt  DateTime?
+  weeklyLastSentAt DateTime?
+  createdByUserId  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  createdByUser    User?    @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  recipients       ReportRecipient[]
+}
+
+model ReportRecipient {
+  id          String   @id @default(cuid())
+  reportConfigId String
+  email       String
+  frequency   ReportFrequency @default(daily)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reportConfig ReportConfig @relation(fields: [reportConfigId], references: [id], onDelete: Cascade)
+
+  @@index([reportConfigId])
+  @@unique([reportConfigId, email, frequency])
 }

@@ -35,14 +35,14 @@ const inputClass =
 
 const ALL_ROLES = [
   AdminUserCreateUserBodyRole.promoter,
-  AdminUserCreateUserBodyRole.merchandizer,
+  AdminUserCreateUserBodyRole.client,
   AdminUserCreateUserBodyRole.supervisor,
   AdminUserCreateUserBodyRole.admin
 ] as const;
 
 const FIELD_ROLES = [
   AdminUserCreateUserBodyRole.promoter,
-  AdminUserCreateUserBodyRole.merchandizer
+  AdminUserCreateUserBodyRole.client
 ] as const;
 
 /** Radix Select requires a non-empty value; map to/from optional region & gender. */
@@ -235,8 +235,8 @@ export default function OpsUsersPage(): ReactElement {
           ) : (
             " New users receive sign-in instructions by email when email delivery is configured."
           )}{" "}
-          Supervisors manage promoters and merchandizers; only admins can create or edit supervisor
-          and admin accounts.
+          Supervisors manage promoters and clients; only admins can create or edit supervisor and
+          admin accounts.
         </p>
       </div>
 

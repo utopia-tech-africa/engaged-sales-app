@@ -6,7 +6,7 @@ import type { AuthenticatedUser, UserRole } from "../../common/types/authenticat
 import { PrismaService } from "../prisma/prisma.service";
 
 const OPS_ROLES = new Set<UserRole>(["admin", "supervisor"]);
-const FIELD_ROLES = ["promoter", "merchandizer"] as const;
+const FIELD_ROLES = ["promoter"] as const;
 
 @Injectable()
 export class AttendanceAdminService {

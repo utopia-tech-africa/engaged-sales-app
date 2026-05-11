@@ -6,6 +6,7 @@ import { type PropsWithChildren, type ReactElement, useEffect } from "react";
 import { FieldShell } from "@/components/field-shell";
 import { useAuthSignOut } from "@/lib/api/generated/client";
 import { useAuthStore, useAuthStoreHydrated } from "@/lib/auth/auth-store";
+import { useRedirectClientAwayFromFieldMutationRoutes } from "@/lib/auth/use-redirect-client-from-field-mutation-routes";
 import { isOpsRole } from "@/lib/ops/ops-adapters";
 
 export const DashboardLayoutClient = ({ children }: PropsWithChildren): ReactElement => {
@@ -18,6 +19,8 @@ export const DashboardLayoutClient = ({ children }: PropsWithChildren): ReactEle
   const user = useAuthStore((state) => state.user);
   const clearSession = useAuthStore((state) => state.clearSession);
   const signOutMutation = useAuthSignOut();
+
+  useRedirectClientAwayFromFieldMutationRoutes();
 
   useEffect(() => {
     if (!authHydrated) {

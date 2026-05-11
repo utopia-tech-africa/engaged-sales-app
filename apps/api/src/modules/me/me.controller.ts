@@ -108,7 +108,7 @@ export class MeController {
     operationId: "Me_listMySales",
     summary: "List my sales",
     description:
-      "BACKEND_PRD §7.2 — the authenticated promoter's or merchandizer's sales, newest first."
+      "BACKEND_PRD §7.2 — the authenticated promoter's sales, newest first (promoters only)."
   })
   @ApiQuery({
     name: "activationId",
