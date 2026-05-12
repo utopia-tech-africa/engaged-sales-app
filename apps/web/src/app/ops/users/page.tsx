@@ -228,20 +228,11 @@ export default function OpsUsersPage(): ReactElement {
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Users</h1>
         <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-          Invite field and ops accounts with phone and access code.
-          {isAdmin ? (
-            <>
-              {" "}
-              New users are only created after the invite SMS is delivered (
-              <code className="text-xs">MNOTIFY_SMS_API_KEY</code> or{" "}
-              <code className="text-xs">MNOTIFY_KEY</code>; current mNotify keys use API v2 by
-              default; failures roll back the user).
-            </>
-          ) : (
-            " New users are only saved if the invite SMS is sent successfully."
-          )}{" "}
-          Supervisors manage promoters and clients; only admins can create or edit supervisor and
-          admin accounts.
+          Invite field and ops team members with their phone number. They receive a text message
+          with sign-in instructions and an access code. A new person is only added after that text
+          sends successfully—if it does not go through, nothing is saved and you can try again or
+          ask whoever runs your systems to check the text-message setup. Supervisors can add and
+          manage promoters and clients. Only admins can add or change supervisor and admin accounts.
         </p>
       </div>
 

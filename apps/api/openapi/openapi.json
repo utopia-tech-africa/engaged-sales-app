@@ -1990,7 +1990,7 @@
     },
     "/admin/users": {
       "get": {
-        "description": "Supervisors see promoters and clients only; admins see all users. Creating a user sends an invite SMS via mNotify; the user row is rolled back if SMS is not accepted.",
+        "description": "Supervisors only see promoters and clients; admins see everyone. New accounts are created by invite text message; if that message cannot be sent, the new user is not saved.",
         "operationId": "AdminUser_listUsers",
         "parameters": [],
         "responses": {
@@ -2013,7 +2013,7 @@
         "tags": ["Admin users (supervisor / admin)"]
       },
       "post": {
-        "description": "Creates a credentials user and sends sign-in instructions by SMS (mNotify). The user is not kept unless the SMS is delivered successfully.",
+        "description": "Creates a sign-in account and sends instructions by text message. The account is only kept if that message is delivered successfully.",
         "operationId": "AdminUser_createUser",
         "parameters": [],
         "requestBody": {

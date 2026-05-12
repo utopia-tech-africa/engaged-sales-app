@@ -36,7 +36,7 @@ export class AdminUserController {
     operationId: "AdminUser_listUsers",
     summary: "List users (supervisor / admin)",
     description:
-      "Supervisors see promoters and clients only; admins see all users. Creating a user sends an invite SMS via mNotify; the user row is rolled back if SMS is not accepted."
+      "Supervisors only see promoters and clients; admins see everyone. New accounts are created by invite text message; if that message cannot be sent, the new user is not saved."
   })
   @ApiOkResponse({ description: "List of users" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
@@ -50,7 +50,7 @@ export class AdminUserController {
     operationId: "AdminUser_createUser",
     summary: "Create user (invite)",
     description:
-      "Creates a credentials user and sends sign-in instructions by SMS (mNotify). The user is not kept unless the SMS is delivered successfully."
+      "Creates a sign-in account and sends instructions by text message. The account is only kept if that message is delivered successfully."
   })
   @ApiBody({
     schema: {

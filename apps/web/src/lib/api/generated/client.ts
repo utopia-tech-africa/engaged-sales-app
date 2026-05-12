@@ -6144,7 +6144,7 @@ export const getAdminUserListUsersUrl = () => {
 };
 
 /**
- * Supervisors see promoters and clients only; admins see all users. Creating a user sends an invite SMS via mNotify; the user row is rolled back if SMS is not accepted.
+ * Supervisors only see promoters and clients; admins see everyone. New accounts are created by invite text message; if that message cannot be sent, the new user is not saved.
  * @summary List users (supervisor / admin)
  */
 export const adminUserListUsers = async (
@@ -6309,7 +6309,7 @@ export const getAdminUserCreateUserUrl = () => {
 };
 
 /**
- * Creates a credentials user and sends sign-in instructions by SMS (mNotify). The user is not kept unless the SMS is delivered successfully.
+ * Creates a sign-in account and sends instructions by text message. The account is only kept if that message is delivered successfully.
  * @summary Create user (invite)
  */
 export const adminUserCreateUser = async (
