@@ -6,12 +6,14 @@ import { type ReactElement, useEffect, useMemo, useRef, useState } from "react";
 
 import { LocationPlaceLine } from "@/components/location-place-line";
 import { SelfieCapture } from "@/components/selfie-capture";
+import { useNetworkOnline } from "@/hooks/use-network-online";
 import { useMeGetFieldAttendance, useMeUpdateMeLocation } from "@/lib/api/generated/client";
 import { ApiError } from "@/lib/api/problem-details";
-import { useAuthStore } from "@/lib/auth/auth-store";
-import type { FieldAttendancePayload } from "@/lib/field/field-attendance";
 import { parseLocationPingFromOrval, type LocationPing } from "@/lib/auth/orval-auth-adapter";
+import { useAuthStore } from "@/lib/auth/auth-store";
 import { calmPrimaryButtonClass, calmSecondaryButtonClass } from "@/lib/calm-ui";
+import type { FieldAttendancePayload } from "@/lib/field/field-attendance";
+import { enqueueLocationPingForOfflineSync } from "@/lib/field/field-offline-enqueue";
 import { formatFieldCheckInDateTime } from "@/lib/format-field-check-in-datetime";
 import { requestCurrentPosition } from "@/lib/geolocation/request-current-position";
 import { toast } from "@/lib/toast";
@@ -35,6 +37,7 @@ export function FieldCheckInPageInner(): ReactElement {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
+  const online = useNetworkOnline();
   const locationMutation = useMeUpdateMeLocation();
   const fieldAttendanceQuery = useMeGetFieldAttendance({
     query: {
@@ -96,32 +99,72 @@ export function FieldCheckInPageInner(): ReactElement {
     if (gpsFix === null || selfieDataUrl === null) {
       return;
     }
-    locationMutation.mutate(
-      {
-        data: {
-          latitude: gpsFix.latitude,
-          longitude: gpsFix.longitude,
-          attendanceKind,
-          selfieImageBase64: selfieDataUrl
+    const payload = {
+      latitude: gpsFix.latitude,
+      longitude: gpsFix.longitude,
+      attendanceKind,
+      selfieImageBase64: selfieDataUrl
+    };
+
+    const finishAfterQueuedLocally = (): void => {
+      setGpsFix(null);
+      setSelfieDataUrl(null);
+      toast.success(
+        `${attendanceKind === "clock_out" ? "Clock-out" : "Clock-in"} saved on this device. It will send when you are back online.`
+      );
+    };
+
+    const onNetworkSendSuccess = (result: unknown): void => {
+      setLastPing(parseLocationPingFromOrval(result));
+      setGpsFix(null);
+      setSelfieDataUrl(null);
+      toast.success(`${attendanceKind === "clock_out" ? "Clock-out" : "Clock-in"} saved`);
+      void queryClient.invalidateQueries({
+        predicate: (query) =>
+          Array.isArray(query.queryKey) &&
+          (query.queryKey[0] === "/me/location/history" ||
+            query.queryKey[0] === "/me/field-attendance")
+      });
+      if (searchParams.get("dailyGate") === "1") {
+        router.replace("/dashboard");
+      }
+    };
+
+    if (!online) {
+      void (async () => {
+        try {
+          await enqueueLocationPingForOfflineSync(payload);
+          finishAfterQueuedLocally();
+        } catch {
+          toast.error(
+            "Could not save on this device. Check storage permissions or free space, then try again."
+          );
         }
-      },
+      })();
+      return;
+    }
+
+    locationMutation.mutate(
+      { data: payload },
       {
         onSuccess: (result) => {
-          setLastPing(parseLocationPingFromOrval(result));
-          setGpsFix(null);
-          setSelfieDataUrl(null);
-          toast.success(`${attendanceKind === "clock_out" ? "Clock-out" : "Clock-in"} saved`);
-          void queryClient.invalidateQueries({
-            predicate: (query) =>
-              Array.isArray(query.queryKey) &&
-              (query.queryKey[0] === "/me/location/history" ||
-                query.queryKey[0] === "/me/field-attendance")
-          });
-          if (searchParams.get("dailyGate") === "1") {
-            router.replace("/dashboard");
-          }
+          onNetworkSendSuccess(result);
         },
         onError: (err: unknown) => {
+          if (err instanceof ApiError && err.status === 0) {
+            void (async () => {
+              try {
+                await enqueueLocationPingForOfflineSync(payload);
+                finishAfterQueuedLocally();
+              } catch {
+                const fallback = `Could not save ${attendanceActionLabel(attendanceKind)}. Try again.`;
+                const detail =
+                  err instanceof ApiError ? (err.problem?.detail ?? err.message).trim() : "";
+                toast.error(detail.length > 0 ? detail : fallback);
+              }
+            })();
+            return;
+          }
           const fallback = `Could not save ${attendanceActionLabel(attendanceKind)}. Try again.`;
           const detail = err instanceof ApiError ? (err.problem?.detail ?? err.message).trim() : "";
           toast.error(detail.length > 0 ? detail : fallback);
@@ -138,7 +181,8 @@ export function FieldCheckInPageInner(): ReactElement {
         <h1 className="text-xl font-semibold tracking-tight text-foreground">Field attendance</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Record a clock-in when you arrive and a clock-out when you leave. GPS and a selfie are
-          required for each save.
+          required for each save. If you lose signal, your clock-in or clock-out can still be saved
+          on this device and sent automatically when you are online again.
         </p>
       </div>
 
