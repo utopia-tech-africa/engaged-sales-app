@@ -7,6 +7,7 @@ import { type ReactElement, useEffect, useMemo, useRef, useState } from "react";
 import { LocationPlaceLine } from "@/components/location-place-line";
 import { SelfieCapture } from "@/components/selfie-capture";
 import { useMeGetFieldAttendance, useMeUpdateMeLocation } from "@/lib/api/generated/client";
+import { ApiError } from "@/lib/api/problem-details";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import type { FieldAttendancePayload } from "@/lib/field/field-attendance";
 import { parseLocationPingFromOrval, type LocationPing } from "@/lib/auth/orval-auth-adapter";
@@ -120,8 +121,10 @@ export function FieldCheckInPageInner(): ReactElement {
             router.replace("/dashboard");
           }
         },
-        onError: () => {
-          toast.error(`Could not save ${attendanceActionLabel(attendanceKind)}. Try again.`);
+        onError: (err: unknown) => {
+          const fallback = `Could not save ${attendanceActionLabel(attendanceKind)}. Try again.`;
+          const detail = err instanceof ApiError ? (err.problem?.detail ?? err.message).trim() : "";
+          toast.error(detail.length > 0 ? detail : fallback);
         }
       }
     );

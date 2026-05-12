@@ -6144,7 +6144,7 @@ export const getAdminUserListUsersUrl = () => {
 };
 
 /**
- * Supervisors see promoters and clients only; admins see all users. Sends invite email (Resend) on create when `RESEND_API_KEY` is set.
+ * Supervisors see promoters and clients only; admins see all users. Creating a user sends an invite SMS via mNotify; the user row is rolled back if SMS is not accepted.
  * @summary List users (supervisor / admin)
  */
 export const adminUserListUsers = async (
@@ -6262,6 +6262,11 @@ export type adminUserCreateUserResponse201 = {
   status: 201;
 };
 
+export type adminUserCreateUserResponse400 = {
+  data: void;
+  status: 400;
+};
+
 export type adminUserCreateUserResponse401 = {
   data: void;
   status: 401;
@@ -6277,13 +6282,20 @@ export type adminUserCreateUserResponse409 = {
   status: 409;
 };
 
+export type adminUserCreateUserResponse503 = {
+  data: void;
+  status: 503;
+};
+
 export type adminUserCreateUserResponseSuccess = adminUserCreateUserResponse201 & {
   headers: Headers;
 };
 export type adminUserCreateUserResponseError = (
+  | adminUserCreateUserResponse400
   | adminUserCreateUserResponse401
   | adminUserCreateUserResponse403
   | adminUserCreateUserResponse409
+  | adminUserCreateUserResponse503
 ) & {
   headers: Headers;
 };
@@ -6297,7 +6309,7 @@ export const getAdminUserCreateUserUrl = () => {
 };
 
 /**
- * Creates a credentials user and emails sign-in instructions via Resend when configured.
+ * Creates a credentials user and sends sign-in instructions by SMS (mNotify). The user is not kept unless the SMS is delivered successfully.
  * @summary Create user (invite)
  */
 export const adminUserCreateUser = async (

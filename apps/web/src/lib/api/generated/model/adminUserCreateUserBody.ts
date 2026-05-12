@@ -10,7 +10,6 @@ import type { AdminUserCreateUserBodyRole } from "./adminUserCreateUserBodyRole"
 
 export type AdminUserCreateUserBody = {
   fullName: string;
-  email: string;
   phone: string;
   role: AdminUserCreateUserBodyRole;
   /** Optional region cuid */

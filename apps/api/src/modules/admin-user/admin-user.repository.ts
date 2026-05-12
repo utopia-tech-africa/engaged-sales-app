@@ -71,9 +71,16 @@ export class AdminUserRepository {
     });
   }
 
+  public deleteById(id: string): Promise<{ id: string }> {
+    return this.prisma.user.delete({
+      where: { id },
+      select: { id: true }
+    });
+  }
+
   public createUser(data: {
     fullName: string;
-    email: string;
+    email?: string | null;
     phone: string;
     role: UserRole;
     uniqueCode: string;
@@ -83,7 +90,7 @@ export class AdminUserRepository {
     return this.prisma.user.create({
       data: {
         fullName: data.fullName,
-        email: data.email,
+        email: data.email ?? null,
         phone: data.phone,
         role: data.role,
         uniqueCode: data.uniqueCode,

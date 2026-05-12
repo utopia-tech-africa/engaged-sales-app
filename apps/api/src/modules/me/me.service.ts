@@ -146,7 +146,7 @@ export class MeService {
     }
     if (latestToday.attendanceKind === "clock_in") {
       if (requestedKind !== "clock_out") {
-        throw new BadRequestException("Clock out before starting a new visit.");
+        throw new BadRequestException("Clock out before you can clock in again.");
       }
       return;
     }

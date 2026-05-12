@@ -16,4 +16,4 @@ export type UpdateLocationDto = {
   attendanceKind?: UpdateLocationDtoAttendanceKind;
   /** Base64-encoded selfie (JPEG or PNG) for attendance verification. May be a data URL (`data:image/jpeg;base64,...`). */
   selfieImageBase64: string;
-};
+}

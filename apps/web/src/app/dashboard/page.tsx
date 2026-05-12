@@ -181,12 +181,6 @@ export default function DashboardHomePage(): ReactElement {
           </ul>
         ) : null}
       </section>
-
-      <p className="text-center text-sm">
-        <Link href="/auth/sign-in" className={calmMutedLinkClass}>
-          Switch account
-        </Link>
-      </p>
     </div>
   );
 }
