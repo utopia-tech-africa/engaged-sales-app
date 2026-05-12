@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ActivationCreateActivationBody = {
+export type ActivationUpdateActivationBody = {
   /**
    * @minLength 1
    * @maxLength 128
    */
-  name: string;
+  name?: string;
   /**
    * @minLength 2
    * @maxLength 64
@@ -19,11 +19,12 @@ export type ActivationCreateActivationBody = {
   slug?: string;
   /** @maxLength 2000 */
   description?: string;
-  /** Optional region cuids; activation can span multiple territories. */
+  /** Replace linked regions. Omit to leave unchanged; [] clears. Values are region cuids. */
   regionIds?: string[];
-  startsAt: string;
-  endsAt?: string;
+  startsAt?: string;
+  /** @nullable */
+  endsAt?: string | null;
   isActive?: boolean;
-  /** Optional work area ids; rostered promoters must sign in inside one of these while the activation is current. */
+  /** Replace linked work areas. Omit to leave unchanged; [] clears. Promoters on the roster sign in inside one of these while the activation is current. */
   geofenceIds?: string[];
 };

@@ -2,7 +2,7 @@ import { IsIn, IsOptional, IsString, MaxLength, MinLength } from "class-validato
 import { ApiPropertyOptional } from "@nestjs/swagger";
 
 export class UpdateMeDto {
-  @ApiPropertyOptional({ type: String, example: "Jamal Salim" })
+  @ApiPropertyOptional({ type: String, example: "John Doe" })
   @IsOptional()
   @IsString()
   @MinLength(1)

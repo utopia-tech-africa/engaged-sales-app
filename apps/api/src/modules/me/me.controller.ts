@@ -53,8 +53,8 @@ export class MeController {
     schema: {
       example: {
         id: "cmad4p0bo0000iib0i0l9e8wk",
-        fullName: "Jamal Salim",
-        phone: "+254712345678",
+        fullName: "John Doe",
+        phone: "0244123456",
         role: "promoter",
         gender: "male",
         regionId: "nairobi-west"
@@ -65,6 +65,30 @@ export class MeController {
   @ApiNotFoundResponse({ description: "User profile not found" })
   public getMe(@CurrentUser() currentUser: AuthenticatedUser) {
     return this.meService.getCurrentUser(currentUser);
+  }
+
+  @Get("field-attendance")
+  @ApiOperation({
+    operationId: "Me_getFieldAttendance",
+    summary: "Field attendance gate and segment suggestion",
+    description:
+      "For promoters: local-day clock-in gate (`needsDailyClockIn`) and alternating clock-in/clock-out suggestion. Non-promoters get `applicable: false`."
+  })
+  @ApiOkResponse({
+    description: "Field attendance status",
+    schema: {
+      example: {
+        applicable: true,
+        timezone: "Africa/Nairobi",
+        localDate: "2026-05-12",
+        needsDailyClockIn: true,
+        suggestedNextAttendanceKind: "clock_in"
+      }
+    }
+  })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid JWT token" })
+  public getFieldAttendance(@CurrentUser() currentUser: AuthenticatedUser) {
+    return this.meService.getFieldAttendance(currentUser);
   }
 
   @Patch()
@@ -79,7 +103,7 @@ export class MeController {
       updateNameAndRegion: {
         summary: "Update name and region",
         value: {
-          fullName: "Jamal S. Salim",
+          fullName: "John Doe",
           regionId: "nairobi-east"
         }
       }
@@ -90,8 +114,8 @@ export class MeController {
     schema: {
       example: {
         id: "cmad4p0bo0000iib0i0l9e8wk",
-        fullName: "Jamal S. Salim",
-        phone: "+254712345678",
+        fullName: "John Doe",
+        phone: "0244123456",
         role: "promoter",
         gender: "male",
         regionId: "nairobi-east"

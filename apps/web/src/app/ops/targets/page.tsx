@@ -95,6 +95,16 @@ export default function OpsTargetsPage(): ReactElement {
     const alertsSheet = XLSX.utils.json_to_sheet(data.underperformerAlerts);
     XLSX.utils.book_append_sheet(workbook, alertsSheet, "Underperformers");
 
+    const skuSheet = XLSX.utils.json_to_sheet(
+      data.skuPerformance.map((row) => ({
+        SKU: row.name,
+        Code: row.sku ?? "",
+        monthlyTargetCases: row.monthlyTargetCases ?? "",
+        monthlyCasesSold: row.monthlyCasesSold
+      }))
+    );
+    XLSX.utils.book_append_sheet(workbook, skuSheet, "SKU performance");
+
     XLSX.writeFile(workbook, `ops-target-monitoring-${data.date}.xlsx`);
     toast.success("Daily target monitoring exported to Excel.");
   };
@@ -106,8 +116,9 @@ export default function OpsTargetsPage(): ReactElement {
           Daily target monitoring
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Daily target is fixed at 10 cases per trade developer. Monitor daily achievement, monthly
-          contribution, leaderboard, and underperformer alerts.
+          Per-SKU monthly case targets (set on each activation product) and team sold vs target.
+          Daily target is 10 cases per trade developer. Includes leaderboard and underperformer
+          alerts.
         </p>
       </div>
 
@@ -169,6 +180,60 @@ export default function OpsTargetsPage(): ReactElement {
 
       {data !== undefined ? (
         <>
+          <section className="rounded-xl border border-border bg-card/80 p-5 shadow-sm dark:bg-card/50">
+            <h2 className="text-sm font-semibold tracking-tight text-foreground">
+              SKU performance
+            </h2>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              SKU-level reporting and performance tracking for monthly case targets on this
+              activation. Targets are set per product line on the activation; sold totals include
+              roster trade developers only for the selected calendar month.
+            </p>
+            {data.skuPerformance.length === 0 ? (
+              <p className="mt-4 text-sm text-muted-foreground">
+                No products on this activation yet. Add product lines under Ops → Activations →
+                products, including optional monthly target (cases).
+              </p>
+            ) : (
+              <div className="relative mt-4 max-h-[min(22rem,55vh)] overflow-y-auto rounded-lg border border-border">
+                <table className="w-full border-collapse text-left text-sm">
+                  <thead className="sticky top-0 z-10 border-b border-border bg-muted/40 backdrop-blur-sm">
+                    <tr>
+                      <th className="px-4 py-3 font-medium text-muted-foreground">SKU</th>
+                      <th className="whitespace-nowrap px-4 py-3 font-medium text-muted-foreground">
+                        Monthly target (cases)
+                      </th>
+                      <th className="whitespace-nowrap px-4 py-3 font-medium text-muted-foreground">
+                        Sold (MTD cases)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.skuPerformance.map((row) => (
+                      <tr
+                        key={row.productId}
+                        className="border-b border-border/60 last:border-0 hover:bg-muted/20"
+                      >
+                        <td className="px-4 py-3 text-foreground">
+                          <span className="font-medium">{row.name}</span>
+                          {row.sku !== null && row.sku.length > 0 ? (
+                            <span className="ml-2 text-xs text-muted-foreground">({row.sku})</span>
+                          ) : null}
+                        </td>
+                        <td className="px-4 py-3 tabular-nums text-foreground">
+                          {row.monthlyTargetCases ?? "—"}
+                        </td>
+                        <td className="px-4 py-3 tabular-nums text-foreground">
+                          {row.monthlyCasesSold}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
           <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <div className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
               <p className="text-xs text-muted-foreground">Team achievement</p>

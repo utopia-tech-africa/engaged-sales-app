@@ -25,6 +25,7 @@ import type {
   ActivationCreateActivationBody,
   ActivationListFieldActivityLocationsParams,
   ActivationListFieldActivitySalesParams,
+  ActivationUpdateActivationBody,
   ActivationsExportClientActivationWorkbookParams,
   ActivationsListProductsForFieldParams,
   ActivationsListTeamSalesForClientParams,
@@ -61,7 +62,6 @@ import type {
   StockGetAdminOverviewParams,
   StockGetDailySummaryParams,
   StockGetTargetMonitoringParams,
-  UpdateActivationDto,
   UpdateLocationDto,
   UpdateMeDto,
   UpdateOutletDto,
@@ -3238,7 +3238,7 @@ export const getActivationListActivationsUrl = () => {
 };
 
 /**
- * Campaigns / activations with region and counts.
+ * Campaigns / activations with linked regions and counts.
  * @summary List activations
  */
 export const activationListActivations = async (
@@ -3365,6 +3365,11 @@ export type activationCreateActivationResponse201 = {
   status: 201;
 };
 
+export type activationCreateActivationResponse400 = {
+  data: void;
+  status: 400;
+};
+
 export type activationCreateActivationResponse401 = {
   data: void;
   status: 401;
@@ -3373,11 +3378,6 @@ export type activationCreateActivationResponse401 = {
 export type activationCreateActivationResponse403 = {
   data: void;
   status: 403;
-};
-
-export type activationCreateActivationResponse404 = {
-  data: void;
-  status: 404;
 };
 
 export type activationCreateActivationResponse409 = {
@@ -3389,9 +3389,9 @@ export type activationCreateActivationResponseSuccess = activationCreateActivati
   headers: Headers;
 };
 export type activationCreateActivationResponseError = (
+  | activationCreateActivationResponse400
   | activationCreateActivationResponse401
   | activationCreateActivationResponse403
-  | activationCreateActivationResponse404
   | activationCreateActivationResponse409
 ) & {
   headers: Headers;
@@ -4274,6 +4274,11 @@ export type activationUpdateActivationResponse200 = {
   status: 200;
 };
 
+export type activationUpdateActivationResponse400 = {
+  data: void;
+  status: 400;
+};
+
 export type activationUpdateActivationResponse401 = {
   data: void;
   status: 401;
@@ -4298,6 +4303,7 @@ export type activationUpdateActivationResponseSuccess = activationUpdateActivati
   headers: Headers;
 };
 export type activationUpdateActivationResponseError = (
+  | activationUpdateActivationResponse400
   | activationUpdateActivationResponse401
   | activationUpdateActivationResponse403
   | activationUpdateActivationResponse404
@@ -4319,14 +4325,14 @@ export const getActivationUpdateActivationUrl = (id: unknown) => {
  */
 export const activationUpdateActivation = async (
   id: unknown,
-  updateActivationDto: UpdateActivationDto,
+  activationUpdateActivationBody: ActivationUpdateActivationBody,
   options?: RequestInit
 ): Promise<activationUpdateActivationResponse> => {
   return orvalFetcher<activationUpdateActivationResponse>(getActivationUpdateActivationUrl(id), {
     ...options,
     method: "PATCH",
     headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(updateActivationDto)
+    body: JSON.stringify(activationUpdateActivationBody)
   });
 };
 
@@ -4337,14 +4343,14 @@ export const getActivationUpdateActivationMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof activationUpdateActivation>>,
     TError,
-    { id: unknown; data: UpdateActivationDto },
+    { id: unknown; data: ActivationUpdateActivationBody },
     TContext
   >;
   request?: SecondParameter<typeof orvalFetcher>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof activationUpdateActivation>>,
   TError,
-  { id: unknown; data: UpdateActivationDto },
+  { id: unknown; data: ActivationUpdateActivationBody },
   TContext
 > => {
   const mutationKey = ["activationUpdateActivation"];
@@ -4356,7 +4362,7 @@ export const getActivationUpdateActivationMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof activationUpdateActivation>>,
-    { id: unknown; data: UpdateActivationDto }
+    { id: unknown; data: ActivationUpdateActivationBody }
   > = (props) => {
     const { id, data } = props ?? {};
 
@@ -4369,7 +4375,7 @@ export const getActivationUpdateActivationMutationOptions = <
 export type ActivationUpdateActivationMutationResult = NonNullable<
   Awaited<ReturnType<typeof activationUpdateActivation>>
 >;
-export type ActivationUpdateActivationMutationBody = UpdateActivationDto;
+export type ActivationUpdateActivationMutationBody = ActivationUpdateActivationBody;
 export type ActivationUpdateActivationMutationError = void;
 
 /**
@@ -4380,7 +4386,7 @@ export const useActivationUpdateActivation = <TError = void, TContext = unknown>
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof activationUpdateActivation>>,
       TError,
-      { id: unknown; data: UpdateActivationDto },
+      { id: unknown; data: ActivationUpdateActivationBody },
       TContext
     >;
     request?: SecondParameter<typeof orvalFetcher>;
@@ -4389,7 +4395,7 @@ export const useActivationUpdateActivation = <TError = void, TContext = unknown>
 ): UseMutationResult<
   Awaited<ReturnType<typeof activationUpdateActivation>>,
   TError,
-  { id: unknown; data: UpdateActivationDto },
+  { id: unknown; data: ActivationUpdateActivationBody },
   TContext
 > => {
   return useMutation(getActivationUpdateActivationMutationOptions(options), queryClient);
@@ -6492,6 +6498,167 @@ export const useAdminUserUpdateUser = <TError = void, TContext = unknown>(
   return useMutation(getAdminUserUpdateUserMutationOptions(options), queryClient);
 };
 
+export type trackingGetCheckInResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type trackingGetCheckInResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type trackingGetCheckInResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type trackingGetCheckInResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type trackingGetCheckInResponseSuccess = trackingGetCheckInResponse200 & {
+  headers: Headers;
+};
+export type trackingGetCheckInResponseError = (
+  | trackingGetCheckInResponse401
+  | trackingGetCheckInResponse403
+  | trackingGetCheckInResponse404
+) & {
+  headers: Headers;
+};
+
+export type trackingGetCheckInResponse =
+  | trackingGetCheckInResponseSuccess
+  | trackingGetCheckInResponseError;
+
+export const getTrackingGetCheckInUrl = (pingId: unknown) => {
+  return `/admin/tracking/check-ins/${pingId}`;
+};
+
+/**
+ * Returns the same payload as activation roster check-in detail: coordinates, time, staff, and selfie as a data URL when recorded. For promoters only; used from Live field tracking.
+ * @summary Get one live-map check-in (with selfie)
+ */
+export const trackingGetCheckIn = async (
+  pingId: unknown,
+  options?: RequestInit
+): Promise<trackingGetCheckInResponse> => {
+  return orvalFetcher<trackingGetCheckInResponse>(getTrackingGetCheckInUrl(pingId), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getTrackingGetCheckInQueryKey = (pingId: unknown) => {
+  return [`/admin/tracking/check-ins/${pingId}`] as const;
+};
+
+export const getTrackingGetCheckInQueryOptions = <
+  TData = Awaited<ReturnType<typeof trackingGetCheckIn>>,
+  TError = void
+>(
+  pingId: unknown,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof trackingGetCheckIn>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getTrackingGetCheckInQueryKey(pingId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof trackingGetCheckIn>>> = ({ signal }) =>
+    trackingGetCheckIn(pingId, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!pingId, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof trackingGetCheckIn>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type TrackingGetCheckInQueryResult = NonNullable<
+  Awaited<ReturnType<typeof trackingGetCheckIn>>
+>;
+export type TrackingGetCheckInQueryError = void;
+
+export function useTrackingGetCheckIn<
+  TData = Awaited<ReturnType<typeof trackingGetCheckIn>>,
+  TError = void
+>(
+  pingId: unknown,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof trackingGetCheckIn>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof trackingGetCheckIn>>,
+          TError,
+          Awaited<ReturnType<typeof trackingGetCheckIn>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useTrackingGetCheckIn<
+  TData = Awaited<ReturnType<typeof trackingGetCheckIn>>,
+  TError = void
+>(
+  pingId: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof trackingGetCheckIn>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof trackingGetCheckIn>>,
+          TError,
+          Awaited<ReturnType<typeof trackingGetCheckIn>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useTrackingGetCheckIn<
+  TData = Awaited<ReturnType<typeof trackingGetCheckIn>>,
+  TError = void
+>(
+  pingId: unknown,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof trackingGetCheckIn>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get one live-map check-in (with selfie)
+ */
+
+export function useTrackingGetCheckIn<
+  TData = Awaited<ReturnType<typeof trackingGetCheckIn>>,
+  TError = void
+>(
+  pingId: unknown,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof trackingGetCheckIn>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getTrackingGetCheckInQueryOptions(pingId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
 export type healthGetHealthResponse200 = {
   data: unknown;
   status: 200;
@@ -6836,6 +7003,151 @@ export const useMeUpdateMe = <TError = void, TContext = unknown>(
 > => {
   return useMutation(getMeUpdateMeMutationOptions(options), queryClient);
 };
+
+export type meGetFieldAttendanceResponse200 = {
+  data: unknown;
+  status: 200;
+};
+
+export type meGetFieldAttendanceResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type meGetFieldAttendanceResponseSuccess = meGetFieldAttendanceResponse200 & {
+  headers: Headers;
+};
+export type meGetFieldAttendanceResponseError = meGetFieldAttendanceResponse401 & {
+  headers: Headers;
+};
+
+export type meGetFieldAttendanceResponse =
+  | meGetFieldAttendanceResponseSuccess
+  | meGetFieldAttendanceResponseError;
+
+export const getMeGetFieldAttendanceUrl = () => {
+  return `/me/field-attendance`;
+};
+
+/**
+ * For promoters: local-day clock-in gate (`needsDailyClockIn`) and alternating clock-in/clock-out suggestion. Non-promoters get `applicable: false`.
+ * @summary Field attendance gate and segment suggestion
+ */
+export const meGetFieldAttendance = async (
+  options?: RequestInit
+): Promise<meGetFieldAttendanceResponse> => {
+  return orvalFetcher<meGetFieldAttendanceResponse>(getMeGetFieldAttendanceUrl(), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getMeGetFieldAttendanceQueryKey = () => {
+  return [`/me/field-attendance`] as const;
+};
+
+export const getMeGetFieldAttendanceQueryOptions = <
+  TData = Awaited<ReturnType<typeof meGetFieldAttendance>>,
+  TError = void
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof meGetFieldAttendance>>, TError, TData>>;
+  request?: SecondParameter<typeof orvalFetcher>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getMeGetFieldAttendanceQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof meGetFieldAttendance>>> = ({ signal }) =>
+    meGetFieldAttendance({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof meGetFieldAttendance>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MeGetFieldAttendanceQueryResult = NonNullable<
+  Awaited<ReturnType<typeof meGetFieldAttendance>>
+>;
+export type MeGetFieldAttendanceQueryError = void;
+
+export function useMeGetFieldAttendance<
+  TData = Awaited<ReturnType<typeof meGetFieldAttendance>>,
+  TError = void
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meGetFieldAttendance>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof meGetFieldAttendance>>,
+          TError,
+          Awaited<ReturnType<typeof meGetFieldAttendance>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useMeGetFieldAttendance<
+  TData = Awaited<ReturnType<typeof meGetFieldAttendance>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meGetFieldAttendance>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof meGetFieldAttendance>>,
+          TError,
+          Awaited<ReturnType<typeof meGetFieldAttendance>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useMeGetFieldAttendance<
+  TData = Awaited<ReturnType<typeof meGetFieldAttendance>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meGetFieldAttendance>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Field attendance gate and segment suggestion
+ */
+
+export function useMeGetFieldAttendance<
+  TData = Awaited<ReturnType<typeof meGetFieldAttendance>>,
+  TError = void
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof meGetFieldAttendance>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getMeGetFieldAttendanceQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 export type meListMySalesResponse200 = {
   data: void;

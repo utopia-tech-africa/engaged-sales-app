@@ -184,8 +184,8 @@ export default function OpsUsersPage(): ReactElement {
       body.gender = editGender;
     }
     const regionChanged = (editing.regionId ?? "") !== editRegionId;
-    if (regionChanged && editRegionId.length > 0) {
-      body.regionId = editRegionId;
+    if (regionChanged) {
+      body.regionId = editRegionId.length > 0 ? editRegionId : null;
     }
     updateMutation.mutate(
       { id: editing.id, data: body },
@@ -283,7 +283,7 @@ export default function OpsUsersPage(): ReactElement {
               onChange={(e) => {
                 setCreatePhone(e.target.value);
               }}
-              placeholder="+254712345678"
+              placeholder="0244123456 or +233244123456"
               required
             />
           </div>
@@ -594,8 +594,7 @@ export default function OpsUsersPage(): ReactElement {
                   </SelectContent>
                 </Select>
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Pick a region to assign or switch assignment. Clearing the dropdown does not
-                  remove an existing region yet.
+                  Assign a territory or choose &quot;None&quot; to remove the user&apos;s region.
                 </p>
               </div>
               <div>

@@ -64,7 +64,8 @@ export default function FieldActivationsPage(): ReactElement {
               >
                 <p className="font-medium text-foreground">{row.name}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {row.region?.name ?? "No region"} · {row._count?.products ?? 0} product
+                  {row.regionLinks.map((l) => l.region.name).join(" · ") || "No regions"} ·{" "}
+                  {row._count?.products ?? 0} product
                   {(row._count?.products ?? 0) === 1 ? "" : "s"}
                 </p>
               </Link>

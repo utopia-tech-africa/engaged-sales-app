@@ -172,7 +172,7 @@ export const ActivationFieldActivityMap = ({
                       onSelectPing(p.id);
                     }}
                   >
-                    View check-in details
+                    {p.hasSelfieVerification ? "View selfie & details" : "View check-in details"}
                   </button>
                 </>
               ) : null}

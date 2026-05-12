@@ -57,7 +57,7 @@ export class AdminUserController {
       properties: {
         fullName: { type: "string" },
         email: { type: "string", format: "email" },
-        phone: { type: "string", example: "+254712345678" },
+        phone: { type: "string", example: "0244123456" },
         role: {
           type: "string",
           enum: ["promoter", "client", "supervisor", "admin"]
@@ -97,7 +97,13 @@ export class AdminUserController {
           type: "string",
           enum: ["promoter", "client", "supervisor", "admin"]
         },
-        regionId: { type: "string" },
+        regionId: {
+          type: "string",
+          nullable: true,
+          description: "Region id (cuid), or null to remove assignment",
+          minLength: 1,
+          maxLength: 64
+        },
         isActive: { type: "boolean" },
         gender: { type: "string", enum: ["male", "female", "other"] }
       }

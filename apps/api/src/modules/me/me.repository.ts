@@ -152,4 +152,38 @@ export class MeRepository {
       }
     });
   }
+
+  /** Latest ping for a user whose `recordedAt` falls in `[windowStart, windowEndExclusive)`. */
+  public findLatestPingInRecordedAtWindow(
+    userId: string,
+    windowStart: Date,
+    windowEndExclusive: Date
+  ) {
+    return this.prisma.locationPing.findFirst({
+      where: {
+        userId,
+        recordedAt: { gte: windowStart, lt: windowEndExclusive }
+      },
+      orderBy: { recordedAt: "desc" },
+      select: {
+        attendanceKind: true,
+        recordedAt: true
+      }
+    });
+  }
+
+  public countAttendanceKindInWindow(
+    userId: string,
+    windowStart: Date,
+    windowEndExclusive: Date,
+    kind: AttendanceKind
+  ): Promise<number> {
+    return this.prisma.locationPing.count({
+      where: {
+        userId,
+        attendanceKind: kind,
+        recordedAt: { gte: windowStart, lt: windowEndExclusive }
+      }
+    });
+  }
 }

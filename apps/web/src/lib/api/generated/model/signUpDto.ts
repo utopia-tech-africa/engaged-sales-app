@@ -5,14 +5,14 @@
  * API documentation for Engaged Sales backend
  * OpenAPI spec version: 1.0.0
  */
-import type { SignUpDtoGender } from './signUpDtoGender';
+import type { SignUpDtoGender } from "./signUpDtoGender";
 
 export type SignUpDto = {
   /** Full name of the user */
   fullName: string;
-  /** E.164 phone number */
+  /** International (+country code) or local/national number; may start with 0. Spaces and hyphens are stripped. */
   phone: string;
   gender: SignUpDtoGender;
   /** Optional sales region id */
   regionId?: string;
-}
+};

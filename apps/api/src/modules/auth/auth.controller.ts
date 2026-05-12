@@ -91,8 +91,8 @@ export class AuthController {
     examples: {
       default: {
         value: {
-          fullName: "Jamal Salim",
-          phone: "+254712345678",
+          fullName: "John Doe",
+          phone: "0244123456",
           gender: "male",
           regionId: "nairobi-west"
         }
@@ -105,9 +105,9 @@ export class AuthController {
       example: {
         user: {
           id: "cmad4p0bo0000iib0i0l9e8wk",
-          fullName: "Jamal Salim",
+          fullName: "John Doe",
           email: null,
-          phone: "+254712345678",
+          phone: "0244123456",
           uniqueCode: "P-12ab34cd",
           role: "promoter",
           gender: "male",
@@ -162,7 +162,7 @@ export class AuthController {
     examples: {
       default: {
         value: {
-          phone: "+254712345678",
+          phone: "0244123456",
           uniqueCode: "P-12ab34cd",
           role: "promoter"
         }
@@ -175,9 +175,9 @@ export class AuthController {
       example: {
         user: {
           id: "cmad4p0bo0000iib0i0l9e8wk",
-          fullName: "Jamal Salim",
+          fullName: "John Doe",
           email: null,
-          phone: "+254712345678",
+          phone: "0244123456",
           uniqueCode: "P-12ab34cd",
           role: "promoter",
           gender: "male",
@@ -275,8 +275,8 @@ export class AuthController {
       example: {
         user: {
           id: "cmad4p0bo0000iib0i0l9e8wk",
-          fullName: "Jamal Salim",
-          email: "jamal@example.com",
+          fullName: "John Doe",
+          email: "john.doe@example.com",
           phone: "pending-a8e4c2f7f9d1",
           uniqueCode: "P-12ab34cd",
           role: "promoter",
@@ -346,9 +346,9 @@ export class AuthController {
       example: {
         user: {
           id: "cmad4p0bo0000iib0i0l9e8wk",
-          fullName: "Jamal Salim",
-          email: "jamal@example.com",
-          phone: "+254712345678",
+          fullName: "John Doe",
+          email: "john.doe@example.com",
+          phone: "0244123456",
           uniqueCode: "P-12ab34cd",
           role: "promoter",
           gender: "male",

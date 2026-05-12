@@ -70,4 +70,36 @@ export class TrackingRepository {
       }
     });
   }
+
+  /**
+   * Single ping with user and optional selfie blob (same shape as activation roster check-in).
+   */
+  public findLocationPingByIdWithUserAndSelfie(pingId: string) {
+    return this.prisma.locationPing.findUnique({
+      where: { id: pingId },
+      select: {
+        id: true,
+        userId: true,
+        attendanceKind: true,
+        geofenceId: true,
+        distanceToGeofenceMeters: true,
+        dwellSecondsAtGeofence: true,
+        latitude: true,
+        longitude: true,
+        placeLabel: true,
+        recordedAt: true,
+        hasSelfieVerification: true,
+        selfieMimeType: true,
+        selfieImage: true,
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            role: true
+          }
+        }
+      }
+    });
+  }
 }

@@ -63,6 +63,14 @@ export type StockAdminOverview = {
   }[];
 };
 
+export type StockSkuPerformanceRow = {
+  productId: string;
+  name: string;
+  sku: string | null;
+  monthlyTargetCases: number | null;
+  monthlyCasesSold: number;
+};
+
 export type StockTargetMonitoring = {
   date: string;
   activationId: string;
@@ -70,6 +78,7 @@ export type StockTargetMonitoring = {
   dailyTargetCases: number;
   monthlyTargetCasesPerUser: number;
   teamAchievementPercent: number;
+  skuPerformance: StockSkuPerformanceRow[];
   leaderboard: {
     userId: string;
     fullName: string;

@@ -5,12 +5,22 @@ import type { AttendanceKind, Prisma } from "../../generated/prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 
 const activationAdminInclude = {
-  region: { select: { id: true, name: true, slug: true } },
+  regionLinks: {
+    select: {
+      regionId: true,
+      region: { select: { id: true, name: true, slug: true } }
+    }
+  },
   _count: { select: { products: true, roster: true } }
 } satisfies Prisma.ActivationInclude;
 
 const activationFieldListInclude = {
-  region: { select: { id: true, name: true, slug: true } },
+  regionLinks: {
+    select: {
+      regionId: true,
+      region: { select: { id: true, name: true, slug: true } }
+    }
+  },
   _count: { select: { products: true } }
 } satisfies Prisma.ActivationInclude;
 
@@ -19,7 +29,12 @@ export type ActivationFieldListRow = Prisma.ActivationGetPayload<{
 }>;
 
 const activationDetailInclude = {
-  region: { select: { id: true, name: true, slug: true } },
+  regionLinks: {
+    select: {
+      regionId: true,
+      region: { select: { id: true, name: true, slug: true } }
+    }
+  },
   products: { orderBy: [{ sortOrder: "asc" as const }, { createdAt: "asc" as const }] },
   roster: {
     orderBy: { createdAt: "asc" as const },
@@ -30,6 +45,21 @@ const activationDetailInclude = {
           fullName: true,
           phone: true,
           role: true,
+          isActive: true
+        }
+      }
+    }
+  },
+  geofenceLinks: {
+    select: {
+      geofenceId: true,
+      geofence: {
+        select: {
+          id: true,
+          label: true,
+          centerLatitude: true,
+          centerLongitude: true,
+          radiusMeters: true,
           isActive: true
         }
       }
@@ -163,24 +193,63 @@ export class ActivationRepository {
     name: string;
     slug: string;
     description: string | null;
-    regionId: string | null;
     startsAt: Date;
     endsAt: Date | null;
     isActive: boolean;
+    regionIds?: readonly string[];
+    geofenceIds?: readonly string[];
   }): Promise<ActivationDetailEntity> {
+    const { geofenceIds, regionIds, ...rest } = data;
     return this.prisma.activation.create({
-      data,
+      data: {
+        ...rest,
+        ...(regionIds !== undefined && regionIds.length > 0
+          ? {
+              regionLinks: {
+                create: [...regionIds].map((regionId) => ({ regionId }))
+              }
+            }
+          : {}),
+        ...(geofenceIds !== undefined && geofenceIds.length > 0
+          ? {
+              geofenceLinks: {
+                create: [...geofenceIds].map((geofenceId) => ({ geofenceId }))
+              }
+            }
+          : {})
+      },
       include: activationDetailInclude
     });
   }
 
   public update(
     id: string,
-    data: Prisma.ActivationUpdateInput | Prisma.ActivationUncheckedUpdateInput
+    data: Prisma.ActivationUpdateInput | Prisma.ActivationUncheckedUpdateInput,
+    options?: { replaceGeofenceIds?: readonly string[]; replaceRegionIds?: readonly string[] }
   ): Promise<ActivationDetailEntity> {
+    const replaceGeofenceIds = options?.replaceGeofenceIds;
+    const replaceRegionIds = options?.replaceRegionIds;
     return this.prisma.activation.update({
       where: { id },
-      data,
+      data: {
+        ...data,
+        ...(replaceRegionIds !== undefined
+          ? {
+              regionLinks: {
+                deleteMany: {},
+                create: [...replaceRegionIds].map((regionId) => ({ regionId }))
+              }
+            }
+          : {}),
+        ...(replaceGeofenceIds !== undefined
+          ? {
+              geofenceLinks: {
+                deleteMany: {},
+                create: [...replaceGeofenceIds].map((geofenceId) => ({ geofenceId }))
+              }
+            }
+          : {})
+      },
       include: activationDetailInclude
     });
   }
@@ -195,7 +264,13 @@ export class ActivationRepository {
 
   public createProduct(
     activationId: string,
-    data: { name: string; sku: string | null; quantity: number; sortOrder: number }
+    data: {
+      name: string;
+      sku: string | null;
+      quantity: number;
+      sortOrder: number;
+      monthlyTargetCases: number | null;
+    }
   ) {
     return this.prisma.activationProduct.create({
       data: {
@@ -203,7 +278,8 @@ export class ActivationRepository {
         name: data.name,
         sku: data.sku,
         quantity: data.quantity,
-        sortOrder: data.sortOrder
+        sortOrder: data.sortOrder,
+        monthlyTargetCases: data.monthlyTargetCases
       }
     });
   }

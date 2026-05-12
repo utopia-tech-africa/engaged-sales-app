@@ -2,26 +2,26 @@ import { z } from "zod";
 
 import { unwrapOrvalResponseBody } from "@/lib/auth/orval-auth-adapter";
 
-const regionSchema = z
-  .object({
+const activationRegionLinkFieldSchema = z.object({
+  regionId: z.string(),
+  region: z.object({
     id: z.string(),
     name: z.string(),
     slug: z.string()
   })
-  .nullable();
+});
 
 export const fieldActivationListItemSchema = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
   description: z.string().nullable().optional(),
-  regionId: z.string().nullable().optional(),
   startsAt: z.string(),
   endsAt: z.string().nullable().optional(),
   isActive: z.boolean(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
-  region: regionSchema.optional(),
+  regionLinks: z.array(activationRegionLinkFieldSchema).optional().default([]),
   _count: z.object({ products: z.number() }).optional()
 });
 

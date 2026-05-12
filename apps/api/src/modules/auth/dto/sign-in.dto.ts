@@ -4,16 +4,22 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  Matches,
   Max,
   MaxLength,
   Min,
   MinLength
 } from "class-validator";
 
+import { PhoneNumberField } from "../../../common/decorators/phone.decorators";
+
 export class SignInDto {
-  @ApiProperty({ type: String, example: "+254712345678", description: "Registered phone number" })
-  @Matches(/^\+?[1-9]\d{7,14}$/)
+  @ApiProperty({
+    type: String,
+    example: "0244123456",
+    description:
+      "Registered phone (international +… or local; may start with 0). Spaces and hyphens are stripped."
+  })
+  @PhoneNumberField()
   public phone!: string;
 
   @ApiProperty({ type: String, example: "P-12ab34cd", description: "Unique promoter code" })

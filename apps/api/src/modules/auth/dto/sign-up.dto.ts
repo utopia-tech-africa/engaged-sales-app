@@ -1,15 +1,22 @@
-import { IsIn, IsOptional, IsString, Matches, MaxLength, MinLength } from "class-validator";
+import { IsIn, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
+import { PhoneNumberField } from "../../../common/decorators/phone.decorators";
+
 export class SignUpDto {
-  @ApiProperty({ type: String, example: "Jamal Salim", description: "Full name of the user" })
+  @ApiProperty({ type: String, example: "John Doe", description: "Full name of the user" })
   @IsString()
   @MinLength(1)
   @MaxLength(120)
   public fullName!: string;
 
-  @ApiProperty({ type: String, example: "+254712345678", description: "E.164 phone number" })
-  @Matches(/^\+?[1-9]\d{7,14}$/)
+  @ApiProperty({
+    type: String,
+    example: "0244123456",
+    description:
+      "International (+country code) or local/national number; may start with 0. Spaces and hyphens are stripped."
+  })
+  @PhoneNumberField()
   public phone!: string;
 
   @ApiProperty({ type: String, example: "male", enum: ["male", "female", "other"] })

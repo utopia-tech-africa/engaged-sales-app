@@ -148,11 +148,15 @@ export class AdminUserService {
       patch.role = dto.role;
     }
     if (dto.regionId !== undefined) {
-      const region = await this.regionRepository.findById(dto.regionId);
-      if (!region) {
-        throw new BadRequestException("Region not found");
+      if (dto.regionId === null) {
+        patch.regionId = null;
+      } else {
+        const region = await this.regionRepository.findById(dto.regionId);
+        if (!region) {
+          throw new BadRequestException("Region not found");
+        }
+        patch.regionId = dto.regionId;
       }
-      patch.regionId = dto.regionId;
     }
     if (dto.isActive !== undefined) {
       patch.isActive = dto.isActive;

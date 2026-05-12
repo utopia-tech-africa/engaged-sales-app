@@ -80,24 +80,28 @@ export const parseAdminUsersFromOrval = (result: unknown): AdminUserRow[] => {
   return adminUserListSchema.parse(unwrapOrvalResponseBody(result));
 };
 
+const activationRegionLinkSchema = z.object({
+  regionId: z.string(),
+  region: z.object({
+    id: z.string(),
+    name: z.string(),
+    slug: z.string()
+  })
+});
+
+export type ActivationRegionLink = z.infer<typeof activationRegionLinkSchema>;
+
 const activationListRowSchema = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
   description: z.string().nullable(),
-  regionId: z.string().nullable(),
   startsAt: z.string(),
   endsAt: z.string().nullable(),
   isActive: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  region: z
-    .object({
-      id: z.string(),
-      name: z.string(),
-      slug: z.string()
-    })
-    .nullable(),
+  regionLinks: z.array(activationRegionLinkSchema).optional().default([]),
   _count: z.object({
     products: z.number(),
     roster: z.number()
@@ -117,6 +121,7 @@ const activationProductSchema = z.object({
   activationId: z.string(),
   name: z.string(),
   sku: z.string().nullable(),
+  monthlyTargetCases: z.number().int().nullable().optional(),
   quantity: z.number().int().min(1).optional().default(1),
   sortOrder: z.number(),
   createdAt: z.string(),
@@ -145,26 +150,34 @@ const activationRosterEntrySchema = z.object({
 
 export type ActivationRosterEntry = z.infer<typeof activationRosterEntrySchema>;
 
+const activationGeofenceLinkSchema = z.object({
+  geofenceId: z.string(),
+  geofence: z.object({
+    id: z.string(),
+    label: z.string(),
+    centerLatitude: z.number(),
+    centerLongitude: z.number(),
+    radiusMeters: z.number(),
+    isActive: z.boolean()
+  })
+});
+
+export type ActivationGeofenceLink = z.infer<typeof activationGeofenceLinkSchema>;
+
 const activationDetailSchema = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
   description: z.string().nullable(),
-  regionId: z.string().nullable(),
   startsAt: z.string(),
   endsAt: z.string().nullable(),
   isActive: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  region: z
-    .object({
-      id: z.string(),
-      name: z.string(),
-      slug: z.string()
-    })
-    .nullable(),
+  regionLinks: z.array(activationRegionLinkSchema).optional().default([]),
   products: z.array(activationProductSchema),
-  roster: z.array(activationRosterEntrySchema)
+  roster: z.array(activationRosterEntrySchema),
+  geofenceLinks: z.array(activationGeofenceLinkSchema).optional().default([])
 });
 
 export type ActivationDetail = z.infer<typeof activationDetailSchema>;

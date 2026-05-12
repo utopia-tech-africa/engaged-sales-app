@@ -7,16 +7,10 @@ import { type ReactElement, type SyntheticEvent, useEffect, useState } from "rea
 
 import { DatetimePicker } from "@/components/ui/datetime-picker";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
-import {
   getActivationListActivationsQueryKey,
   useActivationCreateActivation,
   useActivationListActivations,
+  useAdminGeofenceListGeofences,
   useAdminRegionListRegions
 } from "@/lib/api/generated/client";
 import { ApiError } from "@/lib/api/problem-details";
@@ -31,10 +25,12 @@ import {
   type ActivationListRow,
   parseActivationDetailFromOrval,
   parseActivationsFromOrval,
+  parseGeofencesFromOrval,
   parseRegionsFromOrval
 } from "@/lib/ops/ops-adapters";
 
-import { formatShort, inputClass, labelClass, panelClass, REGION_NONE } from "./activations-shared";
+import { ActivationMultiSelect } from "./activation-multi-select";
+import { formatShort, inputClass, labelClass, panelClass } from "./activations-shared";
 
 export default function OpsActivationsPage(): ReactElement {
   const router = useRouter();
@@ -48,7 +44,8 @@ export default function OpsActivationsPage(): ReactElement {
   const [createName, setCreateName] = useState("");
   const [createStarts, setCreateStarts] = useState("");
   const [createEnds, setCreateEnds] = useState("");
-  const [createRegionId, setCreateRegionId] = useState("");
+  const [createRegionIds, setCreateRegionIds] = useState<string[]>([]);
+  const [createGeofenceIds, setCreateGeofenceIds] = useState<string[]>([]);
   const [createActive, setCreateActive] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -72,6 +69,13 @@ export default function OpsActivationsPage(): ReactElement {
     }
   });
 
+  const geofencesQuery = useAdminGeofenceListGeofences({
+    query: {
+      enabled: accessToken !== null && canManageActivations && createOpen,
+      select: (r) => parseGeofencesFromOrval(r)
+    }
+  });
+
   const invalidateList = async (): Promise<void> => {
     await queryClient.invalidateQueries({ queryKey: getActivationListActivationsQueryKey() });
   };
@@ -83,7 +87,8 @@ export default function OpsActivationsPage(): ReactElement {
         setCreateName("");
         setCreateStarts("");
         setCreateEnds("");
-        setCreateRegionId("");
+        setCreateRegionIds([]);
+        setCreateGeofenceIds([]);
         setCreateActive(true);
         setCreateOpen(false);
         try {
@@ -125,8 +130,9 @@ export default function OpsActivationsPage(): ReactElement {
           name,
           startsAt: startsAt.toISOString(),
           ...(endsAt !== undefined ? { endsAt: endsAt.toISOString() } : {}),
-          ...(createRegionId.trim().length > 0 ? { regionId: createRegionId.trim() } : {}),
-          isActive: createActive
+          ...(createRegionIds.length > 0 ? { regionIds: [...createRegionIds] } : {}),
+          isActive: createActive,
+          ...(createGeofenceIds.length > 0 ? { geofenceIds: [...createGeofenceIds] } : {})
         }
       },
       {
@@ -180,7 +186,14 @@ export default function OpsActivationsPage(): ReactElement {
             <button
               type="button"
               onClick={() => {
-                setCreateOpen((o) => !o);
+                setCreateOpen((o) => {
+                  const next = !o;
+                  if (!next) {
+                    setCreateGeofenceIds([]);
+                    setCreateRegionIds([]);
+                  }
+                  return next;
+                });
                 setFormError(null);
               }}
               className={cn(
@@ -198,7 +211,10 @@ export default function OpsActivationsPage(): ReactElement {
             className="space-y-4 border-b border-border bg-muted/20 px-5 py-5 sm:px-6"
             onSubmit={onCreate}
           >
-            <p className="text-sm text-muted-foreground">Required fields only to get started.</p>
+            <p className="text-sm text-muted-foreground">
+              Name and start time are required. Optionally link work areas so rostered promoters can
+              only sign in there while this activation is current.
+            </p>
             <div>
               <span className={labelClass}>Name</span>
               <input
@@ -237,25 +253,44 @@ export default function OpsActivationsPage(): ReactElement {
               </div>
             </div>
             <div>
-              <span className={labelClass}>Region (optional)</span>
-              <Select
-                value={createRegionId === "" ? REGION_NONE : createRegionId}
-                onValueChange={(next) => {
-                  setCreateRegionId(next === REGION_NONE ? "" : next);
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="No region" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={REGION_NONE}>No region</SelectItem>
-                  {(regionsQuery.data ?? []).map((r) => (
-                    <SelectItem key={r.id} value={r.id}>
-                      {r.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <span className={labelClass}>Regions (optional)</span>
+              <p className="mb-2 text-xs text-muted-foreground">
+                Link one or more territories this campaign spans. Open the list to select several.
+              </p>
+              <ActivationMultiSelect
+                id="activation-create-regions"
+                options={(regionsQuery.data ?? []).map((r) => ({
+                  id: r.id,
+                  label: r.name,
+                  isActive: r.isActive
+                }))}
+                valueIds={createRegionIds}
+                onValueChange={setCreateRegionIds}
+                isLoading={regionsQuery.isLoading}
+                placeholder="Select regions"
+                emptyListHint="No regions yet. Add them under Regions, or continue without."
+              />
+            </div>
+            <div>
+              <span className={labelClass}>Sign-in work areas (optional)</span>
+              <p className="mb-2 text-xs text-muted-foreground">
+                Rostered promoters must sign in inside at least one selected zone while this
+                activation is current. Open the list to pick several. Leave none to use only global
+                work-area rules (if any).
+              </p>
+              <ActivationMultiSelect
+                id="activation-create-work-areas"
+                options={(geofencesQuery.data ?? []).map((g) => ({
+                  id: g.id,
+                  label: g.label,
+                  isActive: g.isActive
+                }))}
+                valueIds={createGeofenceIds}
+                onValueChange={setCreateGeofenceIds}
+                isLoading={geofencesQuery.isLoading}
+                placeholder="Select work areas"
+                emptyListHint="No work areas yet. Add them under Geofences, or continue without."
+              />
             </div>
             <label className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
               <input
@@ -280,6 +315,8 @@ export default function OpsActivationsPage(): ReactElement {
                 type="button"
                 className={cn(calmSecondaryButtonClass, "w-full sm:w-auto")}
                 onClick={() => {
+                  setCreateGeofenceIds([]);
+                  setCreateRegionIds([]);
                   setCreateOpen(false);
                 }}
               >

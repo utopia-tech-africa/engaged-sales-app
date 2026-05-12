@@ -534,6 +534,27 @@ export class StockService {
       );
     }
 
+    const monthlySoldByProduct = new Map<string, number>();
+    for (const row of soldMonthly) {
+      if (!rosterById.has(row.sale.userId)) {
+        continue;
+      }
+      monthlySoldByProduct.set(
+        row.productId,
+        (monthlySoldByProduct.get(row.productId) ?? 0) + row.quantity
+      );
+    }
+
+    const skuPerformance = [...activation.products]
+      .sort((a, b) => a.sortOrder - b.sortOrder || a.createdAt.getTime() - b.createdAt.getTime())
+      .map((p) => ({
+        productId: p.id,
+        name: p.name,
+        sku: p.sku,
+        monthlyTargetCases: p.monthlyTargetCases,
+        monthlyCasesSold: monthlySoldByProduct.get(p.id) ?? 0
+      }));
+
     const teamDailySold = [...dailySoldByUser.values()].reduce((sum, value) => sum + value, 0);
     const teamMonthlySold = [...monthlySoldByUser.values()].reduce((sum, value) => sum + value, 0);
     const teamSize = fieldRoster.length;
@@ -617,6 +638,7 @@ export class StockService {
       dailyTargetCases: DAILY_TARGET_CASES,
       monthlyTargetCasesPerUser: DAILY_TARGET_CASES * daysInMonth,
       teamAchievementPercent,
+      skuPerformance,
       leaderboard,
       underperformerAlerts,
       summary: {

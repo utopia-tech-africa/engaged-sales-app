@@ -55,6 +55,46 @@ export class GeofenceService {
   }
 
   /**
+   * Promoter sign-in: if the user is rostered on any current activation that has linked work areas,
+   * they must sign in inside the union of those active geofences. Otherwise falls back to
+   * {@link assertLoginAllowed} (global active geofences).
+   */
+  public async assertLoginAllowedForPromoter(
+    userId: string,
+    latitude?: number,
+    longitude?: number
+  ): Promise<void> {
+    const now = new Date();
+    const rosterGeofences = await this.repository.findActiveLinkedToUserRosterActivations(
+      userId,
+      now
+    );
+    if (rosterGeofences.length > 0) {
+      if (latitude === undefined || longitude === undefined) {
+        throw new BadRequestException(
+          "Current location is required to sign in because your assigned activation(s) specify allowed work areas. Enable location for this site and try again."
+        );
+      }
+      const inside = rosterGeofences.some(
+        (fence) =>
+          haversineDistanceMeters(
+            latitude,
+            longitude,
+            fence.centerLatitude,
+            fence.centerLongitude
+          ) <= fence.radiusMeters
+      );
+      if (!inside) {
+        throw new ForbiddenException(
+          "Sign-in is only allowed from within a work area linked to one of your current activations. Move to an authorized zone or contact your supervisor."
+        );
+      }
+      return;
+    }
+    await this.assertLoginAllowed(latitude, longitude);
+  }
+
+  /**
    * Returns nearest active geofence (if any) and great-circle distance from the point.
    */
   public async findNearestActiveGeofence(

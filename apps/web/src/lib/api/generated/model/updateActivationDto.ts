@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type UpdateActivationDto = Record<string, unknown>
+export type UpdateActivationDto = {
+  /** Replace linked work areas (geofences). Omit to leave unchanged; send [] to clear. Rostered promoters must sign in inside one of these while the activation is current. */
+  geofenceIds?: string[];
+};

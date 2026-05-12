@@ -1,6 +1,14 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsBoolean, IsDate, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength
+} from "class-validator";
 
 export class CreateActivationDto {
   @IsString()
@@ -22,11 +30,14 @@ export class CreateActivationDto {
   @MaxLength(2000)
   public description?: string;
 
+  @ApiPropertyOptional({
+    description: "Region ids (cuids) this activation spans. Omit or empty for none.",
+    type: [String]
+  })
   @IsOptional()
-  @IsString()
-  @MinLength(1)
-  @MaxLength(64)
-  public regionId?: string;
+  @IsArray()
+  @IsString({ each: true })
+  public regionIds?: string[];
 
   @Type(() => Date)
   @IsDate()
@@ -40,4 +51,14 @@ export class CreateActivationDto {
   @IsOptional()
   @IsBoolean()
   public isActive?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      "Geofence (work area) ids for this activation. Rostered promoters must sign in inside at least one of these zones while the activation is current; if empty or omitted, global geofence rules apply when configured.",
+    type: [String]
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  public geofenceIds?: string[];
 }
