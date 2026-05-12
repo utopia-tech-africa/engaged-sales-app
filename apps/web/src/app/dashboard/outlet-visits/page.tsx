@@ -11,9 +11,11 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { useNetworkOnline } from "@/hooks/use-network-online";
 import { ApiError } from "@/lib/api/problem-details";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { calmPrimaryButtonClass } from "@/lib/calm-ui";
+import { enqueueOutletVisitForOfflineSync } from "@/lib/field/field-offline-enqueue";
 import {
   createOutletVisit,
   listOutlets,
@@ -43,6 +45,7 @@ const readFileAsDataUrl = async (file: File): Promise<string> =>
 
 export default function OutletVisitsPage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
+  const online = useNetworkOnline();
   const [outletId, setOutletId] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
@@ -58,6 +61,7 @@ export default function OutletVisitsPage(): ReactElement {
     queryKey: ["field", "outlets"],
     queryFn: async () => listOutlets(accessToken ?? ""),
     enabled: accessToken !== null,
+    staleTime: 60 * 60 * 1000,
     select: (rows) => rows.filter((row) => row.isActive)
   });
 
@@ -111,41 +115,87 @@ export default function OutletVisitsPage(): ReactElement {
       return;
     }
 
-    createVisitMutation.mutate(
-      {
-        outletId,
-        latitude: parsedLatitude,
-        longitude: parsedLongitude,
-        ...(outletPhotoBase64 !== undefined ? { outletPhotoBase64 } : {}),
-        ...(stockAvailabilityNotes.trim().length > 0
-          ? { stockAvailabilityNotes: stockAvailabilityNotes.trim() }
-          : {}),
-        ...(salesMadeNotes.trim().length > 0 ? { salesMadeNotes: salesMadeNotes.trim() } : {}),
-        ...(consumerEngagementNotes.trim().length > 0
-          ? { consumerEngagementNotes: consumerEngagementNotes.trim() }
-          : {}),
-        ...(visibilityExecutionNotes.trim().length > 0
-          ? { visibilityExecutionNotes: visibilityExecutionNotes.trim() }
-          : {})
-      },
-      {
-        onSuccess: () => {
-          setStatusMessage("Outlet visit submitted successfully.");
+    const payload = {
+      outletId,
+      latitude: parsedLatitude,
+      longitude: parsedLongitude,
+      ...(outletPhotoBase64 !== undefined ? { outletPhotoBase64 } : {}),
+      ...(stockAvailabilityNotes.trim().length > 0
+        ? { stockAvailabilityNotes: stockAvailabilityNotes.trim() }
+        : {}),
+      ...(salesMadeNotes.trim().length > 0 ? { salesMadeNotes: salesMadeNotes.trim() } : {}),
+      ...(consumerEngagementNotes.trim().length > 0
+        ? { consumerEngagementNotes: consumerEngagementNotes.trim() }
+        : {}),
+      ...(visibilityExecutionNotes.trim().length > 0
+        ? { visibilityExecutionNotes: visibilityExecutionNotes.trim() }
+        : {})
+    };
+
+    const clearFormAfterSuccess = (): void => {
+      setStatusMessage("Outlet visit submitted successfully.");
+      setOutletPhotoBase64(undefined);
+      setStockAvailabilityNotes("");
+      setSalesMadeNotes("");
+      setConsumerEngagementNotes("");
+      setVisibilityExecutionNotes("");
+    };
+
+    if (!online) {
+      void (async () => {
+        try {
+          await enqueueOutletVisitForOfflineSync(payload);
+          setStatusMessage(
+            "Visit saved on this device. It will send automatically when you are back online."
+          );
           setOutletPhotoBase64(undefined);
           setStockAvailabilityNotes("");
           setSalesMadeNotes("");
           setConsumerEngagementNotes("");
           setVisibilityExecutionNotes("");
-        },
-        onError: (error: unknown) => {
-          const message =
-            error instanceof ApiError
-              ? (error.problem?.detail ?? error.message)
-              : "Could not submit outlet visit.";
-          setErrorMessage(message);
+        } catch {
+          setErrorMessage(
+            "Could not save on this device. Check storage permissions or free space, then try again."
+          );
         }
+      })();
+      return;
+    }
+
+    createVisitMutation.mutate(payload, {
+      onSuccess: () => {
+        clearFormAfterSuccess();
+      },
+      onError: (error: unknown) => {
+        if (error instanceof ApiError && error.status === 0) {
+          void (async () => {
+            try {
+              await enqueueOutletVisitForOfflineSync(payload);
+              setStatusMessage(
+                "Visit saved on this device. It will send automatically when you are back online."
+              );
+              setOutletPhotoBase64(undefined);
+              setStockAvailabilityNotes("");
+              setSalesMadeNotes("");
+              setConsumerEngagementNotes("");
+              setVisibilityExecutionNotes("");
+            } catch {
+              const message =
+                error instanceof ApiError
+                  ? (error.problem?.detail ?? error.message)
+                  : "Could not submit outlet visit.";
+              setErrorMessage(message);
+            }
+          })();
+          return;
+        }
+        const message =
+          error instanceof ApiError
+            ? (error.problem?.detail ?? error.message)
+            : "Could not submit outlet visit.";
+        setErrorMessage(message);
       }
-    );
+    });
   };
 
   return (
@@ -154,7 +204,8 @@ export default function OutletVisitsPage(): ReactElement {
         <h1 className="text-xl font-semibold tracking-tight text-foreground">Outlet visit</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Check into an outlet and record stock, sales, consumer engagement, and visibility
-          execution.
+          execution. If you lose signal, you can still submit—the visit is stored on this phone and
+          sent when you are online again.
         </p>
         <p className="mt-1 text-sm">
           <Link

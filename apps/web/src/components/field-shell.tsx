@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { type PropsWithChildren, type ReactElement } from "react";
 
 import { CalmBackground } from "@/components/calm-background";
+import { useFieldOutboxCount } from "@/hooks/use-field-outbox-count";
+import { useNetworkOnline } from "@/hooks/use-network-online";
 import type { AuthUser } from "@/lib/auth/auth-types";
 import { calmSecondaryButtonClass } from "@/lib/calm-ui";
 import { cn } from "@/lib/utils";
@@ -72,6 +74,9 @@ export const FieldShell = ({
   attendanceGateLocked = false
 }: FieldShellProps): ReactElement => {
   const pathname = usePathname();
+  const online = useNetworkOnline();
+  const outboxPendingCount = useFieldOutboxCount();
+  const showConnectivityStrip = !online || outboxPendingCount > 0;
   const navItems = getFieldNavItemsForUser(user);
   const appLabel = user.role === "client" ? "Client" : "Field";
   const mobileGridClass =
@@ -178,6 +183,26 @@ export const FieldShell = ({
               {isSigningOut ? "…" : "Sign out"}
             </button>
           </header>
+
+          {showConnectivityStrip ? (
+            <div
+              role="status"
+              className="shrink-0 border-b border-border bg-muted/50 px-4 py-2 text-center text-xs leading-snug text-muted-foreground sm:text-sm"
+            >
+              {!online ? (
+                <>
+                  You appear to be offline. This screen may be out of date, and new visits or
+                  clock-ins are saved on this device first, then sent when you are back online.
+                </>
+              ) : (
+                <>
+                  {outboxPendingCount === 1
+                    ? "You have 1 field record waiting to sync. It will send automatically."
+                    : `You have ${String(outboxPendingCount)} field records waiting to sync. They will send automatically.`}
+                </>
+              )}
+            </div>
+          ) : null}
 
           <main
             className={cn(

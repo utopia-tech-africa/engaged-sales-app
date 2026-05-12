@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type PropsWithChildren, type ReactElement, useEffect } from "react";
 
+import { FieldOfflineSyncListener } from "@/components/field-offline-sync-listener";
 import { FieldShell } from "@/components/field-shell";
 import { useAuthSignOut, useMeGetFieldAttendance } from "@/lib/api/generated/client";
 import { useAuthStore, useAuthStoreHydrated } from "@/lib/auth/auth-store";
@@ -128,6 +129,7 @@ export const DashboardLayoutClient = ({ children }: PropsWithChildren): ReactEle
       isSigningOut={signOutMutation.isPending}
       attendanceGateLocked={attendanceGateLocked}
     >
+      <FieldOfflineSyncListener />
       {children}
     </FieldShell>
   );

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 
+import { clearFieldOutbox } from "@/lib/field/field-offline-idb";
+
 import type { AuthUser } from "./auth-types";
 
 type AuthState = {
@@ -47,6 +49,7 @@ export const useAuthStore = create<AuthState>()(
         });
       },
       clearSession: () => {
+        void clearFieldOutbox().catch(() => undefined);
         set({
           user: null,
           accessToken: null,
