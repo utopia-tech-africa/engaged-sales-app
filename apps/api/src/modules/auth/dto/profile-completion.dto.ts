@@ -1,3 +1,4 @@
+import { Transform } from "class-transformer";
 import {
   IsIn,
   IsOptional,
@@ -9,15 +10,28 @@ import {
 } from "class-validator";
 import { ApiPropertyOptional } from "@nestjs/swagger";
 
+import {
+  normalizePhoneString,
+  PHONE_VALIDATION_PATTERN
+} from "../../../common/decorators/phone.decorators";
+
 export class ProfileCompletionDto {
-  @ApiPropertyOptional({ type: String, example: "jamal@example.com" })
+  @ApiPropertyOptional({ type: String, example: "john.doe@example.com" })
   @IsOptional()
   @IsEmail()
   public email?: string;
 
-  @ApiPropertyOptional({ type: String, example: "+254712345678" })
+  @ApiPropertyOptional({
+    type: String,
+    example: "0244123456",
+    description: "International +… or local; may start with 0; spaces/hyphens stripped."
+  })
   @IsOptional()
-  @Matches(/^\+?[1-9]\d{7,14}$/)
+  @Transform(({ value }) => normalizePhoneString(value))
+  @Matches(PHONE_VALIDATION_PATTERN, {
+    message:
+      "phone must be 8–17 digits, optionally starting with +; leading 0 is allowed (spaces and hyphens are removed)"
+  })
   public phone?: string;
 
   @ApiPropertyOptional({ type: String, example: "male", enum: ["male", "female", "other"] })
@@ -25,7 +39,7 @@ export class ProfileCompletionDto {
   @IsIn(["male", "female", "other"])
   public gender?: "male" | "female" | "other";
 
-  @ApiPropertyOptional({ type: String, example: "Jamal Salim" })
+  @ApiPropertyOptional({ type: String, example: "John Doe" })
   @IsOptional()
   @IsString()
   @MinLength(1)

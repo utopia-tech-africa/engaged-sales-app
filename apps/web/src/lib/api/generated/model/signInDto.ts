@@ -8,7 +8,7 @@
 import type { SignInDtoRole } from './signInDtoRole';
 
 export type SignInDto = {
-  /** Registered phone number */
+  /** Registered phone (international +… or local; may start with 0). Spaces and hyphens are stripped. */
   phone: string;
   /** Unique promoter code */
   uniqueCode: string;

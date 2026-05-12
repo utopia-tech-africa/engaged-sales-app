@@ -11,7 +11,13 @@ import type { AdminUserUpdateUserBodyRole } from "./adminUserUpdateUserBodyRole"
 export type AdminUserUpdateUserBody = {
   fullName?: string;
   role?: AdminUserUpdateUserBodyRole;
-  regionId?: string;
+  /**
+   * Region id (cuid), or null to remove assignment
+   * @minLength 1
+   * @maxLength 64
+   * @nullable
+   */
+  regionId?: string | null;
   isActive?: boolean;
   gender?: AdminUserUpdateUserBodyGender;
 };

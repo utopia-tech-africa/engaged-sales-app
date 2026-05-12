@@ -1,31 +1,26 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import {
-  IsEmail,
-  IsIn,
-  IsOptional,
-  IsString,
-  Matches,
-  MaxLength,
-  MinLength
-} from "class-validator";
+import { IsEmail, IsIn, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+
+import { PhoneNumberField } from "../../../common/decorators/phone.decorators";
 
 export class CreateAdminUserDto {
-  @ApiProperty({ example: "Jamal Salim" })
+  @ApiProperty({ example: "John Doe" })
   @IsString()
   @MinLength(1)
   @MaxLength(128)
   public fullName!: string;
 
-  @ApiProperty({ example: "jamal@example.com" })
+  @ApiProperty({ example: "john.doe@example.com" })
   @IsEmail()
   @MaxLength(320)
   public email!: string;
 
   @ApiProperty({
-    example: "+254712345678",
-    description: "E.164-style phone (same rules as sign-up)"
+    example: "0244123456",
+    description:
+      "Same rules as sign-up: + prefix optional, may start with 0; spaces/hyphens stripped."
   })
-  @Matches(/^\+?[1-9]\d{7,14}$/)
+  @PhoneNumberField()
   public phone!: string;
 
   @ApiProperty({ enum: ["promoter", "client", "supervisor", "admin"] })

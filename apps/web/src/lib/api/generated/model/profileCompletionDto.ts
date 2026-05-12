@@ -9,6 +9,7 @@ import type { ProfileCompletionDtoGender } from './profileCompletionDtoGender';
 
 export type ProfileCompletionDto = {
   email?: string;
+  /** International +… or local; may start with 0; spaces/hyphens stripped. */
   phone?: string;
   gender?: ProfileCompletionDtoGender;
   fullName?: string;

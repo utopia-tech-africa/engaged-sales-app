@@ -109,7 +109,7 @@ function SignInForm(): ReactElement {
         <FormControl label="Phone number">
           <Input
             name="phone"
-            placeholder="+254712345678"
+            placeholder="0244123456 or +233244123456"
             value={phone}
             onChange={(event) => {
               setPhone(event.currentTarget.value);

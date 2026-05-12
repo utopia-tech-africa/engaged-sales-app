@@ -10,7 +10,7 @@ import type { SignUpDtoGender } from './signUpDtoGender';
 export type SignUpDto = {
   /** Full name of the user */
   fullName: string;
-  /** E.164 phone number */
+  /** International (+country code) or local/national number; may start with 0. Spaces and hyphens are stripped. */
   phone: string;
   gender: SignUpDtoGender;
   /** Optional sales region id */

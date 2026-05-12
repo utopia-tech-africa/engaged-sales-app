@@ -16,8 +16,8 @@
               "examples": {
                 "default": {
                   "value": {
-                    "fullName": "Jamal Salim",
-                    "phone": "+254712345678",
+                    "fullName": "John Doe",
+                    "phone": "0244123456",
                     "gender": "male",
                     "regionId": "nairobi-west"
                   }
@@ -35,9 +35,9 @@
                   "example": {
                     "user": {
                       "id": "cmad4p0bo0000iib0i0l9e8wk",
-                      "fullName": "Jamal Salim",
+                      "fullName": "John Doe",
                       "email": null,
-                      "phone": "+254712345678",
+                      "phone": "0244123456",
                       "uniqueCode": "P-12ab34cd",
                       "role": "promoter",
                       "gender": "male",
@@ -109,7 +109,7 @@
               "examples": {
                 "default": {
                   "value": {
-                    "phone": "+254712345678",
+                    "phone": "0244123456",
                     "uniqueCode": "P-12ab34cd",
                     "role": "promoter"
                   }
@@ -127,9 +127,9 @@
                   "example": {
                     "user": {
                       "id": "cmad4p0bo0000iib0i0l9e8wk",
-                      "fullName": "Jamal Salim",
+                      "fullName": "John Doe",
                       "email": null,
-                      "phone": "+254712345678",
+                      "phone": "0244123456",
                       "uniqueCode": "P-12ab34cd",
                       "role": "promoter",
                       "gender": "male",
@@ -262,8 +262,8 @@
                   "example": {
                     "user": {
                       "id": "cmad4p0bo0000iib0i0l9e8wk",
-                      "fullName": "Jamal Salim",
-                      "email": "jamal@example.com",
+                      "fullName": "John Doe",
+                      "email": "john.doe@example.com",
                       "phone": "pending-a8e4c2f7f9d1",
                       "uniqueCode": "P-12ab34cd",
                       "role": "promoter",
@@ -360,9 +360,9 @@
                   "example": {
                     "user": {
                       "id": "cmad4p0bo0000iib0i0l9e8wk",
-                      "fullName": "Jamal Salim",
-                      "email": "jamal@example.com",
-                      "phone": "+254712345678",
+                      "fullName": "John Doe",
+                      "email": "john.doe@example.com",
+                      "phone": "0244123456",
                       "uniqueCode": "P-12ab34cd",
                       "role": "promoter",
                       "gender": "male",
@@ -1977,7 +1977,7 @@
                   },
                   "phone": {
                     "type": "string",
-                    "example": "+254712345678"
+                    "example": "0244123456"
                   },
                   "role": {
                     "type": "string",
@@ -2047,7 +2047,11 @@
                     "enum": ["promoter", "client", "supervisor", "admin"]
                   },
                   "regionId": {
-                    "type": "string"
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Region id (cuid), or null to remove assignment",
+                    "minLength": 1,
+                    "maxLength": 64
                   },
                   "isActive": {
                     "type": "boolean"
@@ -2087,6 +2091,42 @@
         "tags": ["Admin users (supervisor / admin)"]
       }
     },
+    "/admin/tracking/check-ins/{pingId}": {
+      "get": {
+        "description": "Returns the same payload as activation roster check-in detail: coordinates, time, staff, and selfie as a data URL when recorded. For promoters only; used from Live field tracking.",
+        "operationId": "Tracking_getCheckIn",
+        "parameters": [
+          {
+            "name": "pingId",
+            "required": true,
+            "in": "path",
+            "description": "LocationPing id (cuid)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Check-in detail"
+          },
+          "401": {
+            "description": "Missing or invalid JWT"
+          },
+          "403": {
+            "description": "Requires supervisor or admin role"
+          },
+          "404": {
+            "description": "Ping not found or not a promoter check-in"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one live-map check-in (with selfie)",
+        "tags": ["Live tracking (supervisor / admin)"]
+      }
+    },
     "/health": {
       "get": {
         "description": "Returns a simple health signal for uptime probes.",
@@ -2123,8 +2163,8 @@
                 "schema": {
                   "example": {
                     "id": "cmad4p0bo0000iib0i0l9e8wk",
-                    "fullName": "Jamal Salim",
-                    "phone": "+254712345678",
+                    "fullName": "John Doe",
+                    "phone": "0244123456",
                     "role": "promoter",
                     "gender": "male",
                     "regionId": "nairobi-west"
@@ -2163,7 +2203,7 @@
                 "updateNameAndRegion": {
                   "summary": "Update name and region",
                   "value": {
-                    "fullName": "Jamal S. Salim",
+                    "fullName": "John Doe",
                     "regionId": "nairobi-east"
                   }
                 }
@@ -2179,8 +2219,8 @@
                 "schema": {
                   "example": {
                     "id": "cmad4p0bo0000iib0i0l9e8wk",
-                    "fullName": "Jamal S. Salim",
-                    "phone": "+254712345678",
+                    "fullName": "John Doe",
+                    "phone": "0244123456",
                     "role": "promoter",
                     "gender": "male",
                     "regionId": "nairobi-east"
@@ -2804,13 +2844,13 @@
         "properties": {
           "fullName": {
             "type": "string",
-            "example": "Jamal Salim",
+            "example": "John Doe",
             "description": "Full name of the user"
           },
           "phone": {
             "type": "string",
-            "example": "+254712345678",
-            "description": "E.164 phone number"
+            "example": "0244123456",
+            "description": "International (+country code) or local/national number; may start with 0. Spaces and hyphens are stripped."
           },
           "gender": {
             "type": "string",
@@ -2830,8 +2870,8 @@
         "properties": {
           "phone": {
             "type": "string",
-            "example": "+254712345678",
-            "description": "Registered phone number"
+            "example": "0244123456",
+            "description": "Registered phone (international +… or local; may start with 0). Spaces and hyphens are stripped."
           },
           "uniqueCode": {
             "type": "string",
@@ -2918,11 +2958,12 @@
         "properties": {
           "email": {
             "type": "string",
-            "example": "jamal@example.com"
+            "example": "john.doe@example.com"
           },
           "phone": {
             "type": "string",
-            "example": "+254712345678"
+            "example": "0244123456",
+            "description": "International +… or local; may start with 0; spaces/hyphens stripped."
           },
           "gender": {
             "type": "string",
@@ -2931,7 +2972,7 @@
           },
           "fullName": {
             "type": "string",
-            "example": "Jamal Salim"
+            "example": "John Doe"
           },
           "regionId": {
             "type": "string",
@@ -3047,7 +3088,7 @@
           },
           "contactPhone": {
             "type": "string",
-            "example": "+254712345678"
+            "example": "0244123456"
           },
           "contactEmail": {
             "type": "string",
@@ -3086,7 +3127,7 @@
           },
           "contactPhone": {
             "type": "string",
-            "example": "+254712345678"
+            "example": "0244123456"
           },
           "contactEmail": {
             "type": "string",
@@ -3129,7 +3170,7 @@
         "properties": {
           "fullName": {
             "type": "string",
-            "example": "Jamal Salim"
+            "example": "John Doe"
           },
           "gender": {
             "type": "string",

@@ -1,6 +1,15 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import { IsBoolean, IsIn, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import {
+  IsBoolean,
+  IsIn,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+  ValidateIf
+} from "class-validator";
 
+/** PATCH body: `regionId` may be a cuid string or `null` to clear the user's region. */
 export class UpdateAdminUserDto {
   @ApiPropertyOptional()
   @IsOptional()
@@ -14,12 +23,15 @@ export class UpdateAdminUserDto {
   @IsIn(["promoter", "client", "supervisor", "admin"])
   public role?: "promoter" | "client" | "supervisor" | "admin";
 
-  @ApiPropertyOptional({ description: "Region id (cuid)" })
-  @IsOptional()
+  @ApiPropertyOptional({
+    description: "Region id (cuid), or null to remove region assignment",
+    nullable: true
+  })
+  @ValidateIf((_, value) => value !== undefined && value !== null)
   @IsString()
   @MinLength(1)
   @MaxLength(64)
-  public regionId?: string;
+  public regionId?: string | null;
 
   @ApiPropertyOptional()
   @IsOptional()

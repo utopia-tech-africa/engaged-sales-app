@@ -15,6 +15,8 @@ export type CheckInDetailModalProps = {
   isError: boolean;
   detail: AdminFieldActivityCheckInDetail | undefined;
   formatDateTime: (iso: string) => string;
+  /** Shown under the title (e.g. activation roster vs live map). */
+  contextSubtitle?: string;
 };
 
 const staffInitials = (fullName: string): string => {
@@ -34,7 +36,8 @@ export function CheckInDetailModal({
   isLoading,
   isError,
   detail,
-  formatDateTime
+  formatDateTime,
+  contextSubtitle = "Roster attendance verification"
 }: CheckInDetailModalProps): ReactElement | null {
   if (!open) {
     return null;
@@ -71,7 +74,7 @@ export function CheckInDetailModal({
             >
               Check-in details
             </h2>
-            <p className="truncate text-xs text-muted-foreground">Roster attendance verification</p>
+            <p className="truncate text-xs text-muted-foreground">{contextSubtitle}</p>
           </div>
           <button
             type="button"

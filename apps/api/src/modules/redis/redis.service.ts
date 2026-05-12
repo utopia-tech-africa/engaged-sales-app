@@ -40,7 +40,11 @@ export class RedisService implements OnModuleDestroy {
   }
 
   public async onModuleDestroy(): Promise<void> {
-    await this.client.quit();
+    try {
+      await this.client.quit();
+    } catch {
+      this.client.disconnect();
+    }
   }
 
   public async incrementWithWindow(key: string, windowSeconds: number): Promise<number> {

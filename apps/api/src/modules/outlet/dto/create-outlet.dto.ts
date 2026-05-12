@@ -32,7 +32,7 @@ export class CreateOutletDto {
   @MaxLength(120)
   public contactName?: string;
 
-  @ApiPropertyOptional({ type: String, example: "+254712345678" })
+  @ApiPropertyOptional({ type: String, example: "0244123456" })
   @IsOptional()
   @IsString()
   @MaxLength(40)

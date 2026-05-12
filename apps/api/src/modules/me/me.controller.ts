@@ -53,8 +53,8 @@ export class MeController {
     schema: {
       example: {
         id: "cmad4p0bo0000iib0i0l9e8wk",
-        fullName: "Jamal Salim",
-        phone: "+254712345678",
+        fullName: "John Doe",
+        phone: "0244123456",
         role: "promoter",
         gender: "male",
         regionId: "nairobi-west"
@@ -79,7 +79,7 @@ export class MeController {
       updateNameAndRegion: {
         summary: "Update name and region",
         value: {
-          fullName: "Jamal S. Salim",
+          fullName: "John Doe",
           regionId: "nairobi-east"
         }
       }
@@ -90,8 +90,8 @@ export class MeController {
     schema: {
       example: {
         id: "cmad4p0bo0000iib0i0l9e8wk",
-        fullName: "Jamal S. Salim",
-        phone: "+254712345678",
+        fullName: "John Doe",
+        phone: "0244123456",
         role: "promoter",
         gender: "male",
         regionId: "nairobi-east"

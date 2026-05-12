@@ -6492,6 +6492,167 @@ export const useAdminUserUpdateUser = <TError = void, TContext = unknown>(
   return useMutation(getAdminUserUpdateUserMutationOptions(options), queryClient);
 };
 
+export type trackingGetCheckInResponse200 = {
+  data: void;
+  status: 200;
+};
+
+export type trackingGetCheckInResponse401 = {
+  data: void;
+  status: 401;
+};
+
+export type trackingGetCheckInResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type trackingGetCheckInResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type trackingGetCheckInResponseSuccess = trackingGetCheckInResponse200 & {
+  headers: Headers;
+};
+export type trackingGetCheckInResponseError = (
+  | trackingGetCheckInResponse401
+  | trackingGetCheckInResponse403
+  | trackingGetCheckInResponse404
+) & {
+  headers: Headers;
+};
+
+export type trackingGetCheckInResponse =
+  | trackingGetCheckInResponseSuccess
+  | trackingGetCheckInResponseError;
+
+export const getTrackingGetCheckInUrl = (pingId: unknown) => {
+  return `/admin/tracking/check-ins/${pingId}`;
+};
+
+/**
+ * Returns the same payload as activation roster check-in detail: coordinates, time, staff, and selfie as a data URL when recorded. For promoters only; used from Live field tracking.
+ * @summary Get one live-map check-in (with selfie)
+ */
+export const trackingGetCheckIn = async (
+  pingId: unknown,
+  options?: RequestInit
+): Promise<trackingGetCheckInResponse> => {
+  return orvalFetcher<trackingGetCheckInResponse>(getTrackingGetCheckInUrl(pingId), {
+    ...options,
+    method: "GET"
+  });
+};
+
+export const getTrackingGetCheckInQueryKey = (pingId: unknown) => {
+  return [`/admin/tracking/check-ins/${pingId}`] as const;
+};
+
+export const getTrackingGetCheckInQueryOptions = <
+  TData = Awaited<ReturnType<typeof trackingGetCheckIn>>,
+  TError = void
+>(
+  pingId: unknown,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof trackingGetCheckIn>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getTrackingGetCheckInQueryKey(pingId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof trackingGetCheckIn>>> = ({ signal }) =>
+    trackingGetCheckIn(pingId, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, enabled: !!pingId, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof trackingGetCheckIn>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type TrackingGetCheckInQueryResult = NonNullable<
+  Awaited<ReturnType<typeof trackingGetCheckIn>>
+>;
+export type TrackingGetCheckInQueryError = void;
+
+export function useTrackingGetCheckIn<
+  TData = Awaited<ReturnType<typeof trackingGetCheckIn>>,
+  TError = void
+>(
+  pingId: unknown,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof trackingGetCheckIn>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof trackingGetCheckIn>>,
+          TError,
+          Awaited<ReturnType<typeof trackingGetCheckIn>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useTrackingGetCheckIn<
+  TData = Awaited<ReturnType<typeof trackingGetCheckIn>>,
+  TError = void
+>(
+  pingId: unknown,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof trackingGetCheckIn>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof trackingGetCheckIn>>,
+          TError,
+          Awaited<ReturnType<typeof trackingGetCheckIn>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useTrackingGetCheckIn<
+  TData = Awaited<ReturnType<typeof trackingGetCheckIn>>,
+  TError = void
+>(
+  pingId: unknown,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof trackingGetCheckIn>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get one live-map check-in (with selfie)
+ */
+
+export function useTrackingGetCheckIn<
+  TData = Awaited<ReturnType<typeof trackingGetCheckIn>>,
+  TError = void
+>(
+  pingId: unknown,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof trackingGetCheckIn>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalFetcher>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getTrackingGetCheckInQueryOptions(pingId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
 export type healthGetHealthResponse200 = {
   data: unknown;
   status: 200;
