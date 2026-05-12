@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Inject, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
   ApiConflictResponse,
@@ -9,6 +10,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiServiceUnavailableResponse,
   ApiTags,
   ApiUnauthorizedResponse
 } from "@nestjs/swagger";
@@ -34,7 +36,7 @@ export class AdminUserController {
     operationId: "AdminUser_listUsers",
     summary: "List users (supervisor / admin)",
     description:
-      "Supervisors see promoters and clients only; admins see all users. Sends invite email (Resend) on create when `RESEND_API_KEY` is set."
+      "Supervisors see promoters and clients only; admins see all users. Creating a user sends an invite SMS via mNotify; the user row is rolled back if SMS is not accepted."
   })
   @ApiOkResponse({ description: "List of users" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
@@ -48,15 +50,14 @@ export class AdminUserController {
     operationId: "AdminUser_createUser",
     summary: "Create user (invite)",
     description:
-      "Creates a credentials user and emails sign-in instructions via Resend when configured."
+      "Creates a credentials user and sends sign-in instructions by SMS (mNotify). The user is not kept unless the SMS is delivered successfully."
   })
   @ApiBody({
     schema: {
       type: "object",
-      required: ["fullName", "email", "phone", "role"],
+      required: ["fullName", "phone", "role"],
       properties: {
         fullName: { type: "string" },
-        email: { type: "string", format: "email" },
         phone: { type: "string", example: "0244123456" },
         role: {
           type: "string",
@@ -67,8 +68,12 @@ export class AdminUserController {
       }
     }
   })
+  @ApiBadRequestResponse({
+    description: "Validation error, missing SMS configuration, or SMS rejected by provider"
+  })
+  @ApiServiceUnavailableResponse({ description: "SMS provider unreachable or HTTP error" })
   @ApiCreatedResponse({ description: "User created" })
-  @ApiConflictResponse({ description: "Phone or email already in use" })
+  @ApiConflictResponse({ description: "Phone already in use" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
   @ApiForbiddenResponse({
     description: "Requires supervisor or admin; only admins may create supervisor/admin"

@@ -5,6 +5,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  Length,
   Matches,
   Max,
   Min,
@@ -46,6 +47,39 @@ const parseDigestDateMode = (value: unknown): "yesterday" | "today" => {
     return "today";
   }
   return "yesterday";
+};
+
+/** Trim, strip BOM, strip one pair of surrounding quotes (common .env mistakes). */
+const stripEnvSecretArtifacts = (raw: string): string => {
+  let s = raw.replace(/^\uFEFF/, "").trim();
+  if (
+    (s.startsWith('"') && s.endsWith('"') && s.length >= 2) ||
+    (s.startsWith("'") && s.endsWith("'") && s.length >= 2)
+  ) {
+    s = s.slice(1, -1).trim();
+  }
+  return s;
+};
+
+/** Prefer `MNOTIFY_SMS_API_KEY`; fall back to `MNOTIFY_KEY` (Laravel / mNotify docs). */
+const pickMnotifySmsApiKey = (config: Record<string, unknown>): string => {
+  const primary =
+    typeof config["MNOTIFY_SMS_API_KEY"] === "string"
+      ? stripEnvSecretArtifacts(config["MNOTIFY_SMS_API_KEY"])
+      : "";
+  if (primary.length > 0) {
+    return primary;
+  }
+  return typeof config["MNOTIFY_KEY"] === "string"
+    ? stripEnvSecretArtifacts(config["MNOTIFY_KEY"])
+    : "";
+};
+
+const parseMnotifyApiVersion = (value: unknown): "v2" | "legacy" => {
+  if (typeof value === "string" && value.trim().toLowerCase() === "legacy") {
+    return "legacy";
+  }
+  return "v2";
 };
 
 class EnvironmentVariablesDto {
@@ -96,7 +130,7 @@ class EnvironmentVariablesDto {
   @MinLength(1)
   public CORS_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000";
 
-  /** When empty, invite emails are skipped (logged). */
+  /** When empty, operational emails (digest, reports) are skipped (logged). */
   @IsString()
   public RESEND_API_KEY = "";
 
@@ -104,9 +138,25 @@ class EnvironmentVariablesDto {
   @IsString()
   public RESEND_FROM_EMAIL = "";
 
-  /** Public web origin for sign-in links in emails (no trailing slash). */
+  /** Public web origin for sign-in links in SMS (no trailing slash). */
   @IsString()
   public APP_PUBLIC_URL = "http://localhost:3000";
+
+  /** API key for invite SMS. Also reads `MNOTIFY_KEY` if this is empty. Stripped of stray quotes/BOM. */
+  @IsString()
+  public MNOTIFY_SMS_API_KEY = "";
+
+  /** Registered mNotify sender ID (max 11 characters). */
+  @IsString()
+  @Length(1, 11)
+  public MNOTIFY_SENDER_ID = "Engaged";
+
+  /**
+   * `v2` = current mNotify HTTP API (`api.mnotify.com`, keys from apps dashboard).
+   * `legacy` = older GET `apps.mnotify.net/smsapi` (old-style keys only).
+   */
+  @IsIn(["v2", "legacy"])
+  public MNOTIFY_API_VERSION: "v2" | "legacy" = "v2";
 
   /** IANA timezone for daily attendance boundaries and late checks (e.g. `Africa/Nairobi`). */
   @IsOptional()
@@ -164,6 +214,9 @@ export type EnvironmentVariables = {
   RESEND_API_KEY: string;
   RESEND_FROM_EMAIL: string;
   APP_PUBLIC_URL: string;
+  MNOTIFY_SMS_API_KEY: string;
+  MNOTIFY_SENDER_ID: string;
+  MNOTIFY_API_VERSION: "v2" | "legacy";
   ATTENDANCE_TIMEZONE: string;
   ATTENDANCE_EXPECTED_CHECK_IN_HHMM: string;
   ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE: boolean;
@@ -198,6 +251,15 @@ export const validateEnvironment = (config: Record<string, unknown>): Environmen
     RESEND_API_KEY: config["RESEND_API_KEY"] ?? "",
     RESEND_FROM_EMAIL: config["RESEND_FROM_EMAIL"] ?? "",
     APP_PUBLIC_URL: config["APP_PUBLIC_URL"] ?? "http://localhost:3000",
+    MNOTIFY_SMS_API_KEY: pickMnotifySmsApiKey(config),
+    MNOTIFY_SENDER_ID: (() => {
+      if (typeof config["MNOTIFY_SENDER_ID"] !== "string") {
+        return "Engaged";
+      }
+      const t = stripEnvSecretArtifacts(config["MNOTIFY_SENDER_ID"]).slice(0, 11);
+      return t.length > 0 ? t : "Engaged";
+    })(),
+    MNOTIFY_API_VERSION: parseMnotifyApiVersion(config["MNOTIFY_API_VERSION"]),
     ATTENDANCE_TIMEZONE:
       (typeof config["ATTENDANCE_TIMEZONE"] === "string" &&
       config["ATTENDANCE_TIMEZONE"].trim().length > 0
@@ -261,6 +323,9 @@ export const validateEnvironment = (config: Record<string, unknown>): Environmen
     RESEND_API_KEY: validatedEnvironment.RESEND_API_KEY,
     RESEND_FROM_EMAIL: validatedEnvironment.RESEND_FROM_EMAIL,
     APP_PUBLIC_URL: validatedEnvironment.APP_PUBLIC_URL,
+    MNOTIFY_SMS_API_KEY: validatedEnvironment.MNOTIFY_SMS_API_KEY,
+    MNOTIFY_SENDER_ID: validatedEnvironment.MNOTIFY_SENDER_ID,
+    MNOTIFY_API_VERSION: validatedEnvironment.MNOTIFY_API_VERSION,
     ATTENDANCE_TIMEZONE: validatedEnvironment.ATTENDANCE_TIMEZONE,
     ATTENDANCE_EXPECTED_CHECK_IN_HHMM: validatedEnvironment.ATTENDANCE_EXPECTED_CHECK_IN_HHMM,
     ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE: validatedEnvironment.ATTENDANCE_ENFORCE_GEOFENCE_DISTANCE,

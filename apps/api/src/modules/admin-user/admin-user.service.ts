@@ -4,12 +4,13 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException
 } from "@nestjs/common";
 
 import type { AuthenticatedUser, UserRole } from "../../common/types/authenticated-user.type";
 import type { UserRole as PrismaUserRole } from "../../generated/prisma/client";
-import { ResendEmailService } from "../email/resend-email.service";
+import { MnotifySmsService } from "../sms/mnotify-sms.service";
 import { RegionRepository } from "../region/region.repository";
 import { AdminUserRepository, type AdminUserListRow } from "./admin-user.repository";
 import type { CreateAdminUserDto } from "./dto/create-admin-user.dto";
@@ -20,10 +21,12 @@ const ELEVATED_ROLES = new Set<PrismaUserRole>(["supervisor", "admin"]);
 
 @Injectable()
 export class AdminUserService {
+  private readonly logger = new Logger(AdminUserService.name);
+
   public constructor(
     @Inject(AdminUserRepository) private readonly repository: AdminUserRepository,
     @Inject(RegionRepository) private readonly regionRepository: RegionRepository,
-    @Inject(ResendEmailService) private readonly resendEmailService: ResendEmailService
+    @Inject(MnotifySmsService) private readonly mnotifySmsService: MnotifySmsService
   ) {}
 
   private requireSupervisorOrAdmin(currentUser: AuthenticatedUser): void {
@@ -72,7 +75,6 @@ export class AdminUserService {
     this.assertCanAssignRoleOnCreate(currentUser, role);
 
     const fullName = dto.fullName.trim();
-    const email = dto.email.trim().toLowerCase();
     const phone = dto.phone.trim();
 
     if (dto.regionId !== undefined) {
@@ -82,21 +84,15 @@ export class AdminUserService {
       }
     }
 
-    const [phoneTaken, emailTaken] = await Promise.all([
-      this.repository.findByPhone(phone),
-      this.repository.findByEmail(email)
-    ]);
+    const phoneTaken = await this.repository.findByPhone(phone);
     if (phoneTaken) {
       throw new ConflictException("A user with this phone already exists");
-    }
-    if (emailTaken) {
-      throw new ConflictException("A user with this email already exists");
     }
 
     const uniqueCode = AdminUserRepository.makeUniqueCodeForRole(role);
     const created = await this.repository.createUser({
       fullName,
-      email,
+      email: null,
       phone,
       role,
       uniqueCode,
@@ -104,13 +100,24 @@ export class AdminUserService {
       ...(dto.gender !== undefined ? { gender: dto.gender } : {})
     });
 
-    await this.resendEmailService.sendUserInviteEmail({
-      to: email,
-      fullName,
-      phone,
-      uniqueCode,
-      role
-    });
+    try {
+      await this.mnotifySmsService.sendUserInviteSms({
+        phone,
+        fullName,
+        uniqueCode,
+        role
+      });
+    } catch (err: unknown) {
+      try {
+        await this.repository.deleteById(created.id);
+      } catch (deleteErr: unknown) {
+        this.logger.error(
+          `Invite rollback failed: could not delete user ${created.id} after SMS failure`,
+          deleteErr instanceof Error ? deleteErr.stack : String(deleteErr)
+        );
+      }
+      throw err;
+    }
 
     return created;
   }

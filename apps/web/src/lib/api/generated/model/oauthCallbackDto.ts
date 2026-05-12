@@ -18,4 +18,4 @@ export type OauthCallbackDto = {
   latitude?: number;
   /** Device longitude (pair with latitude when required for field roles). */
   longitude?: number;
-};
+}

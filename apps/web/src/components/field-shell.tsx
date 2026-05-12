@@ -7,7 +7,7 @@ import { type PropsWithChildren, type ReactElement } from "react";
 
 import { CalmBackground } from "@/components/calm-background";
 import type { AuthUser } from "@/lib/auth/auth-types";
-import { calmMutedLinkClass, calmSecondaryButtonClass } from "@/lib/calm-ui";
+import { calmSecondaryButtonClass } from "@/lib/calm-ui";
 import { cn } from "@/lib/utils";
 
 export type FieldNavItem = {
@@ -124,9 +124,6 @@ export const FieldShell = ({
               >
                 {isSigningOut ? "Signing out…" : "Sign out"}
               </button>
-              <Link href="/" className={`${calmMutedLinkClass} mt-3 block`}>
-                Marketing site
-              </Link>
             </div>
           </div>
         </aside>

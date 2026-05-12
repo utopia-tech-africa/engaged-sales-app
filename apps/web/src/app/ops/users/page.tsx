@@ -24,9 +24,11 @@ import { useAuthStore } from "@/lib/auth/auth-store";
 import { calmPrimaryButtonClass, calmSecondaryButtonClass } from "@/lib/calm-ui";
 import {
   type AdminUserRow,
+  parseAdminUserFromOrval,
   parseAdminUsersFromOrval,
   parseRegionsFromOrval
 } from "@/lib/ops/ops-adapters";
+import { toast } from "@/lib/toast";
 
 const cardClass = "rounded-xl border border-border bg-card/80 p-5 shadow-sm dark:bg-card/50";
 
@@ -87,7 +89,6 @@ export default function OpsUsersPage(): ReactElement {
   });
 
   const [createFullName, setCreateFullName] = useState("");
-  const [createEmail, setCreateEmail] = useState("");
   const [createPhone, setCreatePhone] = useState("");
   const [createRole, setCreateRole] = useState<(typeof ALL_ROLES)[number]>(
     AdminUserCreateUserBodyRole.promoter
@@ -131,17 +132,15 @@ export default function OpsUsersPage(): ReactElement {
     event.preventDefault();
     setFormError(null);
     const fullName = createFullName.trim();
-    const email = createEmail.trim();
     const phone = createPhone.trim();
-    if (!fullName || !email || !phone) {
-      setFormError("Full name, email, and phone are required.");
+    if (!fullName || !phone) {
+      toast.error("Full name and phone are required.");
       return;
     }
     createMutation.mutate(
       {
         data: {
           fullName,
-          email,
           phone,
           role: createRole,
           ...(createRegionId ? { regionId: createRegionId } : {}),
@@ -149,9 +148,19 @@ export default function OpsUsersPage(): ReactElement {
         }
       },
       {
-        onSuccess: () => {
+        onSuccess: (result: unknown) => {
+          try {
+            const user = parseAdminUserFromOrval(result);
+            toast.success("User invited", {
+              description: `${user.fullName} · ${user.phone} · Access code: ${user.uniqueCode}`
+            });
+          } catch {
+            toast.success("User invited", {
+              description:
+                "Sign-in SMS sent. Find the new user in the list below to copy the access code."
+            });
+          }
           setCreateFullName("");
-          setCreateEmail("");
           setCreatePhone("");
           setCreateRole(AdminUserCreateUserBodyRole.promoter);
           setCreateRegionId("");
@@ -160,7 +169,7 @@ export default function OpsUsersPage(): ReactElement {
         onError: (err: unknown) => {
           const msg =
             err instanceof ApiError ? (err.problem?.detail ?? err.message) : "Create failed.";
-          setFormError(msg);
+          toast.error("Could not invite user", { description: msg });
         }
       }
     );
@@ -212,12 +221,6 @@ export default function OpsUsersPage(): ReactElement {
     });
   };
 
-  const createErrUnknown: unknown = createMutation.error;
-  const createApiErr =
-    createErrUnknown instanceof ApiError
-      ? (createErrUnknown.problem?.detail ?? createErrUnknown.message)
-      : null;
-
   const roleOptionsForEdit = isAdmin ? ALL_ROLES : FIELD_ROLES;
 
   return (
@@ -229,11 +232,13 @@ export default function OpsUsersPage(): ReactElement {
           {isAdmin ? (
             <>
               {" "}
-              New users receive sign-in instructions by email when{" "}
-              <code className="text-xs">RESEND_API_KEY</code> is configured on the API.
+              New users are only created after the invite SMS is delivered (
+              <code className="text-xs">MNOTIFY_SMS_API_KEY</code> or{" "}
+              <code className="text-xs">MNOTIFY_KEY</code>; current mNotify keys use API v2 by
+              default; failures roll back the user).
             </>
           ) : (
-            " New users receive sign-in instructions by email when email delivery is configured."
+            " New users are only saved if the invite SMS is sent successfully."
           )}{" "}
           Supervisors manage promoters and clients; only admins can create or edit supervisor and
           admin accounts.
@@ -258,21 +263,6 @@ export default function OpsUsersPage(): ReactElement {
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground" htmlFor="u-email">
-              Email
-            </label>
-            <input
-              id="u-email"
-              type="email"
-              className={inputClass}
-              value={createEmail}
-              onChange={(e) => {
-                setCreateEmail(e.target.value);
-              }}
-              required
-            />
-          </div>
-          <div>
             <label className="text-xs font-medium text-muted-foreground" htmlFor="u-phone">
               Phone
             </label>
@@ -283,7 +273,7 @@ export default function OpsUsersPage(): ReactElement {
               onChange={(e) => {
                 setCreatePhone(e.target.value);
               }}
-              placeholder="0244123456 or +233244123456"
+              placeholder="0244123456"
               required
             />
           </div>
@@ -368,11 +358,6 @@ export default function OpsUsersPage(): ReactElement {
         {formError ? (
           <p className="mt-3 text-sm text-destructive" role="alert">
             {formError}
-          </p>
-        ) : null}
-        {createApiErr ? (
-          <p className="mt-3 text-sm text-destructive" role="alert">
-            {createApiErr}
           </p>
         ) : null}
       </section>

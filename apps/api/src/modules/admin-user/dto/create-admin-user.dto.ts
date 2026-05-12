@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsEmail, IsIn, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
+import { IsIn, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 
 import { PhoneNumberField } from "../../../common/decorators/phone.decorators";
 
@@ -10,15 +10,10 @@ export class CreateAdminUserDto {
   @MaxLength(128)
   public fullName!: string;
 
-  @ApiProperty({ example: "john.doe@example.com" })
-  @IsEmail()
-  @MaxLength(320)
-  public email!: string;
-
   @ApiProperty({
     example: "0244123456",
     description:
-      "Same rules as sign-up: + prefix optional, may start with 0; spaces/hyphens stripped."
+      "National mobile (leading 0) or international digits; spaces/hyphens stripped (same rules as sign-up)."
   })
   @PhoneNumberField()
   public phone!: string;

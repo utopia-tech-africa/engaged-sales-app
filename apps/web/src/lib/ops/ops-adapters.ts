@@ -80,6 +80,10 @@ export const parseAdminUsersFromOrval = (result: unknown): AdminUserRow[] => {
   return adminUserListSchema.parse(unwrapOrvalResponseBody(result));
 };
 
+export const parseAdminUserFromOrval = (result: unknown): AdminUserRow => {
+  return adminUserRowSchema.parse(unwrapOrvalResponseBody(result));
+};
+
 const activationRegionLinkSchema = z.object({
   regionId: z.string(),
   region: z.object({

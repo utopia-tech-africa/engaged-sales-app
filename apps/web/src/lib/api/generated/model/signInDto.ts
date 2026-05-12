@@ -17,4 +17,4 @@ export type SignInDto = {
   latitude?: number;
   /** Device longitude (decimal degrees). For promoters: required with latitude when geofencing is enforced. Clients, supervisors, and admins may omit. */
   longitude?: number;
-};
+}
