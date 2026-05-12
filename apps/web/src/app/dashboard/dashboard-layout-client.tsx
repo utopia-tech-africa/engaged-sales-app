@@ -76,12 +76,16 @@ export const DashboardLayoutClient = ({ children }: PropsWithChildren): ReactEle
   }, [fieldAttendanceQuery.data, isPromoter, pathname, router]);
 
   const gatePayload = fieldAttendanceQuery.data;
+  const needsDailyClockIn = gatePayload?.applicable === true && gatePayload.needsDailyClockIn;
   /** Avoid one frame of dashboard before `router.replace` to check-in when the daily gate applies. */
   const fieldGatePending =
     isPromoter &&
     pathname !== CHECK_IN_PATH &&
-    (fieldAttendanceQuery.isLoading ||
-      (gatePayload?.applicable === true && gatePayload.needsDailyClockIn));
+    (fieldAttendanceQuery.isLoading || needsDailyClockIn);
+  /** Lock nav until clock-in succeeds (or while first attendance fetch runs on check-in). */
+  const attendanceGateLocked =
+    isPromoter &&
+    (needsDailyClockIn || (pathname === CHECK_IN_PATH && fieldAttendanceQuery.isLoading));
 
   const handleSignOut = (): void => {
     void (async () => {
@@ -118,7 +122,12 @@ export const DashboardLayoutClient = ({ children }: PropsWithChildren): ReactEle
   }
 
   return (
-    <FieldShell user={user} onSignOut={handleSignOut} isSigningOut={signOutMutation.isPending}>
+    <FieldShell
+      user={user}
+      onSignOut={handleSignOut}
+      isSigningOut={signOutMutation.isPending}
+      attendanceGateLocked={attendanceGateLocked}
+    >
       {children}
     </FieldShell>
   );
