@@ -34,6 +34,7 @@ import {
   useActivationRemoveFromRoster,
   useActivationRemoveProduct,
   useActivationUpdateActivation,
+  useAdminGeofenceListGeofences,
   useAdminRegionListRegions,
   useAdminUserListUsers
 } from "@/lib/api/generated/client";
@@ -58,9 +59,11 @@ import {
   type ActivationDetail,
   parseActivationDetailFromOrval,
   parseAdminUsersFromOrval,
+  parseGeofencesFromOrval,
   parseRegionsFromOrval
 } from "@/lib/ops/ops-adapters";
 
+import { ActivationMultiSelect } from "./activation-multi-select";
 import {
   FIELD_ACTIVITY_PALETTE,
   FIELD_ACTIVITY_USER_ALL,
@@ -69,7 +72,6 @@ import {
   inputClass,
   labelClass,
   panelClass,
-  REGION_NONE,
   toDatetimeLocalValue
 } from "./activations-shared";
 
@@ -91,11 +93,13 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
   const [editActive, setEditActive] = useState(true);
   const [editStarts, setEditStarts] = useState("");
   const [editEnds, setEditEnds] = useState("");
-  const [editRegionId, setEditRegionId] = useState("");
+  const [editRegionIds, setEditRegionIds] = useState<string[]>([]);
+  const [editGeofenceIds, setEditGeofenceIds] = useState<string[]>([]);
 
   const [productName, setProductName] = useState("");
   const [productSku, setProductSku] = useState("");
   const [productQty, setProductQty] = useState("1");
+  const [productMonthlyTarget, setProductMonthlyTarget] = useState("");
 
   const [rosterSelectedUserIds, setRosterSelectedUserIds] = useState<string[]>([]);
 
@@ -123,6 +127,13 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
     query: {
       enabled: accessToken !== null && canManageActivations,
       select: (r) => parseRegionsFromOrval(r)
+    }
+  });
+
+  const geofencesQuery = useAdminGeofenceListGeofences({
+    query: {
+      enabled: accessToken !== null && canManageActivations,
+      select: (r) => parseGeofencesFromOrval(r)
     }
   });
 
@@ -246,7 +257,8 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
     setEditActive(detail.isActive);
     setEditStarts(toDatetimeLocalValue(detail.startsAt));
     setEditEnds(detail.endsAt !== null ? toDatetimeLocalValue(detail.endsAt) : "");
-    setEditRegionId(detail.regionId ?? "");
+    setEditRegionIds(detail.regionLinks.map((l) => l.regionId));
+    setEditGeofenceIds(detail.geofenceLinks.map((l) => l.geofenceId));
   }, [detail]);
 
   const invalidateList = async (): Promise<void> => {
@@ -274,6 +286,7 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
         setProductName("");
         setProductSku("");
         setProductQty("1");
+        setProductMonthlyTarget("");
       }
     }
   });
@@ -341,7 +354,8 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
         isActive: editActive,
         startsAt: starts.toISOString(),
         endsAt,
-        regionId: editRegionId.trim()
+        regionIds: [...editRegionIds],
+        geofenceIds: [...editGeofenceIds]
       }
     });
   };
@@ -355,12 +369,17 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
       return;
     }
     const qty = Number.parseInt(productQty, 10);
+    const monthlyRaw = productMonthlyTarget.trim();
+    const monthlyParsed = monthlyRaw.length > 0 ? Number.parseInt(monthlyRaw, 10) : Number.NaN;
+    const monthlyTargetCases =
+      Number.isFinite(monthlyParsed) && monthlyParsed >= 0 ? monthlyParsed : undefined;
     addProductMutation.mutate({
       id: activationId,
       data: {
         name,
         ...(productSku.trim().length > 0 ? { sku: productSku.trim() } : {}),
-        ...(Number.isFinite(qty) && qty >= 1 ? { quantity: qty } : {})
+        ...(Number.isFinite(qty) && qty >= 1 ? { quantity: qty } : {}),
+        ...(monthlyTargetCases !== undefined ? { monthlyTargetCases } : {})
       }
     });
   };
@@ -501,25 +520,45 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
                       />
                     </div>
                     <div>
-                      <span className={labelClass}>Region</span>
-                      <Select
-                        value={editRegionId === "" ? REGION_NONE : editRegionId}
-                        onValueChange={(next) => {
-                          setEditRegionId(next === REGION_NONE ? "" : next);
-                        }}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="No region" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={REGION_NONE}>No region</SelectItem>
-                          {(regionsQuery.data ?? []).map((r) => (
-                            <SelectItem key={r.id} value={r.id}>
-                              {r.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <span className={labelClass}>Regions</span>
+                      <p className="mb-2 text-xs text-muted-foreground">
+                        Optional. Open the list to choose one or more territories this campaign
+                        spans.
+                      </p>
+                      <ActivationMultiSelect
+                        id="activation-edit-regions"
+                        options={(regionsQuery.data ?? []).map((r) => ({
+                          id: r.id,
+                          label: r.name,
+                          isActive: r.isActive
+                        }))}
+                        valueIds={editRegionIds}
+                        onValueChange={setEditRegionIds}
+                        isLoading={regionsQuery.isLoading}
+                        placeholder="Select regions"
+                        emptyListHint="No regions yet. Add them under Regions."
+                      />
+                    </div>
+                    <div>
+                      <span className={labelClass}>Sign-in work areas</span>
+                      <p className="mb-2 text-xs text-muted-foreground">
+                        Rostered promoters must sign in inside at least one selected zone while this
+                        activation is current. Open the list to pick several. Leave none selected to
+                        use only global work-area rules (if any).
+                      </p>
+                      <ActivationMultiSelect
+                        id="activation-edit-work-areas"
+                        options={(geofencesQuery.data ?? []).map((g) => ({
+                          id: g.id,
+                          label: g.label,
+                          isActive: g.isActive
+                        }))}
+                        valueIds={editGeofenceIds}
+                        onValueChange={setEditGeofenceIds}
+                        isLoading={geofencesQuery.isLoading}
+                        placeholder="Select work areas"
+                        emptyListHint="No work areas defined yet. Add them under Geofences."
+                      />
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
@@ -606,6 +645,15 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
                             }}
                           />
                         </div>
+                        <input
+                          className={inputClass}
+                          placeholder="Monthly target (cases, optional)"
+                          inputMode="numeric"
+                          value={productMonthlyTarget}
+                          onChange={(ev) => {
+                            setProductMonthlyTarget(ev.target.value);
+                          }}
+                        />
                         <button
                           type="submit"
                           className={cn(
@@ -633,6 +681,9 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
                               <p className="font-medium text-foreground">{p.name}</p>
                               <p className="mt-0.5 text-xs text-muted-foreground">
                                 {p.sku !== null ? `SKU ${p.sku} · ` : ""}Qty {p.quantity}
+                                {p.monthlyTargetCases != null ? (
+                                  <> · Monthly target {p.monthlyTargetCases} cases</>
+                                ) : null}
                               </p>
                             </div>
                             <button
@@ -836,23 +887,29 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
                         </div>
                         <div>
                           <span className={labelClass}>From</span>
-                          <input
-                            type="datetime-local"
-                            className={cn(inputClass, "mt-1.5")}
+                          <DatetimePicker
+                            id="field-activity-from"
+                            className="mt-1.5"
                             value={fieldActivityFrom}
-                            onChange={(ev) => {
-                              setFieldActivityFrom(ev.target.value);
+                            onChange={setFieldActivityFrom}
+                            emptyLabel="From date & time (optional)"
+                            clearable
+                            onClear={() => {
+                              setFieldActivityFrom("");
                             }}
                           />
                         </div>
                         <div>
                           <span className={labelClass}>To</span>
-                          <input
-                            type="datetime-local"
-                            className={cn(inputClass, "mt-1.5")}
+                          <DatetimePicker
+                            id="field-activity-to"
+                            className="mt-1.5"
                             value={fieldActivityTo}
-                            onChange={(ev) => {
-                              setFieldActivityTo(ev.target.value);
+                            onChange={setFieldActivityTo}
+                            emptyLabel="To date & time (optional)"
+                            clearable
+                            onClear={() => {
+                              setFieldActivityTo("");
                             }}
                           />
                         </div>

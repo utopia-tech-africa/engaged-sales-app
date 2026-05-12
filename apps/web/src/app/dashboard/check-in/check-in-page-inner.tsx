@@ -1,12 +1,14 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
-import { type ReactElement, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { type ReactElement, useEffect, useMemo, useRef, useState } from "react";
 
 import { LocationPlaceLine } from "@/components/location-place-line";
 import { SelfieCapture } from "@/components/selfie-capture";
-import { useMeUpdateMeLocation } from "@/lib/api/generated/client";
+import { useMeGetFieldAttendance, useMeUpdateMeLocation } from "@/lib/api/generated/client";
+import { useAuthStore } from "@/lib/auth/auth-store";
+import type { FieldAttendancePayload } from "@/lib/field/field-attendance";
 import { parseLocationPingFromOrval, type LocationPing } from "@/lib/auth/orval-auth-adapter";
 import { calmPrimaryButtonClass, calmSecondaryButtonClass } from "@/lib/calm-ui";
 import { formatFieldCheckInDateTime } from "@/lib/format-field-check-in-datetime";
@@ -28,9 +30,18 @@ const attendanceActionLabel = (kind: AttendanceKind): string =>
   kind === "clock_out" ? "clock-out" : "clock-in";
 
 export function FieldCheckInPageInner(): ReactElement {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const user = useAuthStore((state) => state.user);
   const locationMutation = useMeUpdateMeLocation();
+  const fieldAttendanceQuery = useMeGetFieldAttendance({
+    query: {
+      enabled: user?.role === "promoter",
+      select: (raw) => raw as unknown as FieldAttendancePayload
+    }
+  });
+  const lastServerSuggestionRef = useRef<{ localDate: string; kind: AttendanceKind } | null>(null);
   const [attendanceKind, setAttendanceKind] = useState<AttendanceKind>("clock_in");
   const [isLocating, setIsLocating] = useState(false);
   const [gpsFix, setGpsFix] = useState<GpsFix | null>(null);
@@ -44,6 +55,26 @@ export function FieldCheckInPageInner(): ReactElement {
     }
     return DEEP_LINK_HINTS[source] ?? "Opened via link.";
   }, [searchParams]);
+
+  useEffect(() => {
+    const payload = fieldAttendanceQuery.data;
+    if (!payload?.applicable) {
+      return;
+    }
+    const prev = lastServerSuggestionRef.current;
+    if (
+      prev !== null &&
+      prev.localDate === payload.localDate &&
+      prev.kind === payload.suggestedNextAttendanceKind
+    ) {
+      return;
+    }
+    lastServerSuggestionRef.current = {
+      localDate: payload.localDate,
+      kind: payload.suggestedNextAttendanceKind
+    };
+    setAttendanceKind(payload.suggestedNextAttendanceKind);
+  }, [fieldAttendanceQuery.data]);
 
   const handleConfirmLocation = (): void => {
     setIsLocating(true);
@@ -81,8 +112,13 @@ export function FieldCheckInPageInner(): ReactElement {
           toast.success(`${attendanceKind === "clock_out" ? "Clock-out" : "Clock-in"} saved`);
           void queryClient.invalidateQueries({
             predicate: (query) =>
-              Array.isArray(query.queryKey) && query.queryKey[0] === "/me/location/history"
+              Array.isArray(query.queryKey) &&
+              (query.queryKey[0] === "/me/location/history" ||
+                query.queryKey[0] === "/me/field-attendance")
           });
+          if (searchParams.get("dailyGate") === "1") {
+            router.replace("/dashboard");
+          }
         },
         onError: () => {
           toast.error(`Could not save ${attendanceActionLabel(attendanceKind)}. Try again.`);

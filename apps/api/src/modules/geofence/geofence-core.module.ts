@@ -7,6 +7,6 @@ import { GeofenceService } from "./geofence.service";
 @Module({
   imports: [PrismaModule],
   providers: [GeofenceService, GeofenceRepository],
-  exports: [GeofenceService]
+  exports: [GeofenceService, GeofenceRepository]
 })
 export class GeofenceCoreModule {}

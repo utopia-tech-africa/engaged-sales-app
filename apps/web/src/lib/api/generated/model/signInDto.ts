@@ -5,7 +5,7 @@
  * API documentation for Engaged Sales backend
  * OpenAPI spec version: 1.0.0
  */
-import type { SignInDtoRole } from './signInDtoRole';
+import type { SignInDtoRole } from "./signInDtoRole";
 
 export type SignInDto = {
   /** Registered phone (international +… or local; may start with 0). Spaces and hyphens are stripped. */
@@ -17,4 +17,4 @@ export type SignInDto = {
   latitude?: number;
   /** Device longitude (decimal degrees). For promoters: required with latitude when geofencing is enforced. Clients, supervisors, and admins may omit. */
   longitude?: number;
-}
+};

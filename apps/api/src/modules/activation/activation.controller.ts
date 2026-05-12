@@ -52,7 +52,7 @@ export class ActivationController {
   @Get()
   @ApiOperation({
     summary: "List activations",
-    description: "Campaigns / activations with region and counts."
+    description: "Campaigns / activations with linked regions and counts."
   })
   @ApiOkResponse({ description: "Activation list" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
@@ -71,10 +71,20 @@ export class ActivationController {
         name: { type: "string", minLength: 1, maxLength: 128 },
         slug: { type: "string", minLength: 2, maxLength: 64 },
         description: { type: "string", maxLength: 2000 },
-        regionId: { type: "string" },
+        regionIds: {
+          type: "array",
+          items: { type: "string" },
+          description: "Optional region cuids; activation can span multiple territories."
+        },
         startsAt: { type: "string", format: "date-time" },
         endsAt: { type: "string", format: "date-time" },
-        isActive: { type: "boolean" }
+        isActive: { type: "boolean" },
+        geofenceIds: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Optional work area ids; rostered promoters must sign in inside one of these while the activation is current."
+        }
       }
     }
   })
@@ -82,7 +92,7 @@ export class ActivationController {
   @ApiConflictResponse({ description: "Slug already in use" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
   @ApiForbiddenResponse({ description: "Requires supervisor or admin role" })
-  @ApiNotFoundResponse({ description: "Region not found" })
+  @ApiBadRequestResponse({ description: "One or more regions or geofences not found" })
   public createActivation(
     @CurrentUser() currentUser: AuthenticatedUser,
     @Body() body: CreateActivationDto
@@ -194,7 +204,7 @@ export class ActivationController {
   @Get(":id")
   @ApiParam({ name: "id", description: "Activation id (cuid)" })
   @ApiOperation({ summary: "Get activation" })
-  @ApiOkResponse({ description: "Activation detail with products and roster" })
+  @ApiOkResponse({ description: "Activation detail with products, roster, and linked work areas" })
   @ApiNotFoundResponse({ description: "Activation not found" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
   @ApiForbiddenResponse({ description: "Requires supervisor or admin role" })
@@ -205,9 +215,34 @@ export class ActivationController {
   @Patch(":id")
   @ApiParam({ name: "id", description: "Activation id (cuid)" })
   @ApiOperation({ summary: "Update activation" })
-  @ApiBody({ type: UpdateActivationDto })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        name: { type: "string", minLength: 1, maxLength: 128 },
+        slug: { type: "string", minLength: 2, maxLength: 64 },
+        description: { type: "string", maxLength: 2000 },
+        regionIds: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Replace linked regions. Omit to leave unchanged; [] clears. Values are region cuids."
+        },
+        startsAt: { type: "string", format: "date-time" },
+        endsAt: { type: "string", format: "date-time", nullable: true },
+        isActive: { type: "boolean" },
+        geofenceIds: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Replace linked work areas. Omit to leave unchanged; [] clears. Promoters on the roster sign in inside one of these while the activation is current."
+        }
+      }
+    }
+  })
   @ApiOkResponse({ description: "Activation updated" })
-  @ApiNotFoundResponse({ description: "Activation or region not found" })
+  @ApiNotFoundResponse({ description: "Activation not found" })
+  @ApiBadRequestResponse({ description: "Invalid region or geofence ids" })
   @ApiConflictResponse({ description: "Slug already in use" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
   @ApiForbiddenResponse({ description: "Requires supervisor or admin role" })

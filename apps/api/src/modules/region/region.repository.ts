@@ -20,6 +20,13 @@ export class RegionRepository {
     return this.prisma.region.findUnique({ where: { slug } });
   }
 
+  public countByIds(ids: readonly string[]): Promise<number> {
+    if (ids.length === 0) {
+      return Promise.resolve(0);
+    }
+    return this.prisma.region.count({ where: { id: { in: [...ids] } } });
+  }
+
   public create(data: { slug: string; name: string; isActive: boolean }) {
     return this.prisma.region.create({ data });
   }

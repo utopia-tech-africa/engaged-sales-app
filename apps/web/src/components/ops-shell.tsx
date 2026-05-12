@@ -99,7 +99,9 @@ const OpsNavLinks = ({ role, onNavigate }: OpsNavLinksProps): ReactElement => {
           next[key] = value;
         }
       }
-      setOpenSections(next);
+      queueMicrotask(() => {
+        setOpenSections(next);
+      });
     } catch {
       // ignore invalid storage
     }

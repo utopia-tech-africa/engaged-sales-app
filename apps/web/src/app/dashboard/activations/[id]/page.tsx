@@ -86,7 +86,7 @@ export default function FieldActivationDetailPage(): ReactElement {
               {detailQuery.data.name}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {detailQuery.data.region?.name ?? "No region"} ·{" "}
+              {detailQuery.data.regionLinks.map((l) => l.region.name).join(" · ") || "No regions"} ·{" "}
               {detailQuery.data.products?.length ?? detailQuery.data._count?.products ?? 0} products
             </p>
             <p className="mt-2 text-xs text-muted-foreground">

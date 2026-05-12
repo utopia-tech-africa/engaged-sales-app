@@ -53,7 +53,7 @@ export default function OpsOrganizationPage(): ReactElement {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <OrgCard
             title="Regions"
-            description="Create and manage sales territories. Users and activations can reference a region."
+            description="Create and manage sales territories. Users can reference one region; activations can link to many."
             href="/ops/regions"
             linkLabel="Open regions →"
           />
@@ -152,7 +152,7 @@ export default function OpsOrganizationPage(): ReactElement {
           />
           <OrgCard
             title="Daily targets"
-            description="Team achievement, leaderboard, and underperformer alerts against daily case targets."
+            description="SKU monthly case targets, team achievement, leaderboard, and underperformer alerts."
             href="/ops/targets"
             linkLabel="Open targets →"
           />

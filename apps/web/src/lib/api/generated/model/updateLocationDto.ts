@@ -5,7 +5,7 @@
  * API documentation for Engaged Sales backend
  * OpenAPI spec version: 1.0.0
  */
-import type { UpdateLocationDtoAttendanceKind } from './updateLocationDtoAttendanceKind';
+import type { UpdateLocationDtoAttendanceKind } from "./updateLocationDtoAttendanceKind";
 
 export type UpdateLocationDto = {
   /** Latitude in decimal degrees */
@@ -16,4 +16,4 @@ export type UpdateLocationDto = {
   attendanceKind?: UpdateLocationDtoAttendanceKind;
   /** Base64-encoded selfie (JPEG or PNG) for attendance verification. May be a data URL (`data:image/jpeg;base64,...`). */
   selfieImageBase64: string;
-}
+};

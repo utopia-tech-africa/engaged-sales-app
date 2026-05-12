@@ -46,7 +46,7 @@ export class FieldActivationsController {
     description:
       "Promoters and rostered clients see activations they are assigned to that are currently active. Supervisors and admins see all activations in their active date window."
   })
-  @ApiOkResponse({ description: "Activation rows with region and product count" })
+  @ApiOkResponse({ description: "Activation rows with linked regions and product count" })
   @ApiUnauthorizedResponse({ description: "Missing or invalid JWT" })
   public listForField(@CurrentUser() currentUser: AuthenticatedUser) {
     return this.activationService.listForField(currentUser);

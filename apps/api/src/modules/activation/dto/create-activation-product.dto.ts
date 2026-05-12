@@ -25,4 +25,12 @@ export class CreateActivationProductDto {
   @Min(0)
   @Max(1_000_000)
   public sortOrder?: number;
+
+  /** Monthly case target for SKU performance dashboard (optional). */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(1_000_000)
+  public monthlyTargetCases?: number;
 }

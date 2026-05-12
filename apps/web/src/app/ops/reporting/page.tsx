@@ -17,6 +17,7 @@ import {
   useAdminRegionListRegions
 } from "@/lib/api/generated/client";
 import { useAuthStore } from "@/lib/auth/auth-store";
+import { ApiError } from "@/lib/api/problem-details";
 import { calmPrimaryButtonClass } from "@/lib/calm-ui";
 import { parseActivationsFromOrval, parseRegionsFromOrval } from "@/lib/ops/ops-adapters";
 import {
@@ -27,7 +28,15 @@ import {
 import { toast } from "@/lib/toast";
 
 const SELECT_ALL = "__all__";
-const todayDateInput = (): string => new Date().toISOString().slice(0, 10);
+
+/** Local calendar YYYY-MM-DD (matches DatePicker), avoids UTC/local mismatch with toISOString(). */
+const todayDateInput = (): string => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${String(y)}-${m}-${d}`;
+};
 
 export default function OpsReportingPage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -50,22 +59,50 @@ export default function OpsReportingPage(): ReactElement {
   });
 
   const dashboardMutation = useMutation({
-    mutationFn: async () =>
-      getReportingDashboard(accessToken ?? "", {
+    mutationFn: async () => {
+      const token = useAuthStore.getState().accessToken;
+      if (token === null || token.length === 0) {
+        throw new Error("You need to be signed in to load reports.");
+      }
+      return getReportingDashboard(token, {
         from,
         to,
         ...(activationId.length > 0 ? { activationId } : {}),
         ...(regionId.length > 0 ? { regionId } : {})
-      })
+      });
+    },
+    onSuccess: () => {
+      toast.success("Report loaded.");
+    },
+    onError: (error: unknown) => {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : "Could not load reporting data for current filters.";
+      toast.error(message);
+    }
   });
 
   const runDashboard = (): void => {
+    const trimmedFrom = from.trim();
+    const trimmedTo = to.trim();
+    if (trimmedFrom.length > 0 && trimmedTo.length > 0 && trimmedFrom > trimmedTo) {
+      toast.error("From date must be on or before To date.");
+      return;
+    }
     dashboardMutation.mutate();
   };
 
   const exportExcel = async (): Promise<void> => {
+    const token = useAuthStore.getState().accessToken;
+    if (token === null || token.length === 0) {
+      toast.error("You need to be signed in to export.");
+      return;
+    }
     try {
-      await exportReportingDashboardExcel(accessToken ?? "", {
+      await exportReportingDashboardExcel(token, {
         from,
         to,
         ...(activationId.length > 0 ? { activationId } : {}),
@@ -78,8 +115,13 @@ export default function OpsReportingPage(): ReactElement {
   };
 
   const exportPdf = async (): Promise<void> => {
+    const token = useAuthStore.getState().accessToken;
+    if (token === null || token.length === 0) {
+      toast.error("You need to be signed in to export.");
+      return;
+    }
     try {
-      await exportReportingDashboardPdf(accessToken ?? "", {
+      await exportReportingDashboardPdf(token, {
         from,
         to,
         ...(activationId.length > 0 ? { activationId } : {}),
@@ -165,19 +207,21 @@ export default function OpsReportingPage(): ReactElement {
               </SelectContent>
             </Select>
           </label>
-          <div className="flex items-end gap-2">
+          <div className="flex min-h-10 flex-col gap-2 sm:col-span-2 lg:col-span-1 lg:min-w-0">
             <button
               type="button"
               className={calmPrimaryButtonClass}
               onClick={runDashboard}
-              disabled={dashboardMutation.isPending}
+              disabled={
+                accessToken === null || accessToken.length === 0 || dashboardMutation.isPending
+              }
             >
               {dashboardMutation.isPending ? "Loading..." : "Load report"}
             </button>
             <button
               type="button"
               className="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted/50 disabled:opacity-50"
-              disabled={data === undefined}
+              disabled={data === undefined || accessToken === null || accessToken.length === 0}
               onClick={() => {
                 void exportExcel();
               }}
@@ -187,7 +231,7 @@ export default function OpsReportingPage(): ReactElement {
             <button
               type="button"
               className="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted/50 disabled:opacity-50"
-              disabled={data === undefined}
+              disabled={data === undefined || accessToken === null || accessToken.length === 0}
               onClick={() => {
                 void exportPdf();
               }}
@@ -200,7 +244,11 @@ export default function OpsReportingPage(): ReactElement {
 
       {dashboardMutation.isError ? (
         <p className="text-sm text-destructive" role="alert">
-          Could not load reporting data for current filters.
+          {dashboardMutation.error instanceof ApiError
+            ? dashboardMutation.error.message
+            : dashboardMutation.error instanceof Error
+              ? dashboardMutation.error.message
+              : "Could not load reporting data for current filters."}
         </p>
       ) : null}
 

@@ -70,7 +70,7 @@ model Region {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   users         User[]
-  activations   Activation[]
+  activationRegionLinks ActivationRegion[]
   subwholesales Subwholesale[]
 }
 
@@ -154,20 +154,44 @@ model Activation {
   name        String
   slug        String   @unique
   description String?
-  regionId    String?
   startsAt    DateTime
   endsAt      DateTime?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  region      Region?  @relation(fields: [regionId], references: [id], onDelete: SetNull)
   products    ActivationProduct[]
   roster      ActivationRoster[]
   sales       Sale[]
   stockPickups StockPickup[]
+  /// Territories this campaign spans (many-to-many with Region).
+  regionLinks ActivationRegion[]
+  /// Allowed sign-in work areas for rostered promoters while this activation is current.
+  geofenceLinks ActivationGeofence[]
 
-  @@index([regionId])
   @@index([startsAt])
+}
+
+/// Links an activation to one or more regions.
+model ActivationRegion {
+  activationId String
+  regionId     String
+  activation   Activation @relation(fields: [activationId], references: [id], onDelete: Cascade)
+  region       Region     @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@id([activationId, regionId])
+  @@index([regionId])
+}
+
+/// Links an activation to one or more geofences. Promoters on the roster may only sign in
+/// inside these zones (when at least one is linked and active) for current activations.
+model ActivationGeofence {
+  activationId String
+  geofenceId   String
+  activation   Activation @relation(fields: [activationId], references: [id], onDelete: Cascade)
+  geofence     Geofence   @relation(fields: [geofenceId], references: [id], onDelete: Cascade)
+
+  @@id([activationId, geofenceId])
+  @@index([geofenceId])
 }
 
 model ActivationProduct {
@@ -175,6 +199,8 @@ model ActivationProduct {
   activationId String
   name         String
   sku          String?
+  /// Monthly case target for SKU performance reporting (ops targets dashboard).
+  monthlyTargetCases Int?
   quantity     Int        @default(1)
   sortOrder    Int        @default(0)
   createdAt    DateTime   @default(now())
@@ -240,6 +266,7 @@ model Geofence {
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  activationLinks ActivationGeofence[]
 }
 
 /// Trade outlet managed by operations and visited by field staff.

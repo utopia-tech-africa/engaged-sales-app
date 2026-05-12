@@ -147,7 +147,11 @@ export class AuthService {
 
     if (this.loginRoleRequiresWorkAreaCheck(user.role)) {
       this.assertCoordinatePair(payload.latitude, payload.longitude);
-      await this.geofenceService.assertLoginAllowed(payload.latitude, payload.longitude);
+      await this.geofenceService.assertLoginAllowedForPromoter(
+        user.id,
+        payload.latitude,
+        payload.longitude
+      );
     }
 
     const tokens = await this.issueTokens(user, {
@@ -208,7 +212,11 @@ export class AuthService {
 
     if (this.loginRoleRequiresWorkAreaCheck(user.role)) {
       this.assertCoordinatePair(payload.latitude, payload.longitude);
-      await this.geofenceService.assertLoginAllowed(payload.latitude, payload.longitude);
+      await this.geofenceService.assertLoginAllowedForPromoter(
+        user.id,
+        payload.latitude,
+        payload.longitude
+      );
     }
 
     const tokens = await this.issueTokens(user, {
@@ -433,7 +441,7 @@ export class AuthService {
     }
   }
 
-  /** Promoters are checked against active geofences at login; clients, supervisors, and admins are not. */
+  /** Promoters: sign-in is checked against activation-linked work areas when applicable, else global geofences. */
   private loginRoleRequiresWorkAreaCheck(role: User["role"]): boolean {
     return role === "promoter";
   }

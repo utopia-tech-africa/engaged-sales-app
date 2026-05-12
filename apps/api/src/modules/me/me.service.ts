@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { DateTime } from "luxon";
 
 import type { AuthenticatedUser } from "../../common/types/authenticated-user.type";
 import type { AttendanceKind } from "../../generated/prisma/client";
@@ -47,6 +48,10 @@ export class MeService {
     }
   }
 
+  private getAttendanceTimezone(): string {
+    return this.configService.get("ATTENDANCE_TIMEZONE", { infer: true });
+  }
+
   public async getCurrentUser(currentUser: AuthenticatedUser) {
     const profile = await this.meRepository.getProfile(currentUser.id);
     if (!profile) {
@@ -54,6 +59,100 @@ export class MeService {
     }
 
     return profile;
+  }
+
+  /**
+   * Field promoters: local calendar day (ATTENDANCE_TIMEZONE), first clock-in gate, and segment suggestion.
+   */
+  public async getFieldAttendance(currentUser: AuthenticatedUser) {
+    const tz = this.getAttendanceTimezone();
+    if (!DateTime.now().setZone(tz).isValid) {
+      throw new BadRequestException(`Invalid ATTENDANCE_TIMEZONE: ${tz}`);
+    }
+
+    if (currentUser.role !== "promoter") {
+      return {
+        applicable: false as const,
+        timezone: tz,
+        localDate: "",
+        needsDailyClockIn: false,
+        suggestedNextAttendanceKind: "clock_in" as const
+      };
+    }
+
+    const { localDate, startUtc, endUtcExclusive } = this.getAttendanceLocalDayBounds(tz);
+    const clockInsToday = await this.meRepository.countAttendanceKindInWindow(
+      currentUser.id,
+      startUtc,
+      endUtcExclusive,
+      "clock_in"
+    );
+    const needsDailyClockIn = clockInsToday === 0;
+    const latestToday = await this.meRepository.findLatestPingInRecordedAtWindow(
+      currentUser.id,
+      startUtc,
+      endUtcExclusive
+    );
+    const suggestedNextAttendanceKind: "clock_in" | "clock_out" =
+      latestToday === null
+        ? "clock_in"
+        : latestToday.attendanceKind === "clock_in"
+          ? "clock_out"
+          : "clock_in";
+
+    return {
+      applicable: true as const,
+      timezone: tz,
+      localDate,
+      needsDailyClockIn,
+      suggestedNextAttendanceKind
+    };
+  }
+
+  private getAttendanceLocalDayBounds(tz: string): {
+    localDate: string;
+    startUtc: Date;
+    endUtcExclusive: Date;
+  } {
+    const nowLocal = DateTime.now().setZone(tz);
+    const dayStart = nowLocal.startOf("day");
+    const dayEndExclusive = dayStart.plus({ days: 1 });
+    return {
+      localDate: dayStart.toFormat("yyyy-MM-dd"),
+      startUtc: dayStart.toUTC().toJSDate(),
+      endUtcExclusive: dayEndExclusive.toUTC().toJSDate()
+    };
+  }
+
+  private async assertVisitSegmentOrThrow(
+    currentUser: AuthenticatedUser,
+    requestedKind: AttendanceKind,
+    windowStart: Date,
+    windowEndExclusive: Date
+  ): Promise<void> {
+    if (currentUser.role !== "promoter") {
+      return;
+    }
+    const latestToday = await this.meRepository.findLatestPingInRecordedAtWindow(
+      currentUser.id,
+      windowStart,
+      windowEndExclusive
+    );
+    if (latestToday === null) {
+      if (requestedKind !== "clock_in") {
+        throw new BadRequestException("Start your day with a clock-in.");
+      }
+      return;
+    }
+    if (latestToday.attendanceKind === "clock_in") {
+      if (requestedKind !== "clock_out") {
+        throw new BadRequestException("Clock out before starting a new visit.");
+      }
+      return;
+    }
+    if (requestedKind !== "clock_in") {
+      throw new BadRequestException("Clock in to start your next visit.");
+    }
   }
 
   public async updateCurrentUser(currentUser: AuthenticatedUser, payload: UpdateMeDto) {
@@ -66,6 +165,11 @@ export class MeService {
   }
 
   public async updateLocation(currentUser: AuthenticatedUser, payload: UpdateLocationDto) {
+    const tz = this.getAttendanceTimezone();
+    const { startUtc, endUtcExclusive } = this.getAttendanceLocalDayBounds(tz);
+    const attendanceKind: AttendanceKind = payload.attendanceKind ?? "clock_in";
+    await this.assertVisitSegmentOrThrow(currentUser, attendanceKind, startUtc, endUtcExclusive);
+
     const selfie = parseSelfieBase64(payload.selfieImageBase64);
     const nearest = await this.geofenceService.findNearestActiveGeofence(
       payload.latitude,
@@ -81,7 +185,7 @@ export class MeService {
       enforceDistance &&
       nearest !== null &&
       nearest.distanceMeters > maxDistanceMeters &&
-      payload.attendanceKind !== "clock_out"
+      attendanceKind !== "clock_out"
     ) {
       throw new BadRequestException(
         `Check-in rejected: you must be within ${String(maxDistanceMeters)} meters of the assigned outlet/work area.`
@@ -100,7 +204,6 @@ export class MeService {
       previous.geofenceId === nearest.geofenceId
         ? Math.max(0, Math.floor((Date.now() - previous.recordedAt.getTime()) / 1000))
         : null;
-    const attendanceKind: AttendanceKind = payload.attendanceKind ?? "clock_in";
     const saved = await this.meRepository.addLocation(
       currentUser.id,
       payload.latitude,

@@ -67,6 +67,30 @@ export class MeController {
     return this.meService.getCurrentUser(currentUser);
   }
 
+  @Get("field-attendance")
+  @ApiOperation({
+    operationId: "Me_getFieldAttendance",
+    summary: "Field attendance gate and segment suggestion",
+    description:
+      "For promoters: local-day clock-in gate (`needsDailyClockIn`) and alternating clock-in/clock-out suggestion. Non-promoters get `applicable: false`."
+  })
+  @ApiOkResponse({
+    description: "Field attendance status",
+    schema: {
+      example: {
+        applicable: true,
+        timezone: "Africa/Nairobi",
+        localDate: "2026-05-12",
+        needsDailyClockIn: true,
+        suggestedNextAttendanceKind: "clock_in"
+      }
+    }
+  })
+  @ApiUnauthorizedResponse({ description: "Missing or invalid JWT token" })
+  public getFieldAttendance(@CurrentUser() currentUser: AuthenticatedUser) {
+    return this.meService.getFieldAttendance(currentUser);
+  }
+
   @Patch()
   @ApiOperation({
     operationId: "Me_updateMe",

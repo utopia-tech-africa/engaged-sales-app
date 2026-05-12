@@ -5,7 +5,7 @@
  * API documentation for Engaged Sales backend
  * OpenAPI spec version: 1.0.0
  */
-import type { ProfileCompletionDtoGender } from './profileCompletionDtoGender';
+import type { ProfileCompletionDtoGender } from "./profileCompletionDtoGender";
 
 export type ProfileCompletionDto = {
   email?: string;
@@ -14,4 +14,4 @@ export type ProfileCompletionDto = {
   gender?: ProfileCompletionDtoGender;
   fullName?: string;
   regionId?: string;
-}
+};

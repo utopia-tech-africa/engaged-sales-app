@@ -10,6 +10,7 @@ import * as XLSX from "xlsx";
 
 import type { AuthenticatedUser, UserRole } from "../../common/types/authenticated-user.type";
 import type { Prisma } from "../../generated/prisma/client";
+import { GeofenceRepository } from "../geofence/geofence.repository";
 import { RegionRepository } from "../region/region.repository";
 import { slugifyRegionName } from "../region/slug.util";
 import { ActivationRepository } from "./activation.repository";
@@ -27,7 +28,8 @@ const ROSTER_FIELD_ROLES = new Set<UserRole>(["promoter", "client"]);
 export class ActivationService {
   public constructor(
     @Inject(ActivationRepository) private readonly repository: ActivationRepository,
-    @Inject(RegionRepository) private readonly regionRepository: RegionRepository
+    @Inject(RegionRepository) private readonly regionRepository: RegionRepository,
+    @Inject(GeofenceRepository) private readonly geofenceRepository: GeofenceRepository
   ) {}
 
   public requireSupervisorOrAdmin(currentUser: AuthenticatedUser): void {
@@ -112,13 +114,25 @@ export class ActivationService {
     return candidate;
   }
 
-  private async resolveRegionOrThrow(regionId: string | undefined): Promise<void> {
-    if (regionId === undefined || regionId.trim().length === 0) {
+  private async assertRegionIdsExist(ids: readonly string[]): Promise<void> {
+    const unique = [...new Set(ids.map((id) => id.trim()).filter((id) => id.length > 0))];
+    if (unique.length === 0) {
       return;
     }
-    const region = await this.regionRepository.findById(regionId);
-    if (region === null) {
-      throw new NotFoundException("Region not found");
+    const count = await this.regionRepository.countByIds(unique);
+    if (count !== unique.length) {
+      throw new BadRequestException("One or more regions were not found");
+    }
+  }
+
+  private async assertGeofenceIdsExist(ids: readonly string[]): Promise<void> {
+    const unique = [...new Set(ids.map((id) => id.trim()).filter((id) => id.length > 0))];
+    if (unique.length === 0) {
+      return;
+    }
+    const count = await this.geofenceRepository.countByIds(unique);
+    if (count !== unique.length) {
+      throw new BadRequestException("One or more work areas (geofences) were not found");
     }
   }
 
@@ -136,17 +150,25 @@ export class ActivationService {
       );
     }
     const slug = await this.allocateUniqueSlug(base.slice(0, 64));
-    await this.resolveRegionOrThrow(dto.regionId);
+    const regionIds = [
+      ...new Set((dto.regionIds ?? []).map((id) => id.trim()).filter((id) => id.length > 0))
+    ];
+    await this.assertRegionIdsExist(regionIds);
+    const geofenceIds = [
+      ...new Set((dto.geofenceIds ?? []).map((id) => id.trim()).filter((id) => id.length > 0))
+    ];
+    await this.assertGeofenceIdsExist(geofenceIds);
 
     try {
       return await this.repository.create({
         name,
         slug,
         description: dto.description?.trim() ?? null,
-        regionId: dto.regionId ?? null,
         startsAt: dto.startsAt,
         endsAt: dto.endsAt ?? null,
-        isActive: dto.isActive ?? true
+        isActive: dto.isActive ?? true,
+        ...(regionIds.length > 0 ? { regionIds } : {}),
+        ...(geofenceIds.length > 0 ? { geofenceIds } : {})
       });
     } catch (error: unknown) {
       if (ActivationService.isUniqueViolation(error)) {
@@ -200,14 +222,6 @@ export class ActivationService {
     if (dto.description !== undefined) {
       data.description = dto.description.trim();
     }
-    if (dto.regionId !== undefined) {
-      if (dto.regionId.trim().length === 0) {
-        data.region = { disconnect: true };
-      } else {
-        await this.resolveRegionOrThrow(dto.regionId);
-        data.region = { connect: { id: dto.regionId } };
-      }
-    }
     if (dto.startsAt !== undefined) {
       data.startsAt = dto.startsAt;
     }
@@ -218,8 +232,27 @@ export class ActivationService {
       data.isActive = dto.isActive;
     }
 
+    let replaceGeofenceIds: string[] | undefined;
+    if (dto.geofenceIds !== undefined) {
+      replaceGeofenceIds = [
+        ...new Set(dto.geofenceIds.map((id) => id.trim()).filter((id) => id.length > 0))
+      ];
+      await this.assertGeofenceIdsExist(replaceGeofenceIds);
+    }
+
+    let replaceRegionIds: string[] | undefined;
+    if (dto.regionIds !== undefined) {
+      replaceRegionIds = [
+        ...new Set(dto.regionIds.map((id) => id.trim()).filter((id) => id.length > 0))
+      ];
+      await this.assertRegionIdsExist(replaceRegionIds);
+    }
+
     try {
-      return await this.repository.update(id, data);
+      return await this.repository.update(id, data, {
+        ...(replaceRegionIds !== undefined ? { replaceRegionIds } : {}),
+        ...(replaceGeofenceIds !== undefined ? { replaceGeofenceIds } : {})
+      });
     } catch (error: unknown) {
       if (ActivationService.isUniqueViolation(error)) {
         throw new ConflictException("An activation with this slug already exists");
@@ -242,12 +275,14 @@ export class ActivationService {
     const sku = dto.sku !== undefined && dto.sku.trim().length > 0 ? dto.sku.trim() : null;
     const quantity = dto.quantity ?? 1;
     const sortOrder = dto.sortOrder ?? (await this.repository.nextProductSortOrder(activationId));
+    const monthlyTargetCases = dto.monthlyTargetCases ?? null;
 
     return this.repository.createProduct(activationId, {
       name,
       sku,
       quantity,
-      sortOrder
+      sortOrder,
+      monthlyTargetCases
     });
   }
 
@@ -666,7 +701,7 @@ export class ActivationService {
       XLSX.utils.json_to_sheet([
         {
           name: row.name,
-          region: row.region?.name ?? "",
+          region: row.regionLinks.map((l) => l.region.name).join(" · "),
           startsAt: row.startsAt.toISOString(),
           endsAt: row.endsAt?.toISOString() ?? ""
         }

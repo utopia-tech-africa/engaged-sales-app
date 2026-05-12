@@ -1107,7 +1107,7 @@
     },
     "/admin/activations": {
       "get": {
-        "description": "Campaigns / activations with region and counts.",
+        "description": "Campaigns / activations with linked regions and counts.",
         "operationId": "Activation_listActivations",
         "parameters": [],
         "responses": {
@@ -1154,8 +1154,12 @@
                     "type": "string",
                     "maxLength": 2000
                   },
-                  "regionId": {
-                    "type": "string"
+                  "regionIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Optional region cuids; activation can span multiple territories."
                   },
                   "startsAt": {
                     "type": "string",
@@ -1167,6 +1171,13 @@
                   },
                   "isActive": {
                     "type": "boolean"
+                  },
+                  "geofenceIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Optional work area ids; rostered promoters must sign in inside one of these while the activation is current."
                   }
                 }
               }
@@ -1177,14 +1188,14 @@
           "201": {
             "description": "Activation created"
           },
+          "400": {
+            "description": "One or more regions or geofences not found"
+          },
           "401": {
             "description": "Missing or invalid JWT"
           },
           "403": {
             "description": "Requires supervisor or admin role"
-          },
-          "404": {
-            "description": "Region not found"
           },
           "409": {
             "description": "Slug already in use"
@@ -1396,7 +1407,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Activation detail with products and roster"
+            "description": "Activation detail with products, roster, and linked work areas"
           },
           "401": {
             "description": "Missing or invalid JWT"
@@ -1432,7 +1443,49 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateActivationDto"
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  },
+                  "slug": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 64
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "regionIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Replace linked regions. Omit to leave unchanged; [] clears. Values are region cuids."
+                  },
+                  "startsAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "endsAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  },
+                  "geofenceIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Replace linked work areas. Omit to leave unchanged; [] clears. Promoters on the roster sign in inside one of these while the activation is current."
+                  }
+                }
               }
             }
           }
@@ -1441,6 +1494,9 @@
           "200": {
             "description": "Activation updated"
           },
+          "400": {
+            "description": "Invalid region or geofence ids"
+          },
           "401": {
             "description": "Missing or invalid JWT"
           },
@@ -1448,7 +1504,7 @@
             "description": "Requires supervisor or admin role"
           },
           "404": {
-            "description": "Activation or region not found"
+            "description": "Activation not found"
           },
           "409": {
             "description": "Slug already in use"
@@ -1692,7 +1748,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Activation rows with region and product count"
+            "description": "Activation rows with linked regions and product count"
           },
           "401": {
             "description": "Missing or invalid JWT"
@@ -2239,6 +2295,41 @@
           }
         ],
         "summary": "Update current user profile",
+        "tags": ["Me"]
+      }
+    },
+    "/me/field-attendance": {
+      "get": {
+        "description": "For promoters: local-day clock-in gate (`needsDailyClockIn`) and alternating clock-in/clock-out suggestion. Non-promoters get `applicable: false`.",
+        "operationId": "Me_getFieldAttendance",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Field attendance status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "applicable": true,
+                    "timezone": "Africa/Nairobi",
+                    "localDate": "2026-05-12",
+                    "needsDailyClockIn": true,
+                    "suggestedNextAttendanceKind": "clock_in"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid JWT token"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Field attendance gate and segment suggestion",
         "tags": ["Me"]
       }
     },
@@ -3139,10 +3230,6 @@
             "default": true
           }
         }
-      },
-      "UpdateActivationDto": {
-        "type": "object",
-        "properties": {}
       },
       "CreateActivationProductDto": {
         "type": "object",

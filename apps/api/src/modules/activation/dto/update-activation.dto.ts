@@ -1,5 +1,7 @@
+import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
+  IsArray,
   IsBoolean,
   IsDate,
   IsOptional,
@@ -27,10 +29,15 @@ export class UpdateActivationDto {
   @MaxLength(2000)
   public description?: string;
 
+  @ApiPropertyOptional({
+    description:
+      "Replace linked regions. Omit to leave unchanged; send [] to clear. Values are region cuids.",
+    type: [String]
+  })
   @IsOptional()
-  @IsString()
-  @MaxLength(64)
-  public regionId?: string;
+  @IsArray()
+  @IsString({ each: true })
+  public regionIds?: string[];
 
   @IsOptional()
   @Type(() => Date)
@@ -46,4 +53,14 @@ export class UpdateActivationDto {
   @IsOptional()
   @IsBoolean()
   public isActive?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      "Replace linked work areas (geofences). Omit to leave unchanged; send [] to clear. Rostered promoters must sign in inside one of these while the activation is current.",
+    type: [String]
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  public geofenceIds?: string[];
 }
