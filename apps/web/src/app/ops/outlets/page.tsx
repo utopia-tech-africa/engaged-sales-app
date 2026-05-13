@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { type ReactElement, type SyntheticEvent, useState } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import { ApiError } from "@/lib/api/problem-details";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { calmPrimaryButtonClass, calmSecondaryButtonClass } from "@/lib/calm-ui";
@@ -260,7 +261,7 @@ export default function OpsOutletsPage(): ReactElement {
       <section className={cardClass}>
         <h2 className="text-base font-semibold text-foreground">Outlet database</h2>
         {outletsQuery.isLoading ? (
-          <p className="mt-3 text-sm text-muted-foreground">Loading...</p>
+          <BoneyardInlineFallback name="ops-outlets-list" className="mt-3 min-h-[12rem]" />
         ) : null}
         {outletsQuery.isError ? (
           <p className="mt-3 text-sm text-destructive">Could not load outlets.</p>

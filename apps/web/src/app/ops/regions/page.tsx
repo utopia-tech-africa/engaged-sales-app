@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { type SyntheticEvent, type ReactElement, useState } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import {
   getAdminRegionListRegionsQueryKey,
   useAdminRegionCreateRegion,
@@ -226,7 +227,7 @@ export default function OpsRegionsPage(): ReactElement {
       <section className={cardClass}>
         <h2 className="text-base font-semibold text-foreground">All regions</h2>
         {regionsQuery.isLoading ? (
-          <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
+          <BoneyardInlineFallback name="ops-regions-list" className="mt-3 min-h-[12rem]" />
         ) : null}
         {regionsQuery.isError ? (
           <p className="mt-3 text-sm text-destructive">Could not load regions.</p>

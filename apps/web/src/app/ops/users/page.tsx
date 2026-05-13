@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { type SyntheticEvent, type ReactElement, useState } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import {
   getAdminUserListUsersQueryKey,
   useAdminRegionListRegions,
@@ -356,7 +357,7 @@ export default function OpsUsersPage(): ReactElement {
       <section className={cardClass}>
         <h2 className="text-base font-semibold text-foreground">All users</h2>
         {usersQuery.isLoading ? (
-          <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
+          <BoneyardInlineFallback name="ops-users-list" className="mt-3 min-h-[14rem]" />
         ) : null}
         {usersQuery.isError ? (
           <p className="mt-3 text-sm text-destructive">Could not load users.</p>

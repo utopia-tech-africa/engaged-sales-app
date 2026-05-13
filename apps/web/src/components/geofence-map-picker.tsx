@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { type ReactElement } from "react";
 
+import { BoneyardBlock } from "@/components/boneyard/boneyard-block";
 import { type GeofenceLeafletMapProps } from "@/components/geofence-leaflet-map";
 
 const GeofenceLeafletMap = dynamic(
@@ -11,10 +12,17 @@ const GeofenceLeafletMap = dynamic(
     ssr: false,
     loading: () => (
       <div
-        className="flex h-[min(420px,55vh)] min-h-[240px] w-full items-center justify-center rounded-lg border border-border bg-muted/30 text-sm text-muted-foreground"
+        className="flex h-[min(420px,55vh)] min-h-[240px] w-full items-center justify-center rounded-lg border border-border bg-muted/30"
         aria-hidden
       >
-        Loading map…
+        <BoneyardBlock
+          name="geofence-map-loading"
+          loading
+          variant="lines4"
+          className="w-full max-w-xs px-4"
+        >
+          <span className="sr-only">Loading map</span>
+        </BoneyardBlock>
       </div>
     )
   }

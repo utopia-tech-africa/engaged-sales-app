@@ -24,6 +24,7 @@ import {
   parseRegionsFromOrval
 } from "@/lib/ops/ops-adapters";
 import { calmMutedLinkClass } from "@/lib/calm-ui";
+import { BoneyardBlock } from "@/components/boneyard/boneyard-block";
 
 const shellCard = "rounded-xl border border-border bg-card/80 shadow-sm dark:bg-card/50";
 
@@ -35,25 +36,35 @@ type StatCellProps = {
   error?: boolean;
 };
 
-const StatCell = ({ label, value, detail, loading, error }: StatCellProps): ReactElement => (
-  <div className="min-w-0 px-1 py-2 sm:px-2">
-    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-      {label}
-    </p>
-    {loading ? (
-      <p className="mt-1.5 text-sm text-muted-foreground">…</p>
-    ) : error ? (
-      <p className="mt-1.5 text-sm text-destructive">Error</p>
-    ) : (
-      <p className="mt-1.5 truncate text-2xl font-semibold tabular-nums tracking-tight text-foreground">
-        {value}
+const StatCell = ({ label, value, detail, loading, error }: StatCellProps): ReactElement => {
+  const statName = `ops-stat-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  return (
+    <div className="min-w-0 px-1 py-2 sm:px-2">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
       </p>
-    )}
-    {detail !== undefined && detail.length > 0 && !loading && !error ? (
-      <p className="mt-0.5 text-xs text-muted-foreground">{detail}</p>
-    ) : null}
-  </div>
-);
+      {loading ? (
+        <BoneyardBlock
+          name={statName}
+          loading
+          variant="statValue"
+          className="mt-1.5 block h-9 w-28 max-w-full"
+        >
+          <span className="sr-only">Loading {label}</span>
+        </BoneyardBlock>
+      ) : error ? (
+        <p className="mt-1.5 text-sm text-destructive">Error</p>
+      ) : (
+        <p className="mt-1.5 truncate text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+          {value}
+        </p>
+      )}
+      {detail !== undefined && detail.length > 0 && !loading && !error ? (
+        <p className="mt-0.5 text-xs text-muted-foreground">{detail}</p>
+      ) : null}
+    </div>
+  );
+};
 
 const dash = "—";
 
@@ -408,7 +419,14 @@ export default function OpsOverviewPage(): ReactElement {
               </Link>
             </>
           ) : meQuery.isLoading ? (
-            <p className="text-xs text-muted-foreground">Loading profile…</p>
+            <BoneyardBlock
+              name="ops-overview-profile"
+              loading
+              variant="lines3"
+              className="mt-1 w-44"
+            >
+              <span className="sr-only">Loading profile</span>
+            </BoneyardBlock>
           ) : null}
         </div>
       </div>

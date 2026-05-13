@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, type ReactElement, useState } from "react";
 
 import { MobileShell } from "@/components/mobile-shell";
+import { BoneyardFullPageFallback } from "@/components/boneyard/boneyard-full-page-fallback";
 import { useAuthSignIn } from "@/lib/api/generated/client";
 import { ApiError } from "@/lib/api/problem-details";
 import { resolvePostSignInRedirect } from "@/lib/auth/safe-post-sign-in-redirect";
@@ -166,13 +167,7 @@ function SignInForm(): ReactElement {
 
 export default function SignInPage(): ReactElement {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-dvh items-center justify-center bg-background text-muted-foreground">
-          Loading…
-        </div>
-      }
-    >
+    <Suspense fallback={<BoneyardFullPageFallback name="auth-sign-in-suspense" />}>
       <SignInForm />
     </Suspense>
   );

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ReactElement } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import { LocationPlaceLine } from "@/components/location-place-line";
 import { useMeListLocationHistory } from "@/lib/api/generated/client";
 import { useAuthStore } from "@/lib/auth/auth-store";
@@ -38,7 +39,7 @@ export default function FieldHistoryPage(): ReactElement {
       </div>
 
       {historyQuery.isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading history…</p>
+        <BoneyardInlineFallback name="field-history" variant="lines4" className="min-h-[12rem]" />
       ) : null}
       {historyQuery.isError ? (
         <p className="text-sm text-destructive" role="alert">

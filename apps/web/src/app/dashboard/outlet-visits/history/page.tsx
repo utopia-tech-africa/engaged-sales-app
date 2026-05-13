@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { type ReactElement } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { calmMutedLinkClass } from "@/lib/calm-ui";
 import { formatFieldCheckInDateTime } from "@/lib/format-field-check-in-datetime";
@@ -32,7 +33,11 @@ export default function OutletVisitHistoryPage(): ReactElement {
       </div>
 
       {visitsQuery.isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading history...</p>
+        <BoneyardInlineFallback
+          name="field-outlet-visit-history"
+          variant="lines4"
+          className="min-h-[10rem]"
+        />
       ) : null}
       {visitsQuery.isError ? (
         <p className="text-sm text-destructive" role="alert">

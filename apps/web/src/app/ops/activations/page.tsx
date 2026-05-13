@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactElement, type SyntheticEvent, useEffect, useState } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import { DatetimePicker } from "@/components/ui/datetime-picker";
 import {
   getActivationListActivationsQueryKey,
@@ -328,7 +329,11 @@ export default function OpsActivationsPage(): ReactElement {
 
         <div className="px-0 py-2">
           {listQuery.isLoading ? (
-            <p className="px-5 py-8 text-center text-sm text-muted-foreground sm:px-6">Loading…</p>
+            <BoneyardInlineFallback
+              name="ops-activations-list"
+              variant="lines4"
+              className="px-5 py-8 sm:px-6"
+            />
           ) : null}
           {listQuery.isError ? (
             <p className="px-5 py-8 text-center text-sm text-destructive sm:px-6">

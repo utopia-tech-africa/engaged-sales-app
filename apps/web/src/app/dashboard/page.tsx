@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ReactElement } from "react";
 
+import { BoneyardBlock } from "@/components/boneyard/boneyard-block";
 import { getFieldNavItemsForUser } from "@/components/field-shell";
 import {
   getMeListMySalesQueryKey,
@@ -84,33 +85,37 @@ export default function DashboardHomePage(): ReactElement {
               Activations
             </Link>
           </div>
-          {recentSalesQuery.isLoading ? (
-            <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
-          ) : null}
           {recentSalesQuery.isError ? (
             <p className="mt-2 text-sm text-muted-foreground">Sales history unavailable.</p>
           ) : null}
-          {recentSalesQuery.data?.length === 0 ? (
+          {!recentSalesQuery.isLoading && recentSalesQuery.data?.length === 0 ? (
             <p className="mt-2 text-sm text-muted-foreground">
               No sales yet. Open an activation to record one.
             </p>
           ) : null}
-          {recentSalesQuery.data !== undefined && recentSalesQuery.data.length > 0 ? (
-            <ul className="mt-3 space-y-2">
-              {recentSalesQuery.data.map((sale) => (
-                <li
-                  key={sale.id}
-                  className="rounded-lg border border-border bg-muted/30 p-3 text-xs dark:bg-muted/15"
-                >
-                  <p className="font-medium text-foreground">{sale.activation.name}</p>
-                  <p className="text-muted-foreground">
-                    {formatFieldCheckInDateTime(sale.createdAt)} · {sale.items.length} line
-                    {sale.items.length === 1 ? "" : "s"}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          ) : null}
+          <BoneyardBlock
+            name="dashboard-recent-sales"
+            loading={recentSalesQuery.isLoading}
+            variant="listRows"
+            className="mt-2 min-h-[8rem]"
+          >
+            {recentSalesQuery.data !== undefined && recentSalesQuery.data.length > 0 ? (
+              <ul className="mt-3 space-y-2">
+                {recentSalesQuery.data.map((sale) => (
+                  <li
+                    key={sale.id}
+                    className="rounded-lg border border-border bg-muted/30 p-3 text-xs dark:bg-muted/15"
+                  >
+                    <p className="font-medium text-foreground">{sale.activation.name}</p>
+                    <p className="text-muted-foreground">
+                      {formatFieldCheckInDateTime(sale.createdAt)} · {sale.items.length} line
+                      {sale.items.length === 1 ? "" : "s"}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </BoneyardBlock>
         </section>
       ) : (
         <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
@@ -124,62 +129,70 @@ export default function DashboardHomePage(): ReactElement {
 
       <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
         <h2 className="text-base font-semibold text-foreground">Profile</h2>
-        {meQuery.isLoading ? (
-          <p className="mt-2 text-sm text-muted-foreground">Loading profile…</p>
-        ) : null}
         {meQuery.isError ? (
           <p className="mt-2 text-sm text-destructive" role="alert">
             Failed to load profile.
           </p>
         ) : null}
-        {meQuery.data ? (
-          <dl className="mt-3 space-y-1 text-sm text-foreground/90">
-            <div>
-              <dt className="inline font-medium text-foreground">Name: </dt>
-              <dd className="inline">{meQuery.data.fullName}</dd>
-            </div>
-            <div>
-              <dt className="inline font-medium text-foreground">Phone: </dt>
-              <dd className="inline">{meQuery.data.phone}</dd>
-            </div>
-            <div>
-              <dt className="inline font-medium text-foreground">Role: </dt>
-              <dd className="inline capitalize">{meQuery.data.role}</dd>
-            </div>
-            <div>
-              <dt className="inline font-medium text-foreground">Region: </dt>
-              <dd className="inline">{meQuery.data.regionId ?? "Not set"}</dd>
-            </div>
-          </dl>
-        ) : null}
+        <BoneyardBlock
+          name="dashboard-profile"
+          loading={meQuery.isLoading}
+          variant="lines4"
+          className="mt-2"
+        >
+          {meQuery.data ? (
+            <dl className="mt-3 space-y-1 text-sm text-foreground/90">
+              <div>
+                <dt className="inline font-medium text-foreground">Name: </dt>
+                <dd className="inline">{meQuery.data.fullName}</dd>
+              </div>
+              <div>
+                <dt className="inline font-medium text-foreground">Phone: </dt>
+                <dd className="inline">{meQuery.data.phone}</dd>
+              </div>
+              <div>
+                <dt className="inline font-medium text-foreground">Role: </dt>
+                <dd className="inline capitalize">{meQuery.data.role}</dd>
+              </div>
+              <div>
+                <dt className="inline font-medium text-foreground">Region: </dt>
+                <dd className="inline">{meQuery.data.regionId ?? "Not set"}</dd>
+              </div>
+            </dl>
+          ) : null}
+        </BoneyardBlock>
       </section>
 
       <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
         <h2 className="text-base font-semibold text-foreground">Sessions</h2>
-        {sessionsQuery.isLoading ? (
-          <p className="mt-2 text-sm text-muted-foreground">Loading sessions…</p>
-        ) : null}
         {sessionsQuery.isError ? (
           <p className="mt-2 text-sm text-destructive" role="alert">
             Failed to load sessions.
           </p>
         ) : null}
-        {sessionsQuery.data ? (
-          <ul className="mt-3 space-y-2">
-            {sessionsQuery.data.sessions.map((session) => (
-              <li
-                key={session.id}
-                className="rounded-lg border border-border bg-muted/30 p-3 text-xs dark:bg-muted/15"
-              >
-                <p className="font-medium text-foreground">
-                  {session.isCurrent ? "Current session" : "Past session"}
-                </p>
-                <p className="text-muted-foreground">IP: {session.ipAddress ?? "Unknown"}</p>
-                <p className="text-muted-foreground">Active: {session.isActive ? "Yes" : "No"}</p>
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        <BoneyardBlock
+          name="dashboard-sessions"
+          loading={sessionsQuery.isLoading}
+          variant="listRows"
+          className="mt-2 min-h-[6rem]"
+        >
+          {sessionsQuery.data ? (
+            <ul className="mt-3 space-y-2">
+              {sessionsQuery.data.sessions.map((session) => (
+                <li
+                  key={session.id}
+                  className="rounded-lg border border-border bg-muted/30 p-3 text-xs dark:bg-muted/15"
+                >
+                  <p className="font-medium text-foreground">
+                    {session.isCurrent ? "Current session" : "Past session"}
+                  </p>
+                  <p className="text-muted-foreground">IP: {session.ipAddress ?? "Unknown"}</p>
+                  <p className="text-muted-foreground">Active: {session.isActive ? "Yes" : "No"}</p>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </BoneyardBlock>
       </section>
     </div>
   );

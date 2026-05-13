@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { type ReactElement, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   Select,
@@ -240,7 +241,7 @@ export default function OpsOutletVisitsReportPage(): ReactElement {
           </div>
         </div>
         {visitsQuery.isLoading ? (
-          <p className="mt-3 text-sm text-muted-foreground">Loading...</p>
+          <BoneyardInlineFallback name="ops-outlet-visits-report" className="mt-3 min-h-[12rem]" />
         ) : null}
         {visitsQuery.isError ? (
           <p className="mt-3 text-sm text-destructive">Could not load outlet visit reports.</p>

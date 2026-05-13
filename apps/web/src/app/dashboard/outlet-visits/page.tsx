@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { type ChangeEvent, type ReactElement, type SyntheticEvent, useState } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import {
   Select,
   SelectContent,
@@ -346,7 +347,7 @@ export default function OutletVisitsPage(): ReactElement {
       </form>
 
       {outletsQuery.isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading outlets...</p>
+        <BoneyardInlineFallback name="field-outlet-visits-outlets" className="min-h-24" />
       ) : null}
       {outletsQuery.isError ? (
         <p className="text-sm text-destructive">

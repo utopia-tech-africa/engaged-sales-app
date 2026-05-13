@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { type ReactElement, useMemo, useState } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import {
   activationsListProductsForField,
   getActivationsListProductsForFieldQueryKey,
@@ -129,7 +130,11 @@ export default function FieldRecordSalePage(): ReactElement {
       </div>
 
       {productsQuery.isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading products…</p>
+        <BoneyardInlineFallback
+          name="field-record-sale-products"
+          variant="lines4"
+          className="min-h-[12rem]"
+        />
       ) : null}
       {productsQuery.isError ? (
         <p className="text-sm text-destructive" role="alert">

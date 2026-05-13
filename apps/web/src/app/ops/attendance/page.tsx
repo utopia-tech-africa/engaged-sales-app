@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { type ReactElement, useMemo, useState } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   Select,
@@ -175,7 +176,11 @@ export default function OpsAttendancePage(): ReactElement {
       </section>
 
       {summaryQuery.isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading attendance…</p>
+        <BoneyardInlineFallback
+          name="ops-attendance-summary"
+          variant="lines4"
+          className="min-h-[14rem] w-full max-w-4xl"
+        />
       ) : null}
       {summaryQuery.isError ? (
         <p className="text-sm text-destructive" role="alert">

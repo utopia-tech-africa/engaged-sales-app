@@ -13,6 +13,7 @@ import {
 } from "react";
 
 import { ActivationFieldActivityMap } from "@/components/activation-field-activity-map";
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import { CheckInDetailModal } from "@/components/check-in-detail-modal";
 import { DatetimePicker } from "@/components/ui/datetime-picker";
 import {
@@ -448,7 +449,11 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
               ← All activations
             </Link>
             {detailQuery.isLoading ? (
-              <h1 className="mt-3 text-2xl font-bold tracking-tight text-foreground">Loading…</h1>
+              <BoneyardInlineFallback
+                name="ops-activation-detail-title"
+                variant="lines4"
+                className="mt-3 max-w-md"
+              />
             ) : detail !== undefined ? (
               <>
                 <h1 className="mt-3 text-2xl font-bold tracking-tight text-foreground">
@@ -486,7 +491,11 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
         <div className={cn(panelClass, "min-h-112")}>
           {detailQuery.isLoading ? (
             <div className="flex min-h-88 items-center justify-center p-12">
-              <p className="text-sm text-muted-foreground">Loading activation…</p>
+              <BoneyardInlineFallback
+                name="ops-activation-detail-panel"
+                variant="lines4"
+                className="w-full max-w-lg"
+              />
             </div>
           ) : detailQuery.isError || detail === undefined ? (
             <div className="flex min-h-88 flex-col items-center justify-center gap-3 p-12 text-center">
@@ -959,7 +968,11 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
                       )}
                       <div className="mt-4">
                         {fieldLocationsQuery.isLoading ? (
-                          <p className="text-sm text-muted-foreground">Loading locations…</p>
+                          <BoneyardInlineFallback
+                            name="ops-activation-field-locations"
+                            variant="lines4"
+                            className="mt-4 min-h-[12rem] w-full"
+                          />
                         ) : fieldLocationsQuery.isError ? (
                           <p className="text-sm text-destructive" role="alert">
                             Could not load location history.
@@ -995,7 +1008,11 @@ export function ActivationDetailView({ activationId }: ActivationDetailViewProps
                         hidden.
                       </p>
                       {fieldSalesQuery.isLoading ? (
-                        <p className="mt-4 text-sm text-muted-foreground">Loading sales…</p>
+                        <BoneyardInlineFallback
+                          name="ops-activation-field-sales"
+                          variant="lines4"
+                          className="mt-4 min-h-[10rem] w-full"
+                        />
                       ) : fieldSalesQuery.isError ? (
                         <p className="mt-4 text-sm text-destructive" role="alert">
                           Could not load sales.
