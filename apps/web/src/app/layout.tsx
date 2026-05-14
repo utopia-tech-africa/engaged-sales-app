@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, JetBrains_Mono } from "next/font/google";
 
+import "@/bones/registry";
 import { AppToaster } from "@/components/app-toaster";
 import { BaseUiProvider } from "@/components/base-ui-provider";
+import { BoneyardAppSetup } from "@/components/boneyard/boneyard-app-setup";
 import { PwaProvider } from "@/components/pwa-provider";
 import { QueryProvider } from "@/components/query-provider";
 
@@ -72,12 +74,14 @@ export default function RootLayout({
     <html lang="en" className={`${fontSans.variable} ${fontMono.variable} h-full antialiased`}>
       <body className="min-h-full bg-background text-foreground font-sans">
         <PwaProvider>
-          <BaseUiProvider>
-            <QueryProvider>
-              {children}
-              <AppToaster />
-            </QueryProvider>
-          </BaseUiProvider>
+          <BoneyardAppSetup>
+            <BaseUiProvider>
+              <QueryProvider>
+                {children}
+                <AppToaster />
+              </QueryProvider>
+            </BaseUiProvider>
+          </BoneyardAppSetup>
         </PwaProvider>
       </body>
     </html>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ReactElement } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import { useAuthListSessions, useMeGetMe } from "@/lib/api/generated/client";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import { parseMeProfileFromOrval, parseSessionsFromOrval } from "@/lib/auth/orval-auth-adapter";
@@ -39,7 +40,9 @@ export default function OpsAccountPage(): ReactElement {
 
       <section className={cardClass}>
         <h2 className="text-base font-semibold text-foreground">Profile</h2>
-        {meQuery.isLoading ? <p className="mt-2 text-sm text-muted-foreground">Loading…</p> : null}
+        {meQuery.isLoading ? (
+          <BoneyardInlineFallback name="ops-account-profile" className="mt-2 min-h-[6rem]" />
+        ) : null}
         {meQuery.isError ? (
           <p className="mt-2 text-sm text-destructive">Failed to load profile.</p>
         ) : null}
@@ -68,7 +71,11 @@ export default function OpsAccountPage(): ReactElement {
       <section className={cardClass}>
         <h2 className="text-base font-semibold text-foreground">Sessions</h2>
         {sessionsQuery.isLoading ? (
-          <p className="mt-2 text-sm text-muted-foreground">Loading…</p>
+          <BoneyardInlineFallback
+            name="ops-account-sessions"
+            variant="lines4"
+            className="mt-2 min-h-[8rem]"
+          />
         ) : null}
         {sessionsQuery.isError ? (
           <p className="mt-2 text-sm text-destructive">Failed to load sessions.</p>

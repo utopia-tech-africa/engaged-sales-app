@@ -1,8 +1,9 @@
 "use client";
 
-import { Camera, Clock, Loader2, MapPin, User, X } from "lucide-react";
+import { Camera, Clock, MapPin, User, X } from "lucide-react";
 import { type ReactElement } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import { LocationPlaceLine } from "@/components/location-place-line";
 import { calmSecondaryButtonClass } from "@/lib/calm-ui";
 import type { AdminFieldActivityCheckInDetail } from "@/lib/ops/field-activity-adapters";
@@ -91,9 +92,12 @@ export function CheckInDetailModal({
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-muted-foreground">
-              <Loader2 className="size-8 animate-spin text-primary" aria-hidden />
-              <p className="text-sm">Loading check-in…</p>
+            <div className="flex flex-col items-center justify-center px-6 py-16">
+              <BoneyardInlineFallback
+                name="check-in-detail-modal"
+                variant="lines4"
+                className="w-full max-w-xs"
+              />
             </div>
           ) : null}
 

@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type PropsWithChildren, type ReactElement, useEffect } from "react";
 
+import { BoneyardFullPageFallback } from "@/components/boneyard/boneyard-full-page-fallback";
 import { FieldOfflineSyncListener } from "@/components/field-offline-sync-listener";
 import { FieldShell } from "@/components/field-shell";
 import { useAuthSignOut, useMeGetFieldAttendance } from "@/lib/api/generated/client";
@@ -99,27 +100,15 @@ export const DashboardLayoutClient = ({ children }: PropsWithChildren): ReactEle
   };
 
   if (!authHydrated || accessToken === null || user === null) {
-    return (
-      <div className="flex h-dvh items-center justify-center bg-background text-muted-foreground">
-        Loading…
-      </div>
-    );
+    return <BoneyardFullPageFallback name="dashboard-auth-loading" />;
   }
 
   if (fieldGatePending) {
-    return (
-      <div className="flex h-dvh items-center justify-center bg-background text-muted-foreground">
-        Loading…
-      </div>
-    );
+    return <BoneyardFullPageFallback name="dashboard-field-gate-loading" />;
   }
 
   if (isOpsRole(user.role)) {
-    return (
-      <div className="flex h-dvh items-center justify-center bg-background text-muted-foreground">
-        Redirecting…
-      </div>
-    );
+    return <BoneyardFullPageFallback name="dashboard-redirect-ops" />;
   }
 
   return (

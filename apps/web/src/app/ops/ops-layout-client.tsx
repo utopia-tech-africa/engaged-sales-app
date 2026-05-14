@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type PropsWithChildren, type ReactElement, useEffect } from "react";
 
 import { OpsShell } from "@/components/ops-shell";
+import { BoneyardFullPageFallback } from "@/components/boneyard/boneyard-full-page-fallback";
 import { useAuthSignOut } from "@/lib/api/generated/client";
 import { useAuthStore, useAuthStoreHydrated } from "@/lib/auth/auth-store";
 import { isOpsRole } from "@/lib/ops/ops-adapters";
@@ -59,19 +60,11 @@ export const OpsLayoutClient = ({ children }: PropsWithChildren): ReactElement =
   };
 
   if (!authHydrated || accessToken === null || user === null) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
-        Loading…
-      </div>
-    );
+    return <BoneyardFullPageFallback name="ops-auth-loading" height="screen" />;
   }
 
   if (!isOpsRole(user.role)) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
-        Redirecting…
-      </div>
-    );
+    return <BoneyardFullPageFallback name="ops-redirect-field" height="screen" />;
   }
 
   return (

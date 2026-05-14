@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { type ReactElement, type SyntheticEvent, useMemo, useState } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import { GeofenceLocationEditor } from "@/components/geofence-location-editor";
 import {
   getAdminGeofenceListGeofencesQueryKey,
@@ -259,7 +260,7 @@ export default function OpsGeofencesPage(): ReactElement {
       <section className={cardClass}>
         <h2 className="text-base font-semibold text-foreground">Existing areas</h2>
         {geofencesQuery.isLoading ? (
-          <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
+          <BoneyardInlineFallback name="ops-geofences-list" className="mt-3 min-h-[12rem]" />
         ) : null}
         {geofencesQuery.isError ? (
           <p className="mt-3 text-sm text-destructive">Could not load geofences.</p>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { type ReactElement, useState } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import {
   activationsGetByIdForField,
   getActivationsGetByIdForFieldQueryKey
@@ -74,7 +75,12 @@ export default function FieldActivationDetailPage(): ReactElement {
         <Link href="/dashboard/activations" className={`${calmMutedLinkClass} mb-2 inline-block`}>
           ← All activations
         </Link>
-        {detailQuery.isLoading ? <p className="text-sm text-muted-foreground">Loading…</p> : null}
+        {detailQuery.isLoading ? (
+          <BoneyardInlineFallback
+            name="field-activation-detail"
+            className="mt-1 min-h-[4rem] max-w-md"
+          />
+        ) : null}
         {detailQuery.isError ? (
           <p className="text-sm text-destructive" role="alert">
             Could not load this activation.
@@ -145,7 +151,11 @@ export default function FieldActivationDetailPage(): ReactElement {
             <section className="rounded-xl border border-border bg-card/80 p-4 shadow-sm dark:bg-card/50">
               <h2 className="text-sm font-semibold text-foreground">Team sales (read-only)</h2>
               {teamSalesQuery.isLoading ? (
-                <p className="mt-2 text-sm text-muted-foreground">Loading sales…</p>
+                <BoneyardInlineFallback
+                  name="field-team-sales"
+                  variant="lines4"
+                  className="mt-2 min-h-[8rem]"
+                />
               ) : null}
               {teamSalesQuery.isError ? (
                 <p className="mt-2 text-sm text-destructive">Could not load sales.</p>

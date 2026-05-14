@@ -3,6 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import { useLayoutEffect, useRef, useState, type ReactElement } from "react";
 
+import { BoneyardBlock } from "@/components/boneyard/boneyard-block";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
@@ -24,15 +25,11 @@ type ActivationMultiSelectProps = {
 };
 
 function buildTriggerLabel(args: {
-  isLoading: boolean;
   optionsLength: number;
   emptyListHint: string;
   placeholder: string;
   selectedLabels: string[];
 }): string {
-  if (args.isLoading) {
-    return "Loading…";
-  }
   if (args.optionsLength === 0) {
     return args.emptyListHint;
   }
@@ -72,7 +69,6 @@ export function ActivationMultiSelect({
     .filter((n): n is string => n !== undefined);
 
   const triggerLabel = buildTriggerLabel({
-    isLoading,
     optionsLength: options.length,
     emptyListHint,
     placeholder,
@@ -107,7 +103,14 @@ export function ActivationMultiSelect({
             showMutedTrigger && "text-muted-foreground"
           )}
         >
-          <span className="min-w-0 flex-1 truncate text-left">{triggerLabel}</span>
+          <BoneyardBlock
+            name="activation-multi-select-trigger"
+            loading={isLoading}
+            variant="lines3"
+            className="min-w-0 flex-1 text-left"
+          >
+            <span className="block truncate text-left">{triggerLabel}</span>
+          </BoneyardBlock>
           <ChevronDown className="size-4 shrink-0 opacity-50" aria-hidden />
         </button>
       </PopoverTrigger>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ReactElement } from "react";
 
+import { BoneyardInlineFallback } from "@/components/boneyard/boneyard-inline-fallback";
 import {
   activationsListForField,
   getActivationsListForFieldQueryKey
@@ -36,7 +37,11 @@ export default function FieldActivationsPage(): ReactElement {
       </div>
 
       {listQuery.isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading activations…</p>
+        <BoneyardInlineFallback
+          name="field-activations-list"
+          variant="lines4"
+          className="min-h-[10rem]"
+        />
       ) : null}
       {listQuery.isError ? (
         <p className="text-sm text-destructive" role="alert">

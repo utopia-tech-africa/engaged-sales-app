@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense, type ReactElement, type ReactNode } from "react";
 
+import { BoneyardFullPageFallback } from "@/components/boneyard/boneyard-full-page-fallback";
+
 import { DashboardLayoutClient } from "./dashboard-layout-client";
 
 export const metadata: Metadata = {
@@ -10,13 +12,7 @@ export const metadata: Metadata = {
 
 export default function DashboardLayout({ children }: { children: ReactNode }): ReactElement {
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-dvh items-center justify-center bg-background text-muted-foreground">
-          Loading…
-        </div>
-      }
-    >
+    <Suspense fallback={<BoneyardFullPageFallback name="dashboard-layout-suspense" />}>
       <DashboardLayoutClient>{children}</DashboardLayoutClient>
     </Suspense>
   );
