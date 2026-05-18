@@ -1,12 +1,13 @@
 "use client";
 
-import { Boxes, History, Home, MapPin, Store, type LucideIcon } from "lucide-react";
+import { Boxes, Download, History, Home, MapPin, Store, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type PropsWithChildren, type ReactElement } from "react";
 
 import { CalmBackground } from "@/components/calm-background";
 import { PlatformLogo } from "@/components/platform-logo";
+import { usePwaInstallContext } from "@/components/pwa-install-context";
 import { useFieldOutboxCount } from "@/hooks/use-field-outbox-count";
 import { useNetworkOnline } from "@/hooks/use-network-online";
 import type { AuthUser } from "@/lib/auth/auth-types";
@@ -77,6 +78,7 @@ export const FieldShell = ({
   const pathname = usePathname();
   const online = useNetworkOnline();
   const outboxPendingCount = useFieldOutboxCount();
+  const { showInstallEntry, openInstallUi } = usePwaInstallContext();
   const showConnectivityStrip = !online || outboxPendingCount > 0;
   const navItems = getFieldNavItemsForUser(user);
   const appLabel = user.role === "client" ? "Client" : "Field";
@@ -121,6 +123,16 @@ export const FieldShell = ({
                   {user.fullName}
                 </p>
                 <p className="truncate px-3 text-xs capitalize text-foreground">{user.role}</p>
+                {showInstallEntry ? (
+                  <button
+                    type="button"
+                    className={`${calmSecondaryButtonClass} mt-3`}
+                    onClick={openInstallUi}
+                  >
+                    <Download className="mr-2 inline size-4" aria-hidden />
+                    Install app
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   className={`${calmSecondaryButtonClass} mt-3`}
@@ -170,17 +182,29 @@ export const FieldShell = ({
               )}
               <p className="truncate text-xs text-muted-foreground">{user.fullName}</p>
             </div>
-            <button
-              type="button"
-              className={cn(
-                calmSecondaryButtonClass,
-                "max-w-36 shrink-0 px-3 py-2 text-xs sm:text-sm"
-              )}
-              disabled={isSigningOut}
-              onClick={onSignOut}
-            >
-              {isSigningOut ? "…" : "Sign out"}
-            </button>
+            <div className="flex shrink-0 items-center gap-2">
+              {showInstallEntry ? (
+                <button
+                  type="button"
+                  className={cn(calmSecondaryButtonClass, "size-10 max-w-none shrink-0 px-0 py-0")}
+                  aria-label="Install app"
+                  onClick={openInstallUi}
+                >
+                  <Download className="size-4" aria-hidden />
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className={cn(
+                  calmSecondaryButtonClass,
+                  "max-w-36 shrink-0 px-3 py-2 text-xs sm:text-sm"
+                )}
+                disabled={isSigningOut}
+                onClick={onSignOut}
+              >
+                {isSigningOut ? "…" : "Sign out"}
+              </button>
+            </div>
           </header>
 
           {showConnectivityStrip ? (
