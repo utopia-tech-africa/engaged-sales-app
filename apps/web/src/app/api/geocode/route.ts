@@ -9,7 +9,7 @@ const nominatimItemSchema = z.object({
 
 const nominatimResponseSchema = z.array(nominatimItemSchema);
 
-const USER_AGENT = "EngagedSalesOps/1.0 (work-area geocoding; https://nominatim.org/usage-policy)";
+const USER_AGENT = "TransmedGhanaOps/1.0 (work-area geocoding; https://nominatim.org/usage-policy)";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CalmBackground } from "@/components/calm-background";
+import { PlatformLogo } from "@/components/platform-logo";
 import { calmPrimaryButtonClass, calmSecondaryButtonClass } from "@/lib/calm-ui";
 
 const highlights = [
@@ -16,20 +17,24 @@ export default function Home() {
 
       <main className="relative mx-auto flex min-h-screen w-full max-w-lg flex-col px-4 pb-10 pt-12 sm:max-w-xl sm:px-6 sm:pb-14 sm:pt-16">
         <div className="flex flex-1 flex-col justify-center">
+          <div className="mb-6">
+            <PlatformLogo href="/" size="lg" priority />
+          </div>
+
           <p className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card/90 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm">
             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
-            Mobile-first field operations
+            Transmed Ghana · field operations
           </p>
 
-          <h1 className="text-balance text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
             <span className="bg-linear-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent">
-              Engaged Sales
+              Run your day from the field
             </span>
           </h1>
 
           <p className="mt-4 max-w-md text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Run your day from the field: secure sessions, clear roles, and profile data that stays
-            with you—whether you are on a phone between stores or at a desk.
+            Secure sessions, clear roles, and profile data that stays with you—whether you are on a
+            phone between stores or at a desk.
           </p>
 
           <ul className="mt-8 space-y-3 text-sm text-foreground sm:text-[0.9375rem]">

@@ -8,6 +8,8 @@ import { BoneyardAppSetup } from "@/components/boneyard/boneyard-app-setup";
 import { PwaProvider } from "@/components/pwa-provider";
 import { QueryProvider } from "@/components/query-provider";
 
+import { APP_DESCRIPTION, APP_NAME } from "@/lib/brand";
+
 import "./globals.css";
 
 const fontSans = Geist_Mono({
@@ -19,9 +21,6 @@ const fontMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono"
 });
-
-const APP_NAME = "Engaged Sales";
-const APP_DESCRIPTION = "Mobile-first sales operations for field teams and ops.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
