@@ -134,12 +134,7 @@ export const FieldShell = ({
           </aside>
         ) : (
           <aside className="hidden h-dvh w-52 shrink-0 flex-col border-r border-border bg-card/90 px-4 py-4 backdrop-blur-sm lg:flex dark:bg-card/70">
-            <PlatformLogo
-              href="/dashboard/check-in"
-              size="sm"
-              showWordmark
-              className="max-w-full"
-            />
+            <PlatformLogo href="/dashboard/check-in" size="sm" className="max-w-full" />
             <p className="mt-3 text-xs leading-snug text-muted-foreground">
               Clock in to unlock the rest of the app for today. You can sign out if you need to
               leave.

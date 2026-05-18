@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactElement } from "react";
 
-import { APP_NAME, LOGO_SRC } from "@/lib/brand";
+import { APP_NAME, APP_SHORT_NAME, LOGO_SRC } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 const SIZE_PRESETS = {
@@ -20,7 +20,9 @@ type PlatformLogoProps = {
   /** Optional pill shown after the wordmark (e.g. Ops, Field). */
   badge?: string;
   size?: PlatformLogoSize;
-  /** Show the app wordmark next to the mark. Default true. */
+  /** Use the short app name next to the mark (e.g. compact mobile header). */
+  compact?: boolean;
+  /** Show the wordmark next to the mark. Default true. */
   showWordmark?: boolean;
   /** Prioritize loading (hero / auth). */
   priority?: boolean;
@@ -31,16 +33,18 @@ export const PlatformLogo = ({
   href,
   badge,
   size = "md",
+  compact = false,
   showWordmark = true,
   priority = false
 }: PlatformLogoProps): ReactElement => {
   const preset = SIZE_PRESETS[size];
-  const imageAlt = showWordmark ? "" : APP_NAME;
+  const label = compact ? APP_SHORT_NAME : APP_NAME;
+  const imageAlt = showWordmark ? "" : label;
 
   const inner = (
     <span
       className={cn("inline-flex min-w-0 max-w-full items-center gap-2", className)}
-      {...(showWordmark ? {} : { "aria-label": APP_NAME })}
+      {...(showWordmark ? {} : { "aria-label": label })}
     >
       <Image
         src={LOGO_SRC}
@@ -54,7 +58,7 @@ export const PlatformLogo = ({
         <span
           className={cn("truncate font-semibold tracking-tight text-foreground", preset.wordmark)}
         >
-          {APP_NAME}
+          {label}
         </span>
       ) : null}
       {badge !== undefined && badge.length > 0 ? (

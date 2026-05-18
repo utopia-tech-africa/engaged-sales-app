@@ -18,7 +18,7 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["business", "productivity"],
     icons: [
       {
-        src: "/icons/logo.png",
+        src: "/icons/ors-logo.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any"

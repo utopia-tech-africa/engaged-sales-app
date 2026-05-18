@@ -1,5 +1,5 @@
 /**
- * Generates PWA launcher icons from `public/icons/logo.png` (transparent backdrop).
+ * Generates favicon and PWA launcher icons from `public/icons/ors-logo.png`.
  * Run after updating the brand mark:
  *   pnpm exec node ./scripts/ensure-logo-transparency.mjs
  *   pnpm exec node ./scripts/generate-pwa-icons.mjs
@@ -11,14 +11,12 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const iconsDir = path.join(__dirname, "..", "public", "icons");
-const logoPath = path.join(iconsDir, "logo.png");
+const webRoot = path.join(__dirname, "..");
+const iconsDir = path.join(webRoot, "public", "icons");
+const appDir = path.join(webRoot, "src", "app");
+const logoPath = path.join(iconsDir, "ors-logo.png");
 
-await mkdir(iconsDir, { recursive: true });
-
-const logo = sharp(logoPath).ensureAlpha();
-
-for (const size of [192, 512]) {
+const composeSquareIcon = async (logo, size) => {
   const mark = await logo
     .clone()
     .resize(Math.round(size * 0.72), Math.round(size * 0.72), {
@@ -27,7 +25,7 @@ for (const size of [192, 512]) {
     })
     .toBuffer();
 
-  await sharp({
+  return sharp({
     create: {
       width: size,
       height: size,
@@ -36,8 +34,20 @@ for (const size of [192, 512]) {
     }
   })
     .composite([{ input: mark, gravity: "center" }])
-    .png()
-    .toFile(path.join(iconsDir, `icon-${String(size)}.png`));
+    .png();
+};
+
+await mkdir(iconsDir, { recursive: true });
+
+const logo = sharp(logoPath).ensureAlpha();
+
+for (const size of [16, 32, 192, 512]) {
+  const outName = size <= 32 ? `favicon-${String(size)}.png` : `icon-${String(size)}.png`;
+  await (await composeSquareIcon(logo, size)).toFile(path.join(iconsDir, outName));
 }
 
-console.log(`Wrote ${path.join(iconsDir, "icon-192.png")} and icon-512.png (transparent canvas)`);
+await (await composeSquareIcon(logo, 32)).toFile(path.join(appDir, "icon.png"));
+
+console.log(
+  "Wrote favicon-16.png, favicon-32.png, icon-192.png, icon-512.png, and src/app/icon.png"
+);
