@@ -7,7 +7,7 @@ const nominatimReverseSchema = z.object({
 });
 
 const USER_AGENT =
-  "EngagedSalesOps/1.0 (check-in reverse geocoding; https://nominatim.org/usage-policy)";
+  "TransmedGhanaOps/1.0 (check-in reverse geocoding; https://nominatim.org/usage-policy)";
 
 const parseCoord = (value: string | null, kind: "lat" | "lon"): number | null => {
   if (value === null || value.trim() === "") {

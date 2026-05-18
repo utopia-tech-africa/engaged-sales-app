@@ -1,5 +1,7 @@
 /**
- * Generates static PWA icons (solid brand color). Run after changing brand color:
+ * Generates favicon and PWA launcher icons from `public/icons/ors-logo.png`.
+ * Run after updating the brand mark:
+ *   pnpm exec node ./scripts/ensure-logo-transparency.mjs
  *   pnpm exec node ./scripts/generate-pwa-icons.mjs
  */
 import { mkdir } from "node:fs/promises";
@@ -9,24 +11,43 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const iconsDir = path.join(__dirname, "..", "public", "icons");
+const webRoot = path.join(__dirname, "..");
+const iconsDir = path.join(webRoot, "public", "icons");
+const appDir = path.join(webRoot, "src", "app");
+const logoPath = path.join(iconsDir, "ors-logo.png");
 
-/** Matches `:root` `--primary` (#d87943). */
-const primary = { r: 216, g: 121, b: 67, alpha: 1 };
+const composeSquareIcon = async (logo, size) => {
+  const mark = await logo
+    .clone()
+    .resize(Math.round(size * 0.72), Math.round(size * 0.72), {
+      fit: "inside",
+      withoutEnlargement: false
+    })
+    .toBuffer();
 
-await mkdir(iconsDir, { recursive: true });
-
-for (const size of [192, 512]) {
-  await sharp({
+  return sharp({
     create: {
       width: size,
       height: size,
       channels: 4,
-      background: primary
+      background: { r: 0, g: 0, b: 0, alpha: 0 }
     }
   })
-    .png()
-    .toFile(path.join(iconsDir, `icon-${String(size)}.png`));
+    .composite([{ input: mark, gravity: "center" }])
+    .png();
+};
+
+await mkdir(iconsDir, { recursive: true });
+
+const logo = sharp(logoPath).ensureAlpha();
+
+for (const size of [16, 32, 192, 512]) {
+  const outName = size <= 32 ? `favicon-${String(size)}.png` : `icon-${String(size)}.png`;
+  await (await composeSquareIcon(logo, size)).toFile(path.join(iconsDir, outName));
 }
 
-console.log(`Wrote ${path.join(iconsDir, "icon-192.png")} and icon-512.png`);
+await (await composeSquareIcon(logo, 32)).toFile(path.join(appDir, "icon.png"));
+
+console.log(
+  "Wrote favicon-16.png, favicon-32.png, icon-192.png, icon-512.png, and src/app/icon.png"
+);

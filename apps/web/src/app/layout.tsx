@@ -8,6 +8,8 @@ import { BoneyardAppSetup } from "@/components/boneyard/boneyard-app-setup";
 import { PwaProvider } from "@/components/pwa-provider";
 import { QueryProvider } from "@/components/query-provider";
 
+import { APP_DESCRIPTION, APP_NAME, FAVICON_16_SRC, FAVICON_32_SRC } from "@/lib/brand";
+
 import "./globals.css";
 
 const fontSans = Geist_Mono({
@@ -19,9 +21,6 @@ const fontMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono"
 });
-
-const APP_NAME = "Engaged Sales";
-const APP_DESCRIPTION = "Mobile-first sales operations for field teams and ops.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -39,11 +38,14 @@ export const metadata: Metadata = {
     telephone: false
   },
   icons: {
-    apple: [{ url: "/icons/icon-192.png", sizes: "192x192" }],
+    apple: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
     icon: [
+      { url: FAVICON_32_SRC, sizes: "32x32", type: "image/png" },
+      { url: FAVICON_16_SRC, sizes: "16x16", type: "image/png" },
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" }
-    ]
+    ],
+    shortcut: FAVICON_32_SRC
   },
   openGraph: {
     type: "website",

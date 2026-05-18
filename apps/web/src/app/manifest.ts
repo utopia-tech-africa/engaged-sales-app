@@ -1,12 +1,14 @@
 import type { MetadataRoute } from "next";
 
+import { APP_DESCRIPTION, APP_NAME, APP_SHORT_NAME } from "@/lib/brand";
+
 const THEME = "#d87943";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Engaged Sales",
-    short_name: "Engaged",
-    description: "Mobile-first sales operations for field teams and ops.",
+    name: APP_NAME,
+    short_name: APP_SHORT_NAME,
+    description: APP_DESCRIPTION,
     start_url: "/",
     scope: "/",
     display: "standalone",
@@ -15,6 +17,12 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: THEME,
     categories: ["business", "productivity"],
     icons: [
+      {
+        src: "/icons/ors-logo.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any"
+      },
       {
         src: "/icons/icon-192.png",
         sizes: "192x192",

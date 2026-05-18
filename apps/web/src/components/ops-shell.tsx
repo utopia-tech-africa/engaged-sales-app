@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { type PropsWithChildren, type ReactElement, useCallback, useEffect, useState } from "react";
 
 import { CalmBackground } from "@/components/calm-background";
+import { PlatformLogo } from "@/components/platform-logo";
 import type { AuthUser } from "@/lib/auth/auth-types";
 import { calmMutedLinkClass, calmSecondaryButtonClass } from "@/lib/calm-ui";
 
@@ -210,13 +211,8 @@ export const OpsShell = ({
       <CalmBackground />
       <div className="relative z-10 flex h-dvh min-h-0 flex-row overflow-hidden">
         <aside className="hidden h-dvh w-60 shrink-0 flex-col overflow-hidden border-r border-border bg-card/90 backdrop-blur-sm lg:flex dark:bg-card/70">
-          <div className="flex h-14 items-center border-b border-border px-4">
-            <Link href="/ops" className="text-sm font-semibold text-foreground">
-              Engaged Sales
-            </Link>
-            <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-              Ops
-            </span>
+          <div className="flex h-14 items-center border-b border-border px-3">
+            <PlatformLogo href="/ops" size="sm" badge="Ops" className="min-w-0" />
           </div>
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="min-h-0 flex-1 overflow-y-auto p-3 pb-2">
@@ -259,8 +255,8 @@ export const OpsShell = ({
             mobileNavOpen ? "translate-x-0" : "-translate-x-full"
           ].join(" ")}
         >
-          <div className="flex h-14 items-center justify-between border-b border-border px-4">
-            <span className="text-sm font-semibold">Menu</span>
+          <div className="flex h-14 items-center justify-between gap-2 border-b border-border px-3">
+            <PlatformLogo href="/ops" size="sm" badge="Ops" className="min-w-0 flex-1" />
             <button
               type="button"
               className="rounded-lg px-2 py-1 text-sm text-muted-foreground hover:bg-muted"
@@ -306,7 +302,7 @@ export const OpsShell = ({
             >
               Menu
             </button>
-            <span className="truncate text-sm font-semibold text-foreground">Operations</span>
+            <PlatformLogo href="/ops" size="sm" badge="Ops" className="min-w-0 flex-1" />
           </header>
           <main className="mx-auto min-h-0 w-full max-w-6xl flex-1 overflow-y-auto overscroll-y-contain px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
             {children}

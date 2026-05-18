@@ -3,38 +3,62 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Brand Core Colors (Light Mode) */
   --background: #ffffff;
-  --foreground: #111827;
+  --foreground: #1a1a1a;
+  /* Charcoal Black for cleaner readability */
   --card: #ffffff;
-  --card-foreground: #111827;
+  --card-foreground: #1a1a1a;
   --popover: #ffffff;
-  --popover-foreground: #111827;
-  --primary: #d87943;
+  --popover-foreground: #1a1a1a;
+
+  --primary: #800d28;
+  /* ORS Maroon / Crimson */
   --primary-foreground: #ffffff;
-  --secondary: #527575;
+
+  --secondary: #84bd5b;
+  /* Olive Green */
   --secondary-foreground: #ffffff;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  --accent: #eeeeee;
-  --accent-foreground: #111827;
+
+  --muted: #f4f7f1;
+  /* Ultra-soft lime-tinted grey for subtle backgrounds */
+  --muted-foreground: #5a6154;
+
+  --accent: #c2dc87;
+  /* Light Lime Green from packaging accents */
+  --accent-foreground: #800d28;
+  /* Maroon text for contrasting highlights */
+
   --destructive: #ef4444;
   --destructive-foreground: #fafafa;
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: #d87943;
-  --chart-1: #5f8787;
-  --chart-2: #e78a53;
-  --chart-3: #fbcb97;
-  --chart-4: #888888;
-  --chart-5: #999999;
-  --sidebar: #f3f4f6;
-  --sidebar-foreground: #111827;
-  --sidebar-primary: #d87943;
+  --border: #e2e8da;
+  /* Soft green-gray border tone */
+  --input: #e2e8da;
+  --ring: #800d28;
+  /* Maroon focus states */
+
+  /* Brand Charting/Visual System */
+  --chart-1: #800d28;
+  /* Maroon */
+  --chart-2: #84bd5b;
+  /* Olive Green */
+  --chart-3: #c2dc87;
+  /* Light Lime */
+  --chart-4: #4a6b2c;
+  /* Deep Forest Olive */
+  --chart-5: #1a1a1a;
+  /* Accent Charcoal */
+
+  --sidebar: #f4f7f1;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #800d28;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #ffffff;
-  --sidebar-accent-foreground: #111827;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #d87943;
+  --sidebar-accent-foreground: #800d28;
+  --sidebar-border: #e2e8da;
+  --sidebar-ring: #800d28;
+
+  /* Typography & Layout Defaults */
   --font-sans: Geist Mono, ui-monospace, monospace;
   --font-serif: serif;
   --font-mono: JetBrains Mono, monospace;
@@ -58,56 +82,48 @@
 }
 
 .dark {
-  --background: #121113;
-  --foreground: #c1c1c1;
-  --card: #121212;
-  --card-foreground: #c1c1c1;
-  --popover: #121113;
-  --popover-foreground: #c1c1c1;
-  --primary: #e78a53;
-  --primary-foreground: #121113;
-  --secondary: #5f8787;
-  --secondary-foreground: #121113;
-  --muted: #222222;
-  --muted-foreground: #888888;
-  --accent: #333333;
-  --accent-foreground: #c1c1c1;
-  --destructive: #5f8787;
-  --destructive-foreground: #121113;
-  --border: #222222;
-  --input: #222222;
-  --ring: #e78a53;
-  --chart-1: #5f8787;
-  --chart-2: #e78a53;
-  --chart-3: #fbcb97;
-  --chart-4: #888888;
-  --chart-5: #999999;
-  --sidebar: #121212;
-  --sidebar-foreground: #c1c1c1;
-  --sidebar-primary: #e78a53;
-  --sidebar-primary-foreground: #121113;
-  --sidebar-accent: #333333;
-  --sidebar-accent-foreground: #c1c1c1;
-  --sidebar-border: #222222;
-  --sidebar-ring: #e78a53;
-  --font-sans: Geist Mono, ui-monospace, monospace;
-  --font-serif: serif;
-  --font-mono: JetBrains Mono, monospace;
-  --radius: 0.75rem;
-  --shadow-x: 0px;
-  --shadow-y: 1px;
-  --shadow-blur: 4px;
-  --shadow-spread: 0px;
-  --shadow-opacity: 0.05;
-  --shadow-color: #000000;
-  --shadow-2xs: 0px 1px 4px 0px hsl(0 0% 0% / 0.03);
-  --shadow-xs: 0px 1px 4px 0px hsl(0 0% 0% / 0.03);
-  --shadow-sm: 0px 1px 4px 0px hsl(0 0% 0% / 0.05), 0px 1px 2px -1px hsl(0 0% 0% / 0.05);
-  --shadow: 0px 1px 4px 0px hsl(0 0% 0% / 0.05), 0px 1px 2px -1px hsl(0 0% 0% / 0.05);
-  --shadow-md: 0px 1px 4px 0px hsl(0 0% 0% / 0.05), 0px 2px 4px -1px hsl(0 0% 0% / 0.05);
-  --shadow-lg: 0px 1px 4px 0px hsl(0 0% 0% / 0.05), 0px 4px 6px -1px hsl(0 0% 0% / 0.05);
-  --shadow-xl: 0px 1px 4px 0px hsl(0 0% 0% / 0.05), 0px 8px 10px -1px hsl(0 0% 0% / 0.05);
-  --shadow-2xl: 0px 1px 4px 0px hsl(0 0% 0% / 0.13);
+  /* Rich, dark olive-tinted background layout */
+  --background: #0f120c;
+  --foreground: #e4ebdf;
+  --card: #141a10;
+  --card-foreground: #e4ebdf;
+  --popover: #0f120c;
+  --popover-foreground: #e4ebdf;
+
+  --primary: #a6243f;
+  /* Slightly lighter Maroon for dark-mode contrast accessibility */
+  --primary-foreground: #ffffff;
+
+  --secondary: #9ece76;
+  /* Vibrant Olive */
+  --secondary-foreground: #0f120c;
+
+  --muted: #1c2417;
+  --muted-foreground: #99a392;
+
+  --accent: #313f28;
+  --accent-foreground: #e4ebdf;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #242e1e;
+  --input: #242e1e;
+  --ring: #a6243f;
+
+  --chart-1: #a6243f;
+  --chart-2: #9ece76;
+  --chart-3: #c2dc87;
+  --chart-4: #5a7d3e;
+  --chart-5: #e4ebdf;
+
+  --sidebar: #141a10;
+  --sidebar-foreground: #e4ebdf;
+  --sidebar-primary: #a6243f;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #242e1e;
+  --sidebar-accent-foreground: #e4ebdf;
+  --sidebar-border: #242e1e;
+  --sidebar-ring: #a6243f;
 }
 
 @theme inline {

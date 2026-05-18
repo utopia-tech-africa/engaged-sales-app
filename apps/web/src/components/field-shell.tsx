@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { type PropsWithChildren, type ReactElement } from "react";
 
 import { CalmBackground } from "@/components/calm-background";
+import { PlatformLogo } from "@/components/platform-logo";
 import { useFieldOutboxCount } from "@/hooks/use-field-outbox-count";
 import { useNetworkOnline } from "@/hooks/use-network-online";
 import type { AuthUser } from "@/lib/auth/auth-types";
@@ -96,13 +97,8 @@ export const FieldShell = ({
       <div className="relative z-10 flex h-dvh min-h-0 flex-row overflow-hidden">
         {!attendanceGateLocked ? (
           <aside className="hidden h-dvh w-56 shrink-0 flex-col overflow-hidden border-r border-border bg-card/90 backdrop-blur-sm lg:flex dark:bg-card/70">
-            <div className="flex h-14 shrink-0 items-center border-b border-border px-4">
-              <Link href="/dashboard" className="text-sm font-semibold text-foreground">
-                Engaged Sales
-              </Link>
-              <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                {appLabel}
-              </span>
+            <div className="flex h-14 shrink-0 items-center border-b border-border px-3">
+              <PlatformLogo href="/dashboard" size="sm" badge={appLabel} className="min-w-0" />
             </div>
             <div className="flex min-h-0 flex-1 flex-col">
               <nav
@@ -138,7 +134,7 @@ export const FieldShell = ({
           </aside>
         ) : (
           <aside className="hidden h-dvh w-52 shrink-0 flex-col border-r border-border bg-card/90 px-4 py-4 backdrop-blur-sm lg:flex dark:bg-card/70">
-            <p className="text-sm font-semibold text-foreground">Engaged Sales</p>
+            <PlatformLogo href="/dashboard/check-in" size="sm" className="max-w-full" />
             <p className="mt-3 text-xs leading-snug text-muted-foreground">
               Clock in to unlock the rest of the app for today. You can sign out if you need to
               leave.
@@ -165,9 +161,12 @@ export const FieldShell = ({
               {attendanceGateLocked ? (
                 <p className="truncate text-sm font-semibold text-foreground">Clock in required</p>
               ) : (
-                <Link href="/dashboard" className="truncate text-sm font-semibold text-foreground">
-                  {appLabel}
-                </Link>
+                <PlatformLogo
+                  href="/dashboard"
+                  size="sm"
+                  showWordmark={false}
+                  className="max-w-32"
+                />
               )}
               <p className="truncate text-xs text-muted-foreground">{user.fullName}</p>
             </div>
