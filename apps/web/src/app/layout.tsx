@@ -5,7 +5,8 @@ import "@/bones/registry";
 import { AppToaster } from "@/components/app-toaster";
 import { BaseUiProvider } from "@/components/base-ui-provider";
 import { BoneyardAppSetup } from "@/components/boneyard/boneyard-app-setup";
-import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
+import { PwaInstallProvider } from "@/components/pwa-install-context";
+import { PwaInstallUi } from "@/components/pwa-install-prompt";
 import { PwaProvider } from "@/components/pwa-provider";
 import { QueryProvider } from "@/components/query-provider";
 
@@ -80,9 +81,11 @@ export default function RootLayout({
           <BoneyardAppSetup>
             <BaseUiProvider>
               <QueryProvider>
-                {children}
-                <PwaInstallPrompt />
-                <AppToaster />
+                <PwaInstallProvider>
+                  {children}
+                  <PwaInstallUi />
+                  <AppToaster />
+                </PwaInstallProvider>
               </QueryProvider>
             </BaseUiProvider>
           </BoneyardAppSetup>
