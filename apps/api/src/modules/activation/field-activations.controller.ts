@@ -9,6 +9,7 @@ import {
   Res,
   UseGuards
 } from "@nestjs/common";
+import { sendBinaryFile, type BinaryFileResponse } from "../../common/http/send-binary-file";
 import {
   ApiBearerAuth,
   ApiForbiddenResponse,
@@ -91,23 +92,20 @@ export class FieldActivationsController {
     @Param("id") id: string,
     @Query("from") from: string | undefined,
     @Query("to") to: string | undefined,
-    @Res({ passthrough: true }) response: { setHeader: (name: string, value: string) => void }
-  ) {
+    @Res() response: BinaryFileResponse
+  ): Promise<void> {
     const buffer = await this.activationService.exportClientActivationWorkbook(
       currentUser,
       id,
       from,
       to
     );
-    response.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    sendBinaryFile(
+      response,
+      buffer,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      `activation-${id}-report.xlsx`
     );
-    response.setHeader(
-      "Content-Disposition",
-      `attachment; filename="activation-${id}-report.xlsx"`
-    );
-    return buffer;
   }
 
   @Get(":id/products")

@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildDashboardEmailMarkup, buildDashboardExcel } from "./report-export.util";
+import {
+  buildDashboardEmailMarkup,
+  buildDashboardExcel,
+  buildDashboardPdf
+} from "./report-export.util";
 
 const payload = {
   range: { from: "2026-05-01", to: "2026-05-01" },
@@ -49,9 +53,17 @@ const payload = {
   }
 } as const;
 
-void test("buildDashboardExcel returns non-empty buffer", () => {
+void test("buildDashboardExcel returns a valid XLSX file", () => {
   const buffer = buildDashboardExcel(payload as never);
-  assert.ok(buffer.byteLength > 0);
+  assert.ok(buffer.byteLength > 100);
+  assert.equal(buffer[0], 0x50);
+  assert.equal(buffer[1], 0x4b);
+});
+
+void test("buildDashboardPdf returns a valid PDF file", async () => {
+  const buffer = await buildDashboardPdf(payload as never);
+  assert.ok(buffer.byteLength > 100);
+  assert.equal(buffer.subarray(0, 5).toString("utf8"), "%PDF-");
 });
 
 void test("buildDashboardEmailMarkup returns text and html", () => {

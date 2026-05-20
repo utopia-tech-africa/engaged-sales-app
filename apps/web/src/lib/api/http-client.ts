@@ -114,8 +114,16 @@ const shouldAttemptSessionRefreshBlob = (
   return typeof token === "string" && token.length > 0;
 };
 
+export type ApiBlobResponse = {
+  blob: Blob;
+  contentDisposition: string | null;
+};
+
 /** Authenticated GET returning a binary body (e.g. Excel export). Applies the same 401 refresh retry as `apiRequest`. */
-export const apiRequestBlob = async (path: string, options?: BlobRequestOptions): Promise<Blob> => {
+export const apiRequestBlob = async (
+  path: string,
+  options?: BlobRequestOptions
+): Promise<ApiBlobResponse> => {
   const baseHeaders: Record<string, string> = {
     ...(options?.token !== undefined ? { Authorization: `Bearer ${options.token}` } : {})
   };
@@ -152,5 +160,8 @@ export const apiRequestBlob = async (path: string, options?: BlobRequestOptions)
     throw new ApiError(problem?.detail ?? "Request failed", response.status, problem);
   }
 
-  return response.blob();
+  return {
+    blob: await response.blob(),
+    contentDisposition: response.headers.get("Content-Disposition")
+  };
 };

@@ -1,4 +1,6 @@
 import { Body, Controller, Get, Inject, Put, Query, Res, UseGuards } from "@nestjs/common";
+
+import { sendBinaryFile, type BinaryFileResponse } from "../../common/http/send-binary-file";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -59,8 +61,8 @@ export class ReportsController {
     @Query("to") to: string | undefined,
     @Query("activationId") activationId: string | undefined,
     @Query("regionId") regionId: string | undefined,
-    @Res({ passthrough: true }) response: { setHeader: (name: string, value: string) => void }
-  ) {
+    @Res() response: BinaryFileResponse
+  ): Promise<void> {
     const payload = await this.reportsService.getDashboard({
       currentUser,
       ...(from !== undefined ? { from } : {}),
@@ -69,15 +71,12 @@ export class ReportsController {
       ...(regionId !== undefined ? { regionId } : {})
     });
     const buffer = buildDashboardExcel(payload);
-    response.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    sendBinaryFile(
+      response,
+      buffer,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      `reporting-dashboard-${payload.range.from}-to-${payload.range.to}.xlsx`
     );
-    response.setHeader(
-      "Content-Disposition",
-      `attachment; filename="reporting-dashboard-${payload.range.from}-to-${payload.range.to}.xlsx"`
-    );
-    return buffer;
   }
 
   @Get("dashboard/export.pdf")
@@ -91,8 +90,8 @@ export class ReportsController {
     @Query("to") to: string | undefined,
     @Query("activationId") activationId: string | undefined,
     @Query("regionId") regionId: string | undefined,
-    @Res({ passthrough: true }) response: { setHeader: (name: string, value: string) => void }
-  ) {
+    @Res() response: BinaryFileResponse
+  ): Promise<void> {
     const payload = await this.reportsService.getDashboard({
       currentUser,
       ...(from !== undefined ? { from } : {}),
@@ -101,12 +100,12 @@ export class ReportsController {
       ...(regionId !== undefined ? { regionId } : {})
     });
     const buffer = await buildDashboardPdf(payload);
-    response.setHeader("Content-Type", "application/pdf");
-    response.setHeader(
-      "Content-Disposition",
-      `attachment; filename="reporting-dashboard-${payload.range.from}-to-${payload.range.to}.pdf"`
+    sendBinaryFile(
+      response,
+      buffer,
+      "application/pdf",
+      `reporting-dashboard-${payload.range.from}-to-${payload.range.to}.pdf`
     );
-    return buffer;
   }
 
   @Get("settings")

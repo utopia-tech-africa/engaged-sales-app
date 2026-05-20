@@ -146,8 +146,13 @@ const createSimplePdf = (lines: string[]): Promise<Buffer> =>
     doc.on("end", () => {
       resolve(Buffer.concat(chunks));
     });
+    doc.fontSize(11);
     for (const line of lines) {
-      doc.fontSize(11).text(line);
+      if (line.length === 0) {
+        doc.moveDown(0.6);
+        continue;
+      }
+      doc.text(line);
     }
     doc.end();
   });

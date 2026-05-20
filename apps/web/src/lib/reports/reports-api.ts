@@ -1,6 +1,4 @@
-import { apiRequest } from "@/lib/api/http-client";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:5000/api/v1";
+import { apiRequest, apiRequestBlob } from "@/lib/api/http-client";
 
 export type ReportingDashboardResponse = {
   range: { from: string; to: string };
@@ -107,6 +105,72 @@ const buildQuery = (args: FilterArgs): string => {
   return qs.length > 0 ? `?${qs}` : "";
 };
 
+const parseContentDispositionFilename = (header: string | null): string | undefined => {
+  if (header === null) {
+    return undefined;
+  }
+  const quoted = (/filename="([^"]+)"/.exec(header))?.[1];
+  if (quoted !== undefined) {
+    return quoted;
+  }
+  const unquoted = (/filename=([^;\s]+)/.exec(header))?.[1];
+  return unquoted;
+};
+
+const triggerBlobDownload = (blob: Blob, filename: string): void => {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+};
+
+const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+const assertPdfBlob = async (blob: Blob): Promise<Blob> => {
+  const headerBytes = new Uint8Array(await blob.slice(0, 5).arrayBuffer());
+  const header = String.fromCharCode(...headerBytes);
+  if (!header.startsWith("%PDF-")) {
+    throw new Error("Downloaded file is not a valid PDF. Try again or contact support.");
+  }
+  if (blob.type === "application/pdf") {
+    return blob;
+  }
+  return new Blob([await blob.arrayBuffer()], { type: "application/pdf" });
+};
+
+/** XLSX files are ZIP archives and must start with PK (0x50 0x4b). */
+const assertXlsxBlob = async (blob: Blob): Promise<Blob> => {
+  const headerBytes = new Uint8Array(await blob.slice(0, 2).arrayBuffer());
+  if (headerBytes[0] !== 0x50 || headerBytes[1] !== 0x4b) {
+    throw new Error("Downloaded file is not a valid Excel workbook. Try again or contact support.");
+  }
+  if (blob.type === XLSX_MIME) {
+    return blob;
+  }
+  return new Blob([await blob.arrayBuffer()], { type: XLSX_MIME });
+};
+
+const downloadReportBlob = async (
+  token: string,
+  path: string,
+  fallbackFilename: string,
+  options?: { assertPdf?: boolean; assertXlsx?: boolean }
+): Promise<void> => {
+  const { blob, contentDisposition } = await apiRequestBlob(path, { token });
+  const filename = parseContentDispositionFilename(contentDisposition) ?? fallbackFilename;
+  let downloadBlob = blob;
+  if (options?.assertPdf === true) {
+    downloadBlob = await assertPdfBlob(blob);
+  } else if (options?.assertXlsx === true) {
+    downloadBlob = await assertXlsxBlob(blob);
+  }
+  triggerBlobDownload(downloadBlob, filename);
+};
+
 export const getReportingDashboard = async (token: string, args: FilterArgs) =>
   apiRequest<ReportingDashboardResponse>(`/reports/dashboard${buildQuery(args)}`, { token });
 
@@ -125,47 +189,21 @@ export const updateReportingSettings = async (
   }
 ) => apiRequest<ReportSettings>("/reports/settings", { token, method: "PUT", body: payload });
 
-const downloadReport = async (
-  token: string,
-  path: string,
-  fallbackFilename: string
-): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-  if (!response.ok) {
-    throw new Error("Could not export report");
-  }
-  const contentDisposition = response.headers.get("Content-Disposition");
-  const extractedName = contentDisposition?.match(/filename="([^"]+)"/)?.[1];
-  const filename = extractedName ?? fallbackFilename;
-  const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
-};
-
 export const exportReportingDashboardExcel = async (
   token: string,
   args: FilterArgs
 ): Promise<void> =>
-  downloadReport(
+  downloadReportBlob(
     token,
     `/reports/dashboard/export.xlsx${buildQuery(args)}`,
-    `reporting-dashboard-${new Date().toISOString().slice(0, 10)}.xlsx`
+    `reporting-dashboard-${new Date().toISOString().slice(0, 10)}.xlsx`,
+    { assertXlsx: true }
   );
 
 export const exportReportingDashboardPdf = async (token: string, args: FilterArgs): Promise<void> =>
-  downloadReport(
+  downloadReportBlob(
     token,
     `/reports/dashboard/export.pdf${buildQuery(args)}`,
-    `reporting-dashboard-${new Date().toISOString().slice(0, 10)}.pdf`
+    `reporting-dashboard-${new Date().toISOString().slice(0, 10)}.pdf`,
+    { assertPdf: true }
   );

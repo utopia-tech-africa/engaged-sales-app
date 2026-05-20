@@ -109,8 +109,9 @@ export default function OpsReportingPage(): ReactElement {
         ...(regionId.length > 0 ? { regionId } : {})
       });
       toast.success("Reporting dashboard exported to Excel.");
-    } catch {
-      toast.error("Could not export Excel report.");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Could not export Excel report.";
+      toast.error(message);
     }
   };
 
@@ -128,8 +129,9 @@ export default function OpsReportingPage(): ReactElement {
         ...(regionId.length > 0 ? { regionId } : {})
       });
       toast.success("Reporting dashboard exported to PDF.");
-    } catch {
-      toast.error("Could not export PDF report.");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Could not export PDF report.";
+      toast.error(message);
     }
   };
 
