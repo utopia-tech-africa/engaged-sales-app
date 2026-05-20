@@ -1,5 +1,5 @@
 /**
- * Generates favicon and PWA launcher icons from `public/icons/ors-logo.png`.
+ * Generates favicon and PWA launcher icons from `public/icons/ors-logo-1.png`.
  * Run after updating the brand mark:
  *   pnpm exec node ./scripts/ensure-logo-transparency.mjs
  *   pnpm exec node ./scripts/generate-pwa-icons.mjs
@@ -14,7 +14,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.join(__dirname, "..");
 const iconsDir = path.join(webRoot, "public", "icons");
 const appDir = path.join(webRoot, "src", "app");
-const logoPath = path.join(iconsDir, "ors-logo.png");
+const logoPath = path.join(iconsDir, "ors-logo-1.png");
 
 const composeSquareIcon = async (logo, size) => {
   const mark = await logo

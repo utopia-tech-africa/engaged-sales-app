@@ -1,5 +1,5 @@
 /**
- * Ensures `public/icons/ors-logo.png` has a transparent background by flood-filling
+ * Ensures `public/icons/ors-logo-1.png` has a transparent background by flood-filling
  * from the image edges through pixels that match the corner backdrop color.
  *
  *   pnpm exec node ./scripts/ensure-logo-transparency.mjs
@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const logoPath = path.join(__dirname, "..", "public", "icons", "ors-logo.png");
+const logoPath = path.join(__dirname, "..", "public", "icons", "ors-logo-1.png");
 
 /** Max per-channel distance from backdrop sample to treat as background. */
 const COLOR_TOLERANCE = 28;
