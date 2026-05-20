@@ -31,7 +31,8 @@ export const fieldNavItemsFull: readonly FieldNavItem[] = [
     Icon: Store
   },
   { href: "/dashboard/check-in", label: "Check-in", segment: "check-in", Icon: MapPin },
-  { href: "/dashboard/outlet-visits", label: "Outlets", segment: "outlets", Icon: Store },
+  // Temporarily hidden — re-enable when outlet visits launch.
+  // { href: "/dashboard/outlet-visits", label: "Outlets", segment: "outlets", Icon: Store },
   { href: "/dashboard/stock", label: "Stock", segment: "stock", Icon: Boxes },
   { href: "/dashboard/history", label: "History", segment: "history", Icon: History }
 ] as const;
@@ -83,7 +84,11 @@ export const FieldShell = ({
   const navItems = getFieldNavItemsForUser(user);
   const appLabel = user.role === "client" ? "Client" : "Field";
   const mobileGridClass =
-    navItems.length <= 2 ? "grid-cols-2 max-w-sm mx-auto" : "grid-cols-6 max-w-lg mx-auto";
+    navItems.length <= 2
+      ? "grid-cols-2 max-w-sm mx-auto"
+      : navItems.length === 5
+        ? "grid-cols-5 max-w-lg mx-auto"
+        : "grid-cols-6 max-w-lg mx-auto";
 
   const linkClass = (href: string): string =>
     [

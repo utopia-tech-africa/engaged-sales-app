@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { type ReactElement, type SyntheticEvent, useMemo, useState } from "react";
+import { type ReactElement, type SyntheticEvent, useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 
 import {
@@ -37,6 +37,18 @@ const inputClass =
 
 const todayDateInput = (): string => new Date().toISOString().slice(0, 10);
 
+const stockFeedbackMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof ApiError) {
+    const detail = (error.problem?.detail ?? error.message).trim();
+    return detail.length > 0 ? detail : fallback;
+  }
+  if (error instanceof Error) {
+    const message = error.message.trim();
+    return message.length > 0 ? message : fallback;
+  }
+  return fallback;
+};
+
 export default function FieldStockPage(): ReactElement {
   const accessToken = useAuthStore((state) => state.accessToken);
   const [activationId, setActivationId] = useState("");
@@ -46,7 +58,6 @@ export default function FieldStockPage(): ReactElement {
   const [saleQuantities, setSaleQuantities] = useState<Record<string, number>>({});
   const [sellingPrices, setSellingPrices] = useState<Record<string, number>>({});
   const [reportDate, setReportDate] = useState(todayDateInput());
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [summary, setSummary] = useState<StockDailySummary | null>(null);
 
   const activationsQuery = useActivationsListForField({
@@ -84,6 +95,10 @@ export default function FieldStockPage(): ReactElement {
     onSuccess: () => {
       setPickupQuantities({});
       setPickupCosts({});
+      toast.success("Stock pickup saved.");
+    },
+    onError: (error: unknown) => {
+      toast.error(stockFeedbackMessage(error, "Could not save stock pickup."));
     }
   });
 
@@ -107,6 +122,10 @@ export default function FieldStockPage(): ReactElement {
     onSuccess: () => {
       setSaleQuantities({});
       setSellingPrices({});
+      toast.success("Sales recorded.");
+    },
+    onError: (error: unknown) => {
+      toast.error(stockFeedbackMessage(error, "Could not save stock sale."));
     }
   });
 
@@ -115,10 +134,26 @@ export default function FieldStockPage(): ReactElement {
       getStockDailySummary(accessToken ?? "", { activationId, date: reportDate }),
     onSuccess: (result) => {
       setSummary(result);
+      toast.success("Daily summary loaded.");
+    },
+    onError: (error: unknown) => {
+      toast.error(stockFeedbackMessage(error, "Could not load daily summary."));
     }
   });
 
   const products = productsQuery.data?.data ?? [];
+
+  useEffect(() => {
+    if (activationsQuery.isError) {
+      toast.error("Could not load activations.");
+    }
+  }, [activationsQuery.isError]);
+
+  useEffect(() => {
+    if (productsQuery.isError) {
+      toast.error("Could not load activation SKUs.");
+    }
+  }, [productsQuery.isError]);
 
   const inventoryTotals = useMemo(() => {
     if (summary === null) {
@@ -160,46 +195,20 @@ export default function FieldStockPage(): ReactElement {
 
   const handlePickupSubmit = (event: SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    setErrorMessage(null);
     if (!activationId || distributorName.trim().length === 0) {
-      setErrorMessage("Select activation and enter distributor name.");
+      toast.error("Select activation and enter distributor name.");
       return;
     }
-    pickupMutation.mutate(undefined, {
-      onError: (error: unknown) => {
-        if (error instanceof ApiError) {
-          setErrorMessage(error.problem?.detail ?? error.message);
-          return;
-        }
-        if (error instanceof Error) {
-          setErrorMessage(error.message);
-          return;
-        }
-        setErrorMessage("Could not save stock pickup.");
-      }
-    });
+    pickupMutation.mutate();
   };
 
   const handleSaleSubmit = (event: SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    setErrorMessage(null);
     if (!activationId) {
-      setErrorMessage("Select activation first.");
+      toast.error("Select activation first.");
       return;
     }
-    saleMutation.mutate(undefined, {
-      onError: (error: unknown) => {
-        if (error instanceof ApiError) {
-          setErrorMessage(error.problem?.detail ?? error.message);
-          return;
-        }
-        if (error instanceof Error) {
-          setErrorMessage(error.message);
-          return;
-        }
-        setErrorMessage("Could not save stock sale.");
-      }
-    });
+    saleMutation.mutate();
   };
 
   return (
@@ -239,7 +248,9 @@ export default function FieldStockPage(): ReactElement {
             <input
               className={inputClass}
               value={distributorName}
-              onChange={(event) => { setDistributorName(event.target.value); }}
+              onChange={(event) => {
+                setDistributorName(event.target.value);
+              }}
               placeholder="ABC Distributors"
             />
           </label>
@@ -258,12 +269,12 @@ export default function FieldStockPage(): ReactElement {
                   type="number"
                   min={0}
                   value={pickupQuantities[product.id] ?? 0}
-                  onChange={(event) =>
-                    { setPickupQuantities((prev) => ({
+                  onChange={(event) => {
+                    setPickupQuantities((prev) => ({
                       ...prev,
                       [product.id]: Number(event.target.value)
-                    })); }
-                  }
+                    }));
+                  }}
                 />
               </label>
               <label className="text-xs text-muted-foreground">
@@ -274,12 +285,12 @@ export default function FieldStockPage(): ReactElement {
                   min={0}
                   step="0.01"
                   value={pickupCosts[product.id] ?? 0}
-                  onChange={(event) =>
-                    { setPickupCosts((prev) => ({
+                  onChange={(event) => {
+                    setPickupCosts((prev) => ({
                       ...prev,
                       [product.id]: Number(event.target.value)
-                    })); }
-                  }
+                    }));
+                  }}
                 />
               </label>
             </div>
@@ -312,12 +323,12 @@ export default function FieldStockPage(): ReactElement {
                   type="number"
                   min={0}
                   value={saleQuantities[product.id] ?? 0}
-                  onChange={(event) =>
-                    { setSaleQuantities((prev) => ({
+                  onChange={(event) => {
+                    setSaleQuantities((prev) => ({
                       ...prev,
                       [product.id]: Number(event.target.value)
-                    })); }
-                  }
+                    }));
+                  }}
                 />
               </label>
               <label className="text-xs text-muted-foreground">
@@ -328,12 +339,12 @@ export default function FieldStockPage(): ReactElement {
                   min={0}
                   step="0.01"
                   value={sellingPrices[product.id] ?? 0}
-                  onChange={(event) =>
-                    { setSellingPrices((prev) => ({
+                  onChange={(event) => {
+                    setSellingPrices((prev) => ({
                       ...prev,
                       [product.id]: Number(event.target.value)
-                    })); }
-                  }
+                    }));
+                  }}
                 />
               </label>
             </div>
@@ -363,7 +374,9 @@ export default function FieldStockPage(): ReactElement {
             type="button"
             className={calmPrimaryButtonClass}
             disabled={activationId.length === 0 || loadSummaryMutation.isPending}
-            onClick={() => { loadSummaryMutation.mutate(); }}
+            onClick={() => {
+              loadSummaryMutation.mutate();
+            }}
           >
             {loadSummaryMutation.isPending ? "Loading..." : "Load summary"}
           </button>
@@ -409,17 +422,6 @@ export default function FieldStockPage(): ReactElement {
           </div>
         ) : null}
       </section>
-
-      {errorMessage !== null ? (
-        <p className="text-sm text-destructive" role="alert">
-          {errorMessage}
-        </p>
-      ) : null}
-      {productsQuery.isError ? (
-        <p className="text-sm text-destructive" role="alert">
-          Could not load activation SKUs.
-        </p>
-      ) : null}
     </div>
   );
 }
