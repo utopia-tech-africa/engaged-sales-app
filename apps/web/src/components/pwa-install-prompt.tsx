@@ -256,6 +256,7 @@ export const PwaInstallUi = (): ReactElement => (
   </>
 );
 
+/** @deprecated Use `PwaInstallProvider` + `PwaInstallUi` in the root layout instead. */
 export const PwaInstallPrompt = (): ReactElement => (
   <PwaInstallProvider>
     <PwaInstallUi />
