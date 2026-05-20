@@ -57,12 +57,14 @@ export default function OpsOrganizationPage(): ReactElement {
             href="/ops/regions"
             linkLabel="Open regions →"
           />
+          {/* Temporarily hidden — re-enable when subwholesale management launches.
           <OrgCard
             title="Subwholesales"
             description="Wholesale nodes under a region (slugs unique per region). Use for territory hierarchy under regions."
             href="/ops/subwholesales"
             linkLabel="Open subwholesales →"
           />
+          */}
           <OrgCard
             title="Users & roles"
             description="Invite promoters and read-only clients, assign supervisors, activate or deactivate accounts, and manage sessions."

@@ -27,8 +27,9 @@ const navGroupsForRole = (role: AuthUser["role"]): NavGroup[] => {
 
   const structureItems: NavItem[] = [
     { href: "/ops/users", label: "Users" },
-    { href: "/ops/regions", label: "Regions" },
-    { href: "/ops/subwholesales", label: "Subwholesales" }
+    { href: "/ops/regions", label: "Regions" }
+    // Temporarily hidden — re-enable when subwholesale management launches.
+    // { href: "/ops/subwholesales", label: "Subwholesales" }
   ];
   if (canSupervise) {
     structureItems.push({ href: "/ops/activations", label: "Activations" });
