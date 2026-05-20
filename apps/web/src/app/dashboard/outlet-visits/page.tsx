@@ -54,7 +54,6 @@ export default function OutletVisitsPage(): ReactElement {
   const [stockAvailabilityNotes, setStockAvailabilityNotes] = useState("");
   const [salesMadeNotes, setSalesMadeNotes] = useState("");
   const [consumerEngagementNotes, setConsumerEngagementNotes] = useState("");
-  const [visibilityExecutionNotes, setVisibilityExecutionNotes] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -127,9 +126,6 @@ export default function OutletVisitsPage(): ReactElement {
       ...(salesMadeNotes.trim().length > 0 ? { salesMadeNotes: salesMadeNotes.trim() } : {}),
       ...(consumerEngagementNotes.trim().length > 0
         ? { consumerEngagementNotes: consumerEngagementNotes.trim() }
-        : {}),
-      ...(visibilityExecutionNotes.trim().length > 0
-        ? { visibilityExecutionNotes: visibilityExecutionNotes.trim() }
         : {})
     };
 
@@ -139,7 +135,6 @@ export default function OutletVisitsPage(): ReactElement {
       setStockAvailabilityNotes("");
       setSalesMadeNotes("");
       setConsumerEngagementNotes("");
-      setVisibilityExecutionNotes("");
     };
 
     if (!online) {
@@ -153,7 +148,6 @@ export default function OutletVisitsPage(): ReactElement {
           setStockAvailabilityNotes("");
           setSalesMadeNotes("");
           setConsumerEngagementNotes("");
-          setVisibilityExecutionNotes("");
         } catch {
           setErrorMessage(
             "Could not save on this device. Check storage permissions or free space, then try again."
@@ -179,7 +173,6 @@ export default function OutletVisitsPage(): ReactElement {
               setStockAvailabilityNotes("");
               setSalesMadeNotes("");
               setConsumerEngagementNotes("");
-              setVisibilityExecutionNotes("");
             } catch {
               const message =
                 error instanceof ApiError
@@ -204,9 +197,9 @@ export default function OutletVisitsPage(): ReactElement {
       <div>
         <h1 className="text-xl font-semibold tracking-tight text-foreground">Outlet visit</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Check into an outlet and record stock, sales, consumer engagement, and visibility
-          execution. If you lose signal, you can still submit—the visit is stored on this phone and
-          sent when you are online again.
+          Check into an outlet and record stock availability, sales, and consumer engagement. If you
+          lose signal, you can still submit—the visit is stored on this phone and sent when you are
+          online again.
         </p>
         <p className="mt-1 text-sm">
           <Link
@@ -322,18 +315,6 @@ export default function OutletVisitsPage(): ReactElement {
               setConsumerEngagementNotes(event.target.value);
             }}
             placeholder="Record demos, sampling, or conversations"
-          />
-        </label>
-
-        <label className="block text-xs font-medium text-muted-foreground">
-          Visibility execution
-          <textarea
-            className={`${inputClass} min-h-20`}
-            value={visibilityExecutionNotes}
-            onChange={(event) => {
-              setVisibilityExecutionNotes(event.target.value);
-            }}
-            placeholder="Record POSM placement and shelf visibility work"
           />
         </label>
 

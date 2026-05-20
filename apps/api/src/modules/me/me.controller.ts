@@ -265,7 +265,6 @@ export class MeController {
         stockAvailabilityNotes: "All SKUs available except 500ml variant",
         salesMadeNotes: "Sold 2 cartons and 6 singles",
         consumerEngagementNotes: "Engaged 9 consumers with product demo",
-        visibilityExecutionNotes: "Shelf branding and wobblers placed",
         checkedInAt: "2026-05-08T18:20:00.000Z"
       }
     }

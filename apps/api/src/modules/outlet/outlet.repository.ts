@@ -61,7 +61,6 @@ export class OutletRepository {
     stockAvailabilityNotes: string | null;
     salesMadeNotes: string | null;
     consumerEngagementNotes: string | null;
-    visibilityExecutionNotes: string | null;
   }) {
     return this.prisma.outletVisit.create({
       data,
@@ -75,7 +74,6 @@ export class OutletRepository {
         stockAvailabilityNotes: true,
         salesMadeNotes: true,
         consumerEngagementNotes: true,
-        visibilityExecutionNotes: true,
         checkedInAt: true
       }
     });
@@ -96,7 +94,6 @@ export class OutletRepository {
         stockAvailabilityNotes: true,
         salesMadeNotes: true,
         consumerEngagementNotes: true,
-        visibilityExecutionNotes: true,
         checkedInAt: true,
         outlet: {
           select: {
@@ -152,7 +149,6 @@ export class OutletRepository {
         stockAvailabilityNotes: true,
         salesMadeNotes: true,
         consumerEngagementNotes: true,
-        visibilityExecutionNotes: true,
         checkedInAt: true,
         outlet: {
           select: {

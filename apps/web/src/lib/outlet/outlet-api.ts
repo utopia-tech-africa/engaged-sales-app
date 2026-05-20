@@ -33,7 +33,6 @@ export type CreateOutletVisitPayload = {
   stockAvailabilityNotes?: string;
   salesMadeNotes?: string;
   consumerEngagementNotes?: string;
-  visibilityExecutionNotes?: string;
 };
 
 export type OutletVisitRecord = {
@@ -46,7 +45,6 @@ export type OutletVisitRecord = {
   stockAvailabilityNotes: string | null;
   salesMadeNotes: string | null;
   consumerEngagementNotes: string | null;
-  visibilityExecutionNotes: string | null;
   checkedInAt: string;
   outlet?: {
     id: string;

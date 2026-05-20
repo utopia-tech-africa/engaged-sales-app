@@ -47,10 +47,4 @@ export class CreateOutletVisitDto {
   @IsString()
   @MaxLength(2000)
   public consumerEngagementNotes?: string;
-
-  @ApiPropertyOptional({ type: String, example: "Shelf branding and wobblers correctly placed." })
-  @IsOptional()
-  @IsString()
-  @MaxLength(2000)
-  public visibilityExecutionNotes?: string;
 }

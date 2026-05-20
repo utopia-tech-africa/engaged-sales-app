@@ -82,11 +82,6 @@ export default function OutletVisitHistoryPage(): ReactElement {
                   <span className="font-medium">Engagement:</span> {visit.consumerEngagementNotes}
                 </p>
               ) : null}
-              {visit.visibilityExecutionNotes ? (
-                <p className="mt-1 text-xs text-foreground/90">
-                  <span className="font-medium">Visibility:</span> {visit.visibilityExecutionNotes}
-                </p>
-              ) : null}
             </li>
           ))}
         </ul>

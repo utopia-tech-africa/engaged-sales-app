@@ -15,5 +15,4 @@ export type CreateOutletVisitDto = {
   stockAvailabilityNotes?: string;
   salesMadeNotes?: string;
   consumerEngagementNotes?: string;
-  visibilityExecutionNotes?: string;
-}
+};

@@ -78,8 +78,7 @@ export default function OpsOutletVisitsReportPage(): ReactElement {
       hasOutletPhoto: visit.hasOutletPhoto ? "Yes" : "No",
       stockAvailabilityNotes: visit.stockAvailabilityNotes ?? "",
       salesMadeNotes: visit.salesMadeNotes ?? "",
-      consumerEngagementNotes: visit.consumerEngagementNotes ?? "",
-      visibilityExecutionNotes: visit.visibilityExecutionNotes ?? ""
+      consumerEngagementNotes: visit.consumerEngagementNotes ?? ""
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -134,8 +133,7 @@ export default function OpsOutletVisitsReportPage(): ReactElement {
         hasOutletPhoto: visit.hasOutletPhoto ? "Yes" : "No",
         stockAvailabilityNotes: visit.stockAvailabilityNotes ?? "",
         salesMadeNotes: visit.salesMadeNotes ?? "",
-        consumerEngagementNotes: visit.consumerEngagementNotes ?? "",
-        visibilityExecutionNotes: visit.visibilityExecutionNotes ?? ""
+        consumerEngagementNotes: visit.consumerEngagementNotes ?? ""
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -283,12 +281,6 @@ export default function OpsOutletVisitsReportPage(): ReactElement {
                 {visit.consumerEngagementNotes ? (
                   <p className="mt-1 text-xs">
                     <span className="font-medium">Engagement:</span> {visit.consumerEngagementNotes}
-                  </p>
-                ) : null}
-                {visit.visibilityExecutionNotes ? (
-                  <p className="mt-1 text-xs">
-                    <span className="font-medium">Visibility:</span>{" "}
-                    {visit.visibilityExecutionNotes}
                   </p>
                 ) : null}
               </li>

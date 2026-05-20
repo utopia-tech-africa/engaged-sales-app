@@ -282,8 +282,7 @@ export class MeService {
       hasOutletPhoto: parsedPhoto !== null,
       stockAvailabilityNotes: payload.stockAvailabilityNotes?.trim() ?? null,
       salesMadeNotes: payload.salesMadeNotes?.trim() ?? null,
-      consumerEngagementNotes: payload.consumerEngagementNotes?.trim() ?? null,
-      visibilityExecutionNotes: payload.visibilityExecutionNotes?.trim() ?? null
+      consumerEngagementNotes: payload.consumerEngagementNotes?.trim() ?? null
     });
   }
 }
