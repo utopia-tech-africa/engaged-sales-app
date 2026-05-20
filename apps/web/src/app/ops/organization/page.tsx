@@ -98,7 +98,6 @@ export default function OpsOrganizationPage(): ReactElement {
             href="/ops/geofences"
             linkLabel="Open work areas →"
           />
-          {/* Temporarily hidden — re-enable when outlet management launches.
           <OrgCard
             title="Outlets"
             description="Outlet master data and visit reporting for trade coverage."
@@ -111,7 +110,6 @@ export default function OpsOrganizationPage(): ReactElement {
             href="/ops/outlets/visits"
             linkLabel="Open visit reports →"
           />
-          */}
           {canSuperviseField ? (
             <>
               <OrgCard

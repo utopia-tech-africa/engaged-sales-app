@@ -36,9 +36,8 @@ const navGroupsForRole = (role: AuthUser["role"]): NavGroup[] => {
   }
 
   const fieldItems: NavItem[] = [
-    { href: "/ops/geofences", label: "Work areas" }
-    // Temporarily hidden — re-enable when outlet management launches.
-    // { href: "/ops/outlets", label: "Outlets" }
+    { href: "/ops/geofences", label: "Work areas" },
+    { href: "/ops/outlets", label: "Outlets" }
   ];
   if (canSupervise) {
     fieldItems.push(
